@@ -3,7 +3,7 @@ ruby '1.9.3'
 
 gem 'rails', '4.0.5'
 gem 'bootstrap-sass', '2.3.2.0'
-gem 'sprockets', '2.11.0'
+gem 'sprockets'
 gem 'bcrypt-ruby', '3.1.2'
 
 group :development, :test do
