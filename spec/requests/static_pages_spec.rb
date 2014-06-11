@@ -8,7 +8,7 @@ describe "Static pages" do
     end
 		it "should have the right title" do
 			visit '/static_pages/home'
-			expect(page).to have_title("Legal Guide Dog | Home")
+			expect(page).not_to have_title("| Home")
 		end
   end
 	
