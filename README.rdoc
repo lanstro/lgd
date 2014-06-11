@@ -1,28 +1,8 @@
 == README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Legal Guide Dog is a new legal research tool that enriches the presentation of legal
+text and concepts for lawyers and members of the public.  The law is a cluttered web 
+of subtly interconnected concepts, and Rex the Legal Guide Dog will lead users through 
+this mess to the answer that they seek.
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+For further details, contact Kai Fu at kaistuff@yahoo.com.
