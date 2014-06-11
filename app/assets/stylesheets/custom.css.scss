@@ -1,0 +1,85 @@
+@import "bootstrap";
+
+/* universal */
+
+body {
+  padding-top: 6%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.center {
+  text-align: center;
+}
+
+/* typography */
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1;
+}
+
+h1 {
+  font-size: 3em;
+  margin-bottom: 1%;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.2em;
+  margin-bottom: 1%;
+  text-align: center;
+  font-weight: normal;
+}
+
+p {
+  font-size: 1.1em;
+  line-height: 1.7em;
+}
+
+#logo {
+  float: left;
+  padding-top: 1%;
+	width:5%;
+}
+
+#header_title{
+	float:left;
+	padding-top:2%;
+	margin-left:1%;
+	font-weight:bold;
+	color:black;
+	&:hover{
+		text-decoration:none;
+		color:#777777;
+	}
+}
+
+#alpha{
+	float:left;
+	font-size:0.5em;
+	padding-top:3%;
+	margin-left:0.2%;
+	color:blue;
+	font-style:italic;
+}
+
+.navbar .pull-right {
+	padding-top:1.5%;
+}
+
+#main_image{
+	display:block;
+	margin:5% auto 2% auto;
+	width:20%;
+}
+
+.container-fluid{
+	max-width:1000px;
+	margin: 0% auto;
+}
+
+.navbar-inner{
+	min-height:0px;
+}
