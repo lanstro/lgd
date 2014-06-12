@@ -7,25 +7,13 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-	<header class="navbar navbar-fixed-top">
-		<div class="navbar-inner">
-			<div class="container-fluid">
-				<%= link_to image_tag("misc/logo_small.png", alt: "logo", id:"logo"), root_path %>
-				<%= link_to "Legal Guide Dog", root_path, id:"header_title" %>
-				<p id="alpha">Alpha</p>
-				<nav>
-					<ul class="nav pull-right">
-						<li><%= link_to "Home",    root_path %></li>
-						<li><%= link_to "About",   about_path %></li>
-						<li><%= link_to "Help",    help_path %></li>
-						<li><%= link_to "Sign in", '#' %></li>
-					</ul>
-				</nav>
-			</div>
-		</div>
-	</header>
+	<%= render 'layouts/header' %>
 	<div class="container-fluid">
+		<% flash.each do |key, value| %>
+			<div class="alert alert-<%= key %>"><%= value %></div>
+		<% end %>
 		<%= yield %>
+		<%= debug(params) if Rails.env.development? %>
 	</div>
 </body>
 </html>
