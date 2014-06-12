@@ -113,7 +113,7 @@ aside {
 input, textarea, select, .uneditable-input {
   border: 1px solid #bbb;
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: 0.2%;
 }
 
 input {
@@ -124,10 +124,23 @@ input {
   color: #f00;
   ul {
     list-style: none;
-    margin: 0 0 18px 0;
+    margin: 0 0 0.2% 0;
   }
 }
 .field_with_errors {
   @extend .control-group;
   @extend .error;
+}
+
+.users {
+  list-style: none;
+  margin: 0;
+  li {
+    overflow: auto;
+    padding: 0.2% 0;
+    border-top: 1px solid gray;
+    &:last-child {
+      border-bottom: 1px solid gray;
+    }
+  }
 }
