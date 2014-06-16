@@ -11,7 +11,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140612052928) do
+ActiveRecord::Schema.define(version: 20140616054756) do
+
+  create_table "acts", force: true do |t|
+    t.string   "title"
+    t.date     "last_updated"
+    t.string   "jurisdiction"
+    t.text     "updating_acts"
+    t.string   "subtitle"
+    t.string   "regulations"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "act_type"
+    t.integer  "year"
+    t.integer  "number"
+  end
+
+  add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
+
+  create_table "sections", force: true do |t|
+    t.text     "number"
+    t.string   "title"
+    t.date     "last_updated"
+    t.text     "updating_acts"
+    t.integer  "regulations"
+    t.string   "section_type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "act_id"
+  end
+
+  add_index "sections", ["act_id", "number"], name: "index_sections_on_act_id_and_number"
 
   create_table "users", force: true do |t|
     t.string   "name"
