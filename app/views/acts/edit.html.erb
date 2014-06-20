@@ -1,2 +1,11 @@
-<h1>Act#edit</h1>
-<p>Find me in app/views/act/edit.html.erb</p>
+<% provide(:title, "Edit Legislation") %>
+<h1>Updating legislation: <%= @act.title %></h1>
+
+<div class="row">
+  <div class="span6 offset1">
+    <%= form_for(@act) do |f| %>
+			<%= render 'form', f: f, errors: @act.errors %>
+      <%= f.submit "Save changes", class: "btn btn-large btn-primary" %>
+    <% end %>
+  </div>
+</div>

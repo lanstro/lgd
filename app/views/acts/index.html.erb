@@ -1,0 +1,10 @@
+<% provide(:title, 'All legislation') %>
+<h1>Index of legislation</h1>
+<%= will_paginate %>
+<ul class = "acts">
+	<%=  render @acts %>
+</ul>
+<%= will_paginate %>
+<% if current_user and current_user.admin? %>
+	<%= link_to "Create new legislation", new_act_path %>
+<% end %>

@@ -7,6 +7,7 @@ describe "Static pages" do
 		it { should have_content('Legal Guide Dog') }
 		it { should have_title(full_title('')) }
 		it { should_not have_title('| Home')}
+		it { should have_link('Legislation',    href: acts_path) }
   end
 	
   describe "Help page" do

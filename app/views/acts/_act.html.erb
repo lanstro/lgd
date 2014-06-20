@@ -1,0 +1,8 @@
+<li>
+	<%= link_to act.title, act %>
+  <% if current_user and current_user.admin? %>
+		| <%=  link_to "edit", edit_act_path(act) %>
+    | <%= link_to "delete", act, method: :delete,
+                                 data: { confirm: "You sure?" } %>
+  <% end %>
+</li>

@@ -1,0 +1,22 @@
+<%= render 'shared/error_messages', errors: errors %>
+
+<%= f.label :title %>
+<%= f.text_field :title %>
+
+<%= f.label :subtitle %>
+<%= f.text_field :subtitle %>
+
+<%= f.label :jurisdiction %>
+<%= f.select(:jurisdiction, ["Commonwealth", "Victoria", "New South Wales", "Queensland", "Northern Territory", "Australian Capital Territory", "Western Australia", "South Australia", "Tasmania"]) %>
+
+<%= f.label :act_type, "Instrument Type" %>
+<%= f.select(:act_type, ["Act", "Regulations"]) %>
+
+<%= f.label :year, "Year" %>
+<%= f.number_field :year %>
+
+<%= f.label :number, "Number" %>
+<%= f.number_field :number %>
+
+<%= f.label :last_updated, "Last updated by Comlaw" %>
+<%= f.date_select :last_updated, start_year: 2000 %>

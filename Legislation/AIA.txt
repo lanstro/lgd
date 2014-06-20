@@ -1,152 +1,162 @@
-<Act_title>An Act for the Interpretation of Acts of Parliament and for Shortening their Language</Act_title>
 <Part>
-<Part_title>Part 1—Preliminary</Part_title>
+<Title>Part 1 - Preliminary</Title>
 <Section>
-	<Section_title>1  Short title</Section_title>
-	<p>This Act may be cited as the Acts Interpretation Act 1901.</p>
+	<Title>1  Short title</Title>
+	<Paragraph>This Act may be cited as the Acts Interpretation Act 1901.</Paragraph>
 </Section>
 <Section>
-	<Section_title>1A  Simplified outline</Section_title>
-	<p>The following is a simplified outline of this Act:</p>
+	<Title>1A  Simplified outline</Title>
+	<Paragraph>The following is a simplified outline of this Act:</Paragraph>
 	<Explanatory_box>
-		<Explanatory_box_title>Overview</Explanatory_box_title>
-		<p>This Act is like a dictionary and manual to use when reading and interpreting Commonwealth Acts and instruments made under Commonwealth Acts.</p>
-		<p>The definitions and many of the interpretation rules are aimed at making Commonwealth legislation shorter, less complex and more consistent in operation.</p>
-		<p>A provision of this Act is subject to a contrary intention in other Commonwealth legislation.</p>
-		<Explanatory_box_title>Structure</Explanatory_box_title>
-		<p>Part 1 provides that this Act applies to all Acts. This Act also applies to legislative instruments and other instruments made under an Act (see subsection 13(1) of the <reference>Legislative Instruments Act 2003</reference> and subsection 46(1) of this Act).</p>
-		<p>Part 2 contains definitions that apply across all Commonwealth legislation (for example, <defined_term>Australian citizen</defined_term>, <defined_term>business day</defined_term>, <defined_term>document</defined_term> and <defined_term>month</defined_term>).</p>
-		<p>Part 3 deals with the commencement of Commonwealth Acts. For example, section 4 allows certain powers to be exercised (like the making of appointments) between the enactment and commencement of an Act.</p>
-		<p>Part 4 deals with the amendment, repeal and expiry of Commonwealth legislation. For example, section 7 provides that the repeal of an Act does not affect any rights accrued under the Act, or any legal proceedings instituted, before the repeal.</p>
-		<p>Part 5 contains various rules for interpreting Commonwealth legislation, including:</p>
-		<lower_alpha_list>
-			<li>(a)	section 15A (about interpreting an Act subject to the Constitution); and</li>
-			<li>(b)	section 15AA (which provides for interpreting an Act in a way that best achieves the purpose or object of the Act); and</li>
-			<li>(c)	section 15AB (about using material that is not part of an Act (like explanatory memorandums and second reading speeches) in interpreting an Act); and</li>
-			<li>(d)	sections 19 to 19C (which deal with references to Ministers, Departments and Secretaries of Departments and with administrative changes in the operation of the Commonwealth Government).</li>
-		</lower_alpha_list>
-		<p>Part 6 deals with the service of documents on persons.</p>
-		<p>Part 7 contains rules about exercising powers and performing functions and duties under Commonwealth legislation, including:</p>
-		<lower_alpha_list>
-			<li>(a)	subsection 33(3) (which provides that a power to make an instrument includes the power to vary or revoke the instrument); and</li>
-			<li>(b)	section 33A (about acting appointments); and</li>
-			<li>(c)	sections 34AA, 34AB and 34A (about delegating powers, functions and duties).</li>
-		</lower_alpha_list>
-		<p>Part 8 deals with the calculation of distance, time and age.</p>
-		<p>Part 9 deals with the citation of Acts.</p>
-		<p>Part 10 deals with non legislative instruments. For example, it provides that this Act applies to those instruments and that expressions in those instruments have the same meaning as in the enabling legislation.</p>
-		<p>Part 11 contains a regulation making power.</p>
+		<Title>Overview</Title>
+		<Paragraph>This Act is like a dictionary and manual to use when reading and interpreting Commonwealth Acts and instruments made under Commonwealth Acts.</Paragraph>
+		<Paragraph>The definitions and many of the interpretation rules are aimed at making Commonwealth legislation shorter, less complex and more consistent in operation.</Paragraph>
+		<Paragraph>A provision of this Act is subject to a contrary intention in other Commonwealth legislation.</Paragraph>
+		<Title>Structure</Title>
+		<Paragraph>Part 1 provides that this Act applies to all Acts. This Act also applies to legislative instruments and other instruments made under an Act (see subsection 13(1) of the <reference>Legislative Instruments Act 2003</reference> and subsection 46(1) of this Act).</Paragraph>
+		<Paragraph>Part 2 contains definitions that apply across all Commonwealth legislation (for example, <defined_term>Australian citizen</defined_term>, <defined_term>business day</defined_term>, <defined_term>document</defined_term> and <defined_term>month</defined_term>).</Paragraph>
+		<Paragraph>Part 3 deals with the commencement of Commonwealth Acts. For example, section 4 allows certain powers to be exercised (like the making of appointments) between the enactment and commencement of an Act.</Paragraph>
+		<Paragraph>Part 4 deals with the amendment, repeal and expiry of Commonwealth legislation. For example, section 7 provides that the repeal of an Act does not affect any rights accrued under the Act, or any legal proceedings instituted, before the repeal.</Paragraph>
+		<Paragraph>Part 5 contains various rules for interpreting Commonwealth legislation, including:</Paragraph>
+		<List>
+			<List_item>(a)	section 15A (about interpreting an Act subject to the Constitution); and</List_item>
+			<List_item>(b)	section 15AA (which provides for interpreting an Act in a way that best achieves the purpose or object of the Act); and</List_item>
+			<List_item>(c)	section 15AB (about using material that is not part of an Act (like explanatory memorandums and second reading speeches) in interpreting an Act); and</List_item>
+			<List_item>(d)	sections 19 to 19C (which deal with references to Ministers, Departments and Secretaries of Departments and with administrative changes in the operation of the Commonwealth Government).</List_item>
+		</List>
+		<Paragraph>Part 6 deals with the service of documents on persons.</Paragraph>
+		<Paragraph>Part 7 contains rules about exercising powers and performing functions and duties under Commonwealth legislation, including:</Paragraph>
+		<List>
+			<List_item>(a)	subsection 33(3) (which provides that a power to make an instrument includes the power to vary or revoke the instrument); and</List_item>
+			<List_item>(b)	section 33A (about acting appointments); and</List_item>
+			<List_item>(c)	sections 34AA, 34AB and 34A (about delegating powers, functions and duties).</List_item>
+		</List>
+		<Paragraph>Part 8 deals with the calculation of distance, time and age.</Paragraph>
+		<Paragraph>Part 9 deals with the citation of Acts.</Paragraph>
+		<Paragraph>Part 10 deals with non legislative instruments. For example, it provides that this Act applies to those instruments and that expressions in those instruments have the same meaning as in the enabling legislation.</Paragraph>
+		<Paragraph>Part 11 contains a regulation making power.</Paragraph>
 	</Explanatory_box>
 </Section>
 <Section>
-	<Section_title>2  Application of Act</Section_title>
+	<Title>2  Application of Act</Title>
 	<Subsection>
-		<p>(1)	This Act applies to all Acts (including this Act).</p>
-		<Note>Note: This Act also applies to legislative instruments and other instruments made under an Act: see subsection 13(1) of the <Reference>Legislative Instruments Act 2003</Reference> and subsection 46(1) of this Act.</p>
+		<Paragraph>(1)	This Act applies to all Acts (including this Act).</Paragraph>
+		<Note>Note: This Act also applies to legislative instruments and other instruments made under an Act: see subsection 13(1) of the <Reference>Legislative Instruments Act 2003</Reference> and subsection 46(1) of this Act.</Paragraph>
 	</Subsection>
 	<Subsection>
-		<p>(2)	However, the application of this Act or a provision of this Act to an Act or a provision of an Act is subject to a contrary intention.</p>
+		<Paragraph>(2)	However, the application of this Act or a provision of this Act to an Act or a provision of an Act is subject to a contrary intention.</Paragraph>
 	</Subsection>
 </Section>
 <Section>
-	<Section_title>2A  Binding the Crown</Section_title>
-	<p>This Act binds the Crown in each of its capacities.</p>
+	<Title>2A  Binding the Crown</Title>
+	<Paragraph>This Act binds the Crown in each of its capacities.</Paragraph>
 </Section>
 </Part>
 <Part>
-<Part_title>Part 2—Definitions</Part_title>
+<Title>Part 2 - Definitions</Title>
 
 <Section>
-	<Section_heading>2B  Definitions</Section_heading>
-	<p>In any Act:</p>
-	<p><definition>acting SES employee</definition> has the same meaning as in the <Reference>Public Service Act 1999</Reference>.</p>
-	<p><definition>affidavit</definition> includes affirmation, declaration and promise.</p>
-	<p><definition>appoint</definition>: see section 33AA.</p>
-	<p><definition>APS employee</definition> has the same meaning as in the Public Service Act 1999.</p>
-	<p><definition>Australia</definition> means the Commonwealth of Australia and, when used in a geographical sense, includes the Territory of Christmas Island and the Territory of Cocos (Keeling) Islands, but does not include any other external Territory.</p>
-	<Note>Note: See also section 15B.</Note>
-	<p><definition>Australian citizen</definition> has the same meaning as in the Australian Citizenship Act 2007.</p>
-	<p><definition>Australian Privacy Principle</definition> has the same meaning as in the Privacy Act 1988.</p>
-	<p><definition>Australian Standard</definition>: see section 2L.</p>
-	<p><definition>business day</definition> means a day that is not a Saturday, a Sunday or a public holiday in the place concerned.</p>
-	<p><definition>calendar month</definition> means one of the 12 months of the year.</p>
-	<p><definition>calendar year</definition> means a period of 12 months starting on 1 January.</p>
-	<p><definition>charitable</definition> has the meaning given by Part 2 of the Charities Act 2013.</p>
-	<p><definition>charitable purpose</definition> has the meaning given by Part 3 of the Charities Act 2013.</p>
-	<p><definition>charity</definition> has the meaning given by Part 2 of the Charities Act 2013.</p>
-	<p><definition>commencement</definition>, in relation to an Act or a provision of an Act, means the time at which the Act or provision comes into operation.</p>
-	<Note>Note: See also section 3.</Note>
-	<p><definition>Commonwealth</definition> means the Commonwealth of Australia and, when used in a geographical sense, includes the Territory of Christmas Island and the Territory of Cocos (Keeling) Islands, but does not include any other external Territory.</p>
-	<Note>Note: See also section 15B.</Note>
-	<p><definition>Consolidated Revenue Fund</definition> means the Consolidated Revenue Fund referred to in section 81 of the Constitution.</p>
-	<p><definition>Constitution</definition> means the Constitution of the Commonwealth.</p>
-	<p><definition>contiguous zone</definition> has the same meaning as in the Seas and Submerged Lands Act 1973.</p>
-	<p><definition>continental shelf</definition> has the same meaning as in the Seas and Submerged Lands Act 1973.</p>
-	<p><definition>contravene</definition> includes fail to comply with.</p>
-	<p><definition>court exercising federal jurisdiction</definition> means any court when exercising federal jurisdiction, and includes a federal court.</p>
-	<p><definition>court of summary jurisdiction</definition> means any justice of the peace, or magistrate of a State or Territory, sitting as a court of summary jurisdiction.</p>
-	<p><definition>de facto partner</definition>: see section 2D.</p>
-	<p><definition>document</definition> means any record of information, and includes:
-		(a)	anything on which there is writing; and
-		(b)	anything on which there are marks, figures, symbols or perforations having a meaning for persons qualified to interpret them; and
-		(c)	anything from which sounds, images or writings can be reproduced with or without the aid of anything else; and
-		(d)	a map, plan, drawing or photograph.
-	<p><definition>estate</definition> includes any estate, interest, charge, right, title, claim demand, lien or encumbrance at law or in equity.</p>
-	<p><definition>exclusive economic zone</definition> has the same meaning as in the Seas and Submerged Lands Act 1973.</p>
-	<p><definition>Executive Council</definition> means the Federal Executive Council.</p>
-	<p><definition>external Territory</definition> means a Territory, other than an internal Territory, where an Act makes provision for the government of the Territory as a Territory.</p>
-	<Note>Note: See also section 15B.</Note>
-	<p><definition>federal court</definition> means the High Court or any court created by the Parliament.</p>
-	<p><definition>financial year</definition> means a period of 12 months starting on 1 July.</p>
-	<p><definition>foreign country</definition> means any country (whether or not an independent sovereign state) outside Australia and the external Territories.</p>
-	<p><definition>Gazette</definition> means the Commonwealth of Australia Gazette.</p>
-	<p><definition>Government Printer</definition> includes any person printing for the Government of the Commonwealth.</p>
-	<Note>Note:	See also section 17A.</Note>
-	<p><definition>Governor of a State</definition>: see section 16B.</p>
-	<p><definition>Governor General</definition>: see section 16A.</p>
-	<p><definition>High Court</definition> means the High Court of Australia.</p>
-	<p><definition>individual</definition> means a natural person.</p>
-	<p><definition>insolvent under administration</definition> has the same meaning as in the Corporations Act 2001.</p>
-	<p><definition>internal Territory</definition> means the Australian Capital Territory, the Northern Territory or the Jervis Bay Territory.</p>
-	<p><definition>Jervis Bay Territory</definition> means the Territory referred to in the Jervis Bay Territory Acceptance Act 1915.</p>
-	<p><definition>justice of the peace</definition> includes a justice of the peace for a State or part of a State or for a Territory.</p>
-	<p><definition>land</definition> includes messuages, tenements and hereditaments, corporeal and incorporeal, of any tenure or description, whatever may be the estate or interest in them.</p>
-	<p><definition>law of the Commonwealth</definition>: see section 2H.</p>
-	<p><definition>Magistrate</definition>: see subsection 16C(2).</p>
-	<p><definition>Minister</definition> or <definition>Minister of State</definition> means one of the Ministers of State for the Commonwealth.</p>
-	<Note>Note:	See also section 19.</Note>
-	<p><definition>modifications</definition>, in relation to a law, includes additions, omissions and substitutions.</p>
-	<p><definition>month</definition>: see section 2G.</p>
-	<p><definition>Northern Territory</definition> means the Northern Territory of Australia.</p>
-	<p><definition>oath</definition> includes affirmation, declaration and promise.</p>
-	<p><definition>Parliament</definition> means the Parliament of the Commonwealth.</p>
-	<p><definition>penalty unit</definition>, including in relation to a civil penalty provision, has the meaning given by section 4AA of the Crimes Act 1914.</p>
-	<p><definition>person</definition>: see section 2C.</p>
-	<p><definition>prescribed</definition> means prescribed by the Act or by regulations under the Act.</p>
-	<p><definition>Proclamation</definition> means Proclamation by the Governor General that is published in the Gazette or entered in the Federal Register of Legislative Instruments established under the Legislative Instruments Act 2003.</p>
-	<p><definition>record</definition> includes information stored or recorded by means of a computer.</p>
-	<p><definition>regulations</definition> means regulations under the Act.</p>
-	<p><definition>rules of court</definition>: see section 2K.</p>
-	<p><definition>seat of Government</definition> means the seat of Government of the Commonwealth.</p>
-	<p><definition>SES employee</definition> has the same meaning as in the Public Service Act 1999.</p>
-	<p><definition>Sovereign</definition>: see section 16.</p>
-	<p><definition>Standards Australia</definition> means Standards Australia Limited (ACN 087 326 690).</p>
-	<p><definition>State</definition> means a State of the Commonwealth.</p>
-	<p><definition>statutory declaration</definition> means a declaration made because of any Act authorising a declaration to be made otherwise than in the course of a judicial proceeding.</p>
-	<p><definition>Stipendiary Magistrate</definition>: see subsection 16C(1).</p>
-	<p><definition>swear</definition> includes affirm, declare and promise.</p>
-	<p><definition>territorial sea</definition> has the same meaning as in the Seas and Submerged Lands Act 1973.</p>
-	<p><definition>Territory</definition>, <definition>Territory of the Commonwealth</definition>, <definition>Territory under the authority of the Commonwealth</definition> or <definition>Territory of Australia</definition> means a Territory referred to in section 122 of the Constitution.</p>
-	<p><definition>United Kingdom</definition> means the United Kingdom of Great Britain and Northern Ireland.</p>
-	<p><definition>writing</definition> includes any mode of representing or reproducing words, figures, drawings or symbols in a visible form.</p>
+	<Title>2B  Definitions</Title>
+	<Paragraph>In any Act:</Paragraph>
+	<Definition><Paragraph><defined_term>acting SES employee</defined_term> has the same meaning as in the <Reference>Public Service Act 1999</Reference>.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>affidavit</defined_term> includes affirmation, declaration and promise.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>appoint</defined_term>: see section 33AA.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>APS employee</defined_term> has the same meaning as in the Public Service Act 1999.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Australia</defined_term> means the Commonwealth of Australia and, when used in a geographical sense, includes the Territory of Christmas Island and the Territory of Cocos (Keeling) Islands, but does not include any other external Territory.</Paragraph>
+	<Note>Note: See also section 15B.</Note></Definition>
+	<Definition><Paragraph><defined_term>Australian citizen</defined_term> has the same meaning as in the Australian Citizenship Act 2007.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Australian Privacy Principle</defined_term> has the same meaning as in the Privacy Act 1988.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Australian Standard</defined_term>: see section 2L.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>business day</defined_term> means a day that is not a Saturday, a Sunday or a public holiday in the place concerned.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>calendar month</defined_term> means one of the 12 months of the year.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>calendar year</defined_term> means a period of 12 months starting on 1 January.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>charitable</defined_term> has the meaning given by Part 2 of the Charities Act 2013.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>charitable purpose</defined_term> has the meaning given by Part 3 of the Charities Act 2013.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>charity</defined_term> has the meaning given by Part 2 of the Charities Act 2013.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>commencement</defined_term>, in relation to an Act or a provision of an Act, means the time at which the Act or provision comes into operation.</Paragraph>
+	<Note>Note: See also section 3.</Note></Definition>
+	<Definition><Paragraph><defined_term>Commonwealth</defined_term> means the Commonwealth of Australia and, when used in a geographical sense, includes the Territory of Christmas Island and the Territory of Cocos (Keeling) Islands, but does not include any other external Territory.</Paragraph>
+	<Note>Note: See also section 15B.</Note></Definition>
+	<Definition><Paragraph><defined_term>Consolidated Revenue Fund</defined_term> means the Consolidated Revenue Fund referred to in section 81 of the Constitution.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Constitution</defined_term> means the Constitution of the Commonwealth.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>contiguous zone</defined_term> has the same meaning as in the Seas and Submerged Lands Act 1973.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>continental shelf</defined_term> has the same meaning as in the Seas and Submerged Lands Act 1973.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>contravene</defined_term> includes fail to comply with.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>court exercising federal jurisdiction</defined_term> means any court when exercising federal jurisdiction, and includes a federal court.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>court of summary jurisdiction</defined_term> means any justice of the peace, or magistrate of a State or Territory, sitting as a court of summary jurisdiction.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>de facto partner</defined_term>: see section 2D.</Paragraph></Definition>
+	<Definition>
+		<Paragraph><defined_term>document</defined_term> means any record of information, and includes:</Paragraph>
+		<List>
+			<List_item>(a)	anything on which there is writing; and</List_item>
+			<List_item>(b)	anything on which there are marks, figures, symbols or perforations having a meaning for persons qualified to interpret them; and</List_item>
+			<List_item>(c)	anything from which sounds, images or writings can be reproduced with or without the aid of anything else; and</List_item>
+			<List_item>(d)	a map, plan, drawing or photograph.</List_item>
+		</List>
+	<Definition><Paragraph><defined_term>estate</defined_term> includes any estate, interest, charge, right, title, claim demand, lien or encumbrance at law or in equity.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>exclusive economic zone</defined_term> has the same meaning as in the Seas and Submerged Lands Act 1973.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Executive Council</defined_term> means the Federal Executive Council.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>external Territory</defined_term> means a Territory, other than an internal Territory, where an Act makes provision for the government of the Territory as a Territory.</Paragraph>
+	<Note>Note: See also section 15B.</Note></Definition>
+	<Definition><Paragraph><defined_term>federal court</defined_term> means the High Court or any court created by the Parliament.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>financial year</defined_term> means a period of 12 months starting on 1 July.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>foreign country</defined_term> means any country (whether or not an independent sovereign state) outside Australia and the external Territories.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Gazette</defined_term> means the Commonwealth of Australia Gazette.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Government Printer</defined_term> includes any person printing for the Government of the Commonwealth.</Paragraph>
+	<Note>Note:	See also section 17A.</Note></Definition>
+	<Definition><Paragraph><defined_term>Governor of a State</defined_term>: see section 16B.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Governor General</defined_term>: see section 16A.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>High Court</defined_term> means the High Court of Australia.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>individual</defined_term> means a natural person.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>insolvent under administration</defined_term> has the same meaning as in the Corporations Act 2001.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>internal Territory</defined_term> means the Australian Capital Territory, the Northern Territory or the Jervis Bay Territory.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Jervis Bay Territory</defined_term> means the Territory referred to in the Jervis Bay Territory Acceptance Act 1915.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>justice of the peace</defined_term> includes a justice of the peace for a State or part of a State or for a Territory.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>land</defined_term> includes messuages, tenements and hereditaments, corporeal and incorporeal, of any tenure or description, whatever may be the estate or interest in them.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>law of the Commonwealth</defined_term>: see section 2H.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Magistrate</defined_term>: see subsection 16C(2).</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Minister</defined_term> or <defined_term>Minister of State</defined_term> means one of the Ministers of State for the Commonwealth.</Paragraph>
+	<Note>Note:	See also section 19.</Note></Definition>
+	<Definition><Paragraph><defined_term>modifications</defined_term>, in relation to a law, includes additions, omissions and substitutions.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>month</defined_term>: see section 2G.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Northern Territory</defined_term> means the Northern Territory of Australia.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>oath</defined_term> includes affirmation, declaration and promise.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Parliament</defined_term> means the Parliament of the Commonwealth.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>penalty unit</defined_term>, including in relation to a civil penalty provision, has the meaning given by section 4AA of the Crimes Act 1914.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>person</defined_term>: see section 2C.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>prescribed</defined_term> means prescribed by the Act or by regulations under the Act.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Proclamation</defined_term> means Proclamation by the Governor General that is published in the Gazette or entered in the Federal Register of Legislative Instruments established under the Legislative Instruments Act 2003.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>record</defined_term> includes information stored or recorded by means of a computer.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>regulations</defined_term> means regulations under the Act.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>rules of court</defined_term>: see section 2K.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>seat of Government</defined_term> means the seat of Government of the Commonwealth.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>SES employee</defined_term> has the same meaning as in the Public Service Act 1999.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Sovereign</defined_term>: see section 16.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Standards Australia</defined_term> means Standards Australia Limited (ACN 087 326 690).</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>State</defined_term> means a State of the Commonwealth.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>statutory declaration</defined_term> means a declaration made because of any Act authorising a declaration to be made otherwise than in the course of a judicial proceeding.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Stipendiary Magistrate</defined_term>: see subsection 16C(1).</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>swear</defined_term> includes affirm, declare and promise.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>territorial sea</defined_term> has the same meaning as in the Seas and Submerged Lands Act 1973.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>Territory</defined_term>, <defined_term>Territory of the Commonwealth</defined_term>, <defined_term>Territory under the authority of the Commonwealth</defined_term> or <defined_term>Territory of Australia</defined_term> means a Territory referred to in section 122 of the Constitution.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>United Kingdom</defined_term> means the United Kingdom of Great Britain and Northern Ireland.</Paragraph></Definition>
+	<Definition><Paragraph><defined_term>writing</defined_term> includes any mode of representing or reproducing words, figures, drawings or symbols in a visible form.</Paragraph></Definition>
 </Section>
 <Section>
-	<Section_heading>2C  References to persons</Section_heading>
+	<Title>2C  References to persons</Title>
 	<Subsection>
-		<p>(1)	In any Act, expressions used to denote persons generally (such as “person”, “party”, “someone”, “anyone”, “no one”, “one”, “another” and “whoever”), include a body politic or corporate as well as an individual.</p>
+		<Paragraph>(1)	In any Act, expressions used to denote persons generally (such as "person", "party", "someone", "anyone", "no one", "one", "another" and "whoever"), include a body politic or corporate as well as an individual.</Paragraph>
 	</Subsection>
-	(2)	Express references in an Act to companies, corporations or bodies corporate do not imply that expressions in that Act, of the kind mentioned in subsection (1), do not include companies, corporations or bodies corporate.
+	<Subsection>
+		<Paragraph>(2)	Express references in an Act to companies, corporations or bodies corporate do not imply that expressions in that Act, of the kind mentioned in subsection (1), do not include companies, corporations or bodies corporate.</Paragraph>
+	</Subsection>
 </Section>
+
+
+</Act>
+
+
+
 2D  References to de facto partners
 		For the purposes of a provision of an Act that is a provision in which de facto partner has the meaning given by this Act, a person is the de facto partner of another person (whether of the same sex or a different sex) if:
 	(a)	the person is in a registered relationship with the other person under section 2E; or
@@ -208,11 +218,11 @@ Note:	An example of such a document is a court attendance notice under the Crimi
 	(1)	In any Act, rules of court, in relation to any court, means rules made by the authority having for the time being power to make rules or orders regulating the practice and procedure of such court.
 	(2)	The power of the authority to make rules of court includes a power to make rules of court for the purpose of any Act which directs or authorises anything to be done by rules of court.
 2L  References to Australian Standards
-		In any Act, a reference consisting of the words “Australian Standard” followed by the letters “AS” and a number is a reference to the standard so numbered that is published by, or on behalf of, Standards Australia.</Part>
+		In any Act, a reference consisting of the words "Australian Standard" followed by the letters "AS" and a number is a reference to the standard so numbered that is published by, or on behalf of, Standards Australia.</Part>
 Part 3—Commencement of Acts
   
 3  When Acts come into operation
-		If an Act or a provision of an Act is expressed to come into operation on a particular day (whether the expression “come into operation” or “commence” is used), it shall come into operation immediately on the expiration of the last preceding day.
+		If an Act or a provision of an Act is expressed to come into operation on a particular day (whether the expression "come into operation" or "commence" is used), it shall come into operation immediately on the expiration of the last preceding day.
 3A  Commencement of Acts
 	(1)	This section does not apply to an Act so far as it provides for its commencement.
 	(2)	An Act (other than an Act to alter the Constitution) commences on the 28th day after the day on which that Act receives the Royal Assent.
@@ -383,7 +393,7 @@ and shall be read as referring to the Governor General, or a person so deemed to
 	(a)	a Chief, Police, Stipendiary, Resident or Special Magistrate; or
 	(b)	any other Magistrate in respect of whose office an annual salary is payable.
 17A  Paper or document purporting to be printed by Government Printer
-		For the purposes of an Act in which reference is made to a paper or document purporting to be printed by the Government Printer, the words “Government Printer of the Commonwealth”, “Government Printer of the Commonwealth of Australia”, “Commonwealth Government Printer” or “Government Printer of Australia” appearing on a paper or document shall be deemed to refer to the Government Printer.
+		For the purposes of an Act in which reference is made to a paper or document purporting to be printed by the Government Printer, the words "Government Printer of the Commonwealth", "Government Printer of the Commonwealth of Australia", "Commonwealth Government Printer" or "Government Printer of Australia" appearing on a paper or document shall be deemed to refer to the Government Printer.
 18A  Parts of speech and grammatical forms
 		In any Act where a word or phrase is given a particular meaning, other parts of speech and grammatical forms of that word or phrase have corresponding meanings.
 18B  Titles of Chairs and Deputy Chairs
@@ -413,7 +423,7 @@ Deputy chair titles
 		Where in an Act any Minister is referred to, such reference shall be deemed to include any Minister or member of the Executive Council for the time being acting for or on behalf of such Minister.
 19A  References to Ministers and Departments
 	(1)	If a provision of an Act:
-	(aa)	refers to a Minister by using the expression “the Minister” without specifying which Minister is referred to; or
+	(aa)	refers to a Minister by using the expression "the Minister" without specifying which Minister is referred to; or
 	(ab)	refers to a particular Minister (including where there is no longer any such Minister);
 then the reference is a reference to:
 	(a)	if, for the time being, different Ministers administer the provision in respect of different matters:
@@ -423,7 +433,7 @@ then the reference is a reference to:
 	(c)	if paragraphs (a) and (b) do not apply—the Minister for the time being administering the provision.
 	(2)	Where an Act refers to a Minister, specifying the Minister merely by reference to the fact that the Minister administers a specified Act or enactment, subsection (1) applies as if references in paragraphs (1)(a), (b) and (c) to the provision were references to the specified Act or enactment.
 	(3)	If a provision of an Act:
-	(a)	refers to a Department by using the expression “the Department” without specifying which Department is referred to; or
+	(a)	refers to a Department by using the expression "the Department" without specifying which Department is referred to; or
 	(b)	refers to a particular Department (including where there is no longer any such Department);
 then the reference is a reference to:
 	(c)	if different Ministers administer the provision in respect of different matters—the Department of State of the Commonwealth that:
@@ -530,11 +540,11 @@ office includes a position occupied by an APS employee.
 25C  Compliance with forms
 		Where an Act prescribes a form, then strict compliance with the form is not required and substantial compliance is sufficient.
 25D  Content of statements of reasons for decisions
-		Where an Act requires a tribunal, body or person making a decision to give written reasons for the decision, whether the expression “reasons”, “grounds” or any other expression is used, the instrument giving the reasons shall also set out the findings on material questions of fact and refer to the evidence or other material on which those findings were based.
+		Where an Act requires a tribunal, body or person making a decision to give written reasons for the decision, whether the expression "reasons", "grounds" or any other expression is used, the instrument giving the reasons shall also set out the findings on material questions of fact and refer to the evidence or other material on which those findings were based.
 Part 6—Service of documents
   
 28A  Service of documents
-	(1)	For the purposes of any Act that requires or permits a document to be served on a person, whether the expression “serve”, “give” or “send” or any other expression is used, then the document may be served:
+	(1)	For the purposes of any Act that requires or permits a document to be served on a person, whether the expression "serve", "give" or "send" or any other expression is used, then the document may be served:
 	(a)	on a natural person:
 	(i)	by delivering it to the person personally; or
 	(ii)	by leaving it at, or by sending it by pre paid post to, the address of the place of residence or business of the person last known to the person serving the document; or
@@ -544,7 +554,7 @@ Note:	The Electronic Transactions Act 1999 deals with giving information in writ
 	(a)	affects the operation of any other law of the Commonwealth, or any law of a State or Territory, that authorizes the service of a document otherwise than as provided in that subsection; or
 	(b)	affects the power of a court to authorize service of a document otherwise than as provided in that subsection.
 29  Meaning of service by post
-	(1)	Where an Act authorizes or requires any document to be served by post, whether the expression “serve” or the expression “give” or “send” or any other expression is used, then the service shall be deemed to be effected by properly addressing, prepaying and posting the document as a letter and, unless the contrary is proved, to have been effected at the time at which the letter would be delivered in the ordinary course of post.
+	(1)	Where an Act authorizes or requires any document to be served by post, whether the expression "serve" or the expression "give" or "send" or any other expression is used, then the service shall be deemed to be effected by properly addressing, prepaying and posting the document as a letter and, unless the contrary is proved, to have been effected at the time at which the letter would be delivered in the ordinary course of post.
 	(2)	This section does not affect the operation of section 160 of the Evidence Act 1995.
 Part 7—Powers, functions and duties
   
@@ -739,10 +749,10 @@ holiday, in relation to the time for doing a thing, means:
 Part 9—Citation of Acts
   
 38  Reference to Acts
-	(1)	An Act passed by the Parliament of the Commonwealth may be referred to by the word “Act” alone.
-	(2)	An Act passed by the Parliament of the United Kingdom may be referred to by the term “Imperial Act”.
-	(3)	An Act passed by the Parliament of a State may be referred to by the term “State Act”.
-	(4)	An Act passed by the legislature of a Territory may be referred to by the term “Territory Act”.
+	(1)	An Act passed by the Parliament of the Commonwealth may be referred to by the word "Act" alone.
+	(2)	An Act passed by the Parliament of the United Kingdom may be referred to by the term "Imperial Act".
+	(3)	An Act passed by the Parliament of a State may be referred to by the term "State Act".
+	(4)	An Act passed by the legislature of a Territory may be referred to by the term "Territory Act".
 39  Numbering of Acts
 		The Acts passed in each secular year shall be numbered in regular arithmetical series, beginning with the number 1, in the order in which the Governor General assents thereto or makes known the Sovereign’s assent thereto.
 40  Citation of Acts

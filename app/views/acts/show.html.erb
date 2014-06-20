@@ -1,2 +1,17 @@
-<h1>Act#show</h1>
-<p>Find me in app/views/act/show.html.erb</p>
+<% provide(:title, @act.title) %>
+<div class = "legislation">
+	<%= image_tag "misc/coat_of_arms.png", alt: "Australian coat of arms", class: "coat_of_arms" %>
+	<h1><%= @act.title %></h1>
+	<p class="act_no">Act No. <%= @act.number %>, <%= @act.year %></p>
+	<h2><%= @act.subtitle %></h2>
+
+	<% @act.sections.each do |section| %>
+		<%= section.inspect %>
+	<% end %>
+
+	<% @act.parsed_content.each do |line| %>
+		<%= raw line %>
+	<% end %>
+</div>
+
+<p>Adapted from Comlaw under its <a href="http://www.comlaw.gov.au/content/copyright">Creative Commons Licence</a>.  Original files <a href="http://www.comlaw.gov.au/Details/C2014C00077">here</a>.</p>

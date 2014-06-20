@@ -1,10 +1,13 @@
 class ActsController < ApplicationController
+	
+	before_action :admin_user,     only: [:new, :edit, :update, :create, :destroy]
+	
   def new
 		@act = Act.new
   end
 
 	def create
-		@act = Act.new(params)
+		@act = Act.new(user_params)
     if @act.save
 			flash[:success] = "New act created!"
       redirect_to @act
@@ -14,7 +17,7 @@ class ActsController < ApplicationController
 	end
 	
   def edit
-		
+		@act = Act.find(params[:id])
   end
 	
 	def index
@@ -22,7 +25,13 @@ class ActsController < ApplicationController
 	end
 	
 	def update
-		
+		@act = Act.find(params[:id])
+    if @act.update_attributes(user_params)
+			flash[:success] = "Act updated"
+      redirect_to @act
+    else
+      render 'edit'
+    end
 	end
 
   def show
@@ -34,4 +43,10 @@ class ActsController < ApplicationController
     flash[:success] = "Act deleted."
     redirect_to acts_url
   end
+	
+	def user_params
+		params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated)
+	end
+	
 end
+

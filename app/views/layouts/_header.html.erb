@@ -6,11 +6,13 @@
 			<p id="alpha">Alpha</p>
 			<nav>
         <ul class="nav pull-right">
-          <li><%= link_to "Home", root_path %></li>
+					<li><%= link_to "Legislation", acts_path %>
 					<li><%= link_to "About", about_path %></li>
           <li><%= link_to "Help", help_path %></li>
           <% if signed_in? %>
-						<li><%= link_to "Users", users_path %></li>
+						<% if current_user.admin? %>
+							<li><%= link_to "Users", users_path %></li>
+						<% end %>
             <li id="fat-menu" class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 Account <b class="caret"></b>
