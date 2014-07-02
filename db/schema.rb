@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140616054756) do
+ActiveRecord::Schema.define(version: 20140702060639) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -29,19 +29,19 @@ ActiveRecord::Schema.define(version: 20140616054756) do
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
 
-  create_table "sections", force: true do |t|
+  create_table "containers", force: true do |t|
     t.text     "number"
     t.string   "title"
     t.date     "last_updated"
     t.text     "updating_acts"
     t.integer  "regulations"
-    t.string   "section_type"
+    t.string   "container_type"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "act_id"
   end
 
-  add_index "sections", ["act_id", "number"], name: "index_sections_on_act_id_and_number"
+  add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
 
   create_table "users", force: true do |t|
     t.string   "name"

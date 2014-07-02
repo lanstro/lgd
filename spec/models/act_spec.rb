@@ -21,7 +21,7 @@ describe Act do
 	it { should respond_to(:act_type) }
 	it { should respond_to(:year) }
 	it { should respond_to(:number) }
-	it { should respond_to(:sections) }
+	it { should respond_to(:containers) }
 	
 	describe "when title is not present" do
 		before { @act.title = " " }
@@ -98,32 +98,32 @@ describe Act do
 		before {@act.save}
 		 
 		let!(:section_1) do
-			FactoryGirl.create(:section, act: @act, number: "1")
+			FactoryGirl.create(:container, act: @act, number: "1")
 		end
 		let!(:section_4) do
-			FactoryGirl.create(:section, act: @act, number: "4")
+			FactoryGirl.create(:container, act: @act, number: "4")
 		end
 		let!(:section_5) do
-			FactoryGirl.create(:section, act: @act, number: "5")
+			FactoryGirl.create(:container, act: @act, number: "5")
 		end
 		let!(:section_2) do
-			FactoryGirl.create(:section, act: @act, number: "2")
+			FactoryGirl.create(:container, act: @act, number: "2")
 		end
 		let!(:section_1A) do
-			FactoryGirl.create(:section, act: @act, number: "1A")
+			FactoryGirl.create(:container, act: @act, number: "1A")
 		end
 		
 		
 		it "should have the right acts at the right order" do
-			expect(@act.sections.to_a).to eq [section_1, section_1A, section_2, section_4, section_5]
+			expect(@act.containers.to_a).to eq [section_1, section_1A, section_2, section_4, section_5]
 		end
 		
-		it "should destroy associated sections" do
-			sections = @act.sections.to_a
+		it "should destroy associated containers" do
+			containers = @act.containers.to_a
 			@act.destroy
-			expect(sections).not_to be_empty
-			sections.each do |section|
-				expect(Section.where(id: section.id)).to be_empty
+			expect(containers).not_to be_empty
+			containers.each do |container|
+				expect(Container.where(id: container.id)).to be_empty
 			end
 		end
 	end

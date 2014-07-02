@@ -1,4 +1,4 @@
-class SectionsController < ApplicationController
+class ContainersController < ApplicationController
   def new
   end
 

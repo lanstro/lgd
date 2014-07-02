@@ -22,6 +22,8 @@ UPPER_ALPHA      = 9
 LIST             = "List"
 DEFINITIONS_LIST = "Definitions_List"
 
+START_INDENTING  = PART
+
 # structural REGEX explanations
 # Chapter titles: in a string like 'Chapter xxx-yyyy' or 'Chapter xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
 # Part titles: in a string like 'Part xxx-yyyy' or 'Part xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
@@ -109,7 +111,7 @@ DEFINITIONS_REGEXES = [
 	{ regex: /(.+) has the same meaning as(?: .+|:)/,          defined_term: 1},    # xxx has the same meaning as yyyyy  # captures defined term in item 1
 	{ regex: /(.+) includes(?: .+|:)/,                         defined_term: 1},    # xxx includes yyyy # captures defined term in item 1
 	{ regex: /(.+): see(?: .+|:)/,                             defined_term: 1},    # xxx: see yyyy #captures defined term in item 1
-	{ regex: /(.+) has the meaning given by( .+|:)/,           defined_term: 1}    # xxx has the meaning given by yyyy # captures defined term in item 1 and reference in item 2
+	{ regex: /(.+) has the meaning given by( .+|:)/,           defined_term: 1}     # xxx has the meaning given by yyyy # captures defined term in item 1 and reference in item 2
 ]
 
 ####################################################################
@@ -117,7 +119,7 @@ DEFINITIONS_REGEXES = [
 ####################################################################
 
 class Act < ActiveRecord::Base
-	has_many :sections, dependent: :destroy
+	has_many :containers, dependent: :destroy
 	validates :title, presence: true
 	validates :last_updated, presence: true
 	validates :jurisdiction, presence: true, inclusion: { in: ["Commonwealth", "Victoria", "New South Wales", "Queensland", "Northern Territory", "Australian Capital Territory", "Western Australia", "South Australia", "Tasmania"] }
@@ -195,11 +197,12 @@ class Act < ActiveRecord::Base
 	def self.create_tag(params)
 		result = params[:open_tag] ? "<" : "</"
 		result += params[:tag].to_s + ">"
-		return result
+		indent = params[:indent] > 0 ? params[:indent] : 0
+		return "  "*indent+result
 	end
 	
 	def self.wrap_with_tag(str, tag)
-		return create_tag(open_tag: true, tag: tag)+str+create_tag(open_tag: false, tag: tag)
+		return create_tag(open_tag: true, tag: tag, indent: 0)+str+create_tag(open_tag: false, tag: tag, indent: 0)
 	end
 	
 	
@@ -207,57 +210,14 @@ class Act < ActiveRecord::Base
 		if tag.is_a? Integer
 			output.puts create_tag(open_tag: false, tag: tag > SECTION ? 
 				SUBSECTION_TAG+(tag - SECTION).to_s : 
-			STRUCTURAL_REGEXES[tag][OUTER_TAG])
-		elsif tag.is_a? Hash and (tag[:type] == DEFINITIONS_LIST or tag[:type] == LIST)
-			output.puts create_tag(open_tag: false, tag: tag[:type] )
+			STRUCTURAL_REGEXES[tag][OUTER_TAG], indent: tag - START_INDENTING)
 		else
 			raise "don't know how to close this tag: "+tag.inspect
 		end
 	end
-	
-	def self.previous_structural_tag
-		@@open_tags.reverse_each do |tag|
-			return tag if tag.is_a? Integer
-		end
-		raise 'no structural tag'
-	end
-	
-	def self.previous_definitions_list
-		@@open_tags.reverse_each do |tag|
-			return tag if (tag.is_a? Hash and (tag[:type] == DEFINITIONS_LIST))
-		end
-		return nil
-	end
-	
-	def self.previous_list
-		@@open_tags.reverse_each do |tag|
-			return tag if (tag.is_a? Hash and (tag[:type] == LIST))
-		end
-		return nil
-	end
-	
-	def self.close_list?
-		inner_list=false
-		@@open_tags.reverse_each do |tag|
-			if tag.is_a? Hash 
-				if tag[:type] == LIST
-					if inner_list
-						return true
-					else
-						inner_list=true
-					end
-				elsif tag[:type] == DEFINITIONS_LIST
-					return inner_list
-				end
-			elsif tag.is_a? Integer
-				return true if inner_list
-			end
-		end
-		return false
-	end
-	
+
 	def self.type_of_line(line)
-		result = { type: NORMAL, matches: nil, list: nil }
+		result = { type: NORMAL, matches: nil }
 		# see if it's a structural element: Chapter, Division, etc
 		STRUCTURAL_REGEXES.each do |array|
 			matches = array[VALUE][REGEX].match line
@@ -289,17 +249,7 @@ class Act < ActiveRecord::Base
 			end
 		end
 		
-		matches = LIST_REGEX.match line
-		
-		if matches
-			result[:list] = is_definitions_line?(line) ? DEFINITIONS_LIST : LIST
-		end
-		
 		return result
-	end
-	
-	def self.is_list?(tag)
-		return (tag.is_a? Hash and (tag[:type] == LIST or tag[:type] == DEFINITIONS_LIST))
 	end
 	
 	def self.close_all_tags_lower_than(depth, output)
@@ -307,88 +257,34 @@ class Act < ActiveRecord::Base
 		# if current tag is a structural tag
 		# always close previous structural tags up to and including the same depth
 		
-		# if current tag is a subsection or paragraph AND if there is some sort of list open
-		# work out whether to close that list off
-		
 		if depth.is_a? Integer
-			while @@open_tags.size>0 and previous_structural_tag >= depth
+			while @@open_tags.size>0 and @@open_tags.last >= depth
 				puts "closing "+@@open_tags.last.to_s
 				close_tag(output, @@open_tags.pop)
 			end
 		elsif depth==NORMAL or depth==NOTES
-			# in definitions lists: if a new paragraph starts while a normal list is open, close the previous 
-			# list item so that the paragraph belongs to the list rather than the list item
-			if close_list?
-				puts "list within list detected"
-				inner_list_closed = false
+			if @@open_tags.last > SECTION
+				puts "closing because new paragraph detected: "+@@open_tags.last.to_s
 				close_tag(output, @@open_tags.pop)
 			end
+			# work out whether to close previous subsections or not
 		elsif depth==SUBHEADING
 			# close everything up to SECTION
-			while @@open_tags.size>0 and 
-				(previous_structural_tag > SECTION or 
-				(previous_structural_tag == SECTION and is_list?(@@open_tags.last)))
+			while @@open_tags.size>0 and @@open_tags.last > SECTION
 			  puts "closing because subheading detected: "+@@open_tags.last.to_s
 				close_tag(output, @@open_tags.pop)
 			end
 		end
-=begin
-			definition_list = previous_definitions_list
-			list = previous_list
-			if list and definition_list and @@open_tags.index(definition_list) < @@open_tags.index(list)
-				puts "list within definitions list detected"
-				# closing inner list code
-			end
-=end		
-		
-		# after closing the structural tags, sometimes there's a list left open
-
-		# if previous tag is some sort of list 
-		# work out whether to close it or not
-
-		# how can lists be open?
-		# opened by a paragraph
-			# if it's a normal list
-				# close the list only if the new line is a new section, a higher structural element (not possible due to previous loop) or a new paragraph
-			# if it's a definitional list
-				# same as above but don't close if it's a paragraph
-		# opened by a subsection
-			# close the list if the new line is the same level as the list_intro or higher
-		
-		while is_list?(@@open_tags.last)
-			last=@@open_tags.last
-			if last[:list_intro] == NORMAL or last[:list_intro] == NOTES
-				if (depth.is_a? Integer and depth <= SECTION) or 
-					 (depth == NORMAL     and last[:type] == LIST)
-					puts "closing list tag "+@@open_tags.last.inspect
-					close_tag(output, @@open_tags.pop)
-				else 
-					break
-				end
-			else
-				if depth.is_a? Integer and depth <= last[:list_intro]
-					close_tag(output, @@open_tags.pop)
-				else
-					break
-				end
-			end
-		end
-
 	end
 	
 	def self.inline_matches(line)
 		# look for inline tags like definitions, act references
-		
-		# check for definitions when in a definitions list
-		if previous_definitions_list
-			puts "we're in a definitions list"
-			DEFINITIONS_REGEXES.each do | hash|
-				matches = hash[:regex].match line
-				if matches
-					puts "definitions regex matched "+matches.inspect
-					line = line.sub(matches[hash[:defined_term]], wrap_with_tag(matches[hash[:defined_term]], DEFINED_TERM))
-					break
-				end
+		DEFINITIONS_REGEXES.each do | hash|
+			matches = hash[:regex].match line
+			if matches
+				puts "definitions regex matched "+matches.inspect
+				line = line.sub(matches[hash[:defined_term]], wrap_with_tag(matches[hash[:defined_term]], DEFINED_TERM))
+				break
 			end
 		end
 		# check for act names & ad hoc defined terms
@@ -401,29 +297,17 @@ class Act < ActiveRecord::Base
 				line=line.gsub(matches[1], wrap_with_tag(matches[1], array[0]))
 			end
 		end
-		
-		# wrap whole definition in definition tag - including when definition is multi-line
 		return line
-	end
-	
-	def self.is_definitions_line?(line)
-		return !DEFINITIONS_LIST_REGEX.match(line).nil?
 	end
 	
 	def self.insert_structural_tags(structural_tags_to_open, output, type)
 		structural_tags_to_open.each do |depth|
-			if depth==LIST or depth==DEFINITIONS_LIST
-				puts "list recognised"
-				tag = depth
-				depth = {type: depth, list_intro: type[:type], parent_tag: previous_structural_tag}
+			if depth <= SECTION
+				tag = STRUCTURAL_REGEXES[depth][OUTER_TAG]
 			else
-				if depth <= SECTION
-					tag = STRUCTURAL_REGEXES[depth][OUTER_TAG]
-				else
-					tag=SUBSECTION_TAG+(depth - SECTION).to_s
-				end
+				tag=SUBSECTION_TAG+(depth - SECTION).to_s
 			end
-			output.puts      create_tag(open_tag: true, tag: tag)
+			output.puts      create_tag(open_tag: true, tag: tag, indent: depth - START_INDENTING)
 			@@open_tags.push depth
 		end		
 	end
@@ -465,12 +349,6 @@ class Act < ActiveRecord::Base
 					single_line_tags.push (type[:type])
 				end
 				
-				# handle lists and list_intros
-				if type[:list]
-					structural_tags_to_open.unshift type[:list] 
-					single_line_tags.push           LIST_INTRO
-				end
-				
 				# handle defined terms and act references
 				line = inline_matches(line)
 				
@@ -479,8 +357,13 @@ class Act < ActiveRecord::Base
 				
 				insert_structural_tags(structural_tags_to_open, output, type)
 				line = insert_single_line_tags(single_line_tags, line)
-
-				output.puts line
+				
+				indent = 0
+				if @@open_tags.last and @@open_tags.last > START_INDENTING
+					indent = @@open_tags.last - START_INDENTING
+				end
+				indent+=1
+				output.puts "  "*indent+line
 				# PENDING CODE - set up new database objects for new 'section' of the Act
 			end
 			# it's now EOF - close any open tags

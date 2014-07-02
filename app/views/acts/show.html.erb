@@ -5,8 +5,8 @@
 	<p class="act_no">Act No. <%= @act.number %>, <%= @act.year %></p>
 	<h2><%= @act.subtitle %></h2>
 
-	<% @act.sections.each do |section| %>
-		<%= section.inspect %>
+	<% @act.containers.each do |container| %>
+		<%= container.inspect %>
 	<% end %>
 
 	<% @act.parsed_content.each do |line| %>

@@ -54,9 +54,6 @@
 			margin-top:2.5%;
 			margin-bottom:2.5%;
 		}
-		.List:not(.no_indent_list) *:not(:first-child):not(.list_item_no_indent){
-			margin-left:4%;
-		}
 		.Explanatory_box {
 			border: 1px solid black;
 			margin-left:10%;
@@ -72,26 +69,12 @@
 				font-weight:normal;
 				font-style:italic;
 			}
-			.List *:not(:first-child){
-				margin-left:12%;
-				p {
-					margin-bottom:2.5%;
-					margin-top:2.5%;
-				}
-			}
 		}
 		.Definition {
 			defined_term{
 				font-weight: bold;
 				font-style: italic;
 			}
-		}
-		.List:not(.no_indent_list) p:not(.Note) {
-			margin-bottom:0.5%;
-			margin-top:0.5%;
-		}
-		:not(.List) > :not(.List) > .List > .List_intro > p {
-			margin-top:2.5%;
 		}
 	}
 }

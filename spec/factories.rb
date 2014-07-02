@@ -25,7 +25,7 @@ FactoryGirl.define do
 		sequence(:number) { |n| 5+n }
 	end
 	
-	factory :section do
+	factory :container do
 		act
 		sequence(:number) { |n| "#{n}"+["", "", "", "", "A"].sample }
 		last_updated do 
@@ -34,7 +34,7 @@ FactoryGirl.define do
 			Time.at(from+rand*(to - from))
 		end
 		sequence(:title) { |n| "Title for Test SEction #{n}" }
-		section_type ["Regulation", "Section", "Schedule"].sample
+		container_type ["Regulation", "Section", "Schedule"].sample
 		
 	end
 	
