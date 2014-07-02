@@ -4,6 +4,7 @@
 
 body {
   padding-top: 6%;
+	line-height:100%;
 }
 
 textarea {
@@ -12,6 +13,10 @@ textarea {
 
 .center {
   text-align: center;
+}
+
+p {
+	margin:0;
 }
 
 /* typography */
@@ -35,7 +40,7 @@ h2 {
 
 p {
   font-size: 1.1em;
-  line-height: 1.7em;
+  line-height: 100%
 }
 
 #logo {

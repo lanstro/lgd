@@ -15,6 +15,9 @@
 	.coat_of_arms {
 		width:20%;
 	}
+	.Subheading {
+		font-style:italic;
+	}
 	h1 {
 		font-size: 2em;
 		font-weight: bold;
@@ -31,58 +34,64 @@
 		padding-bottom: 1%;
 	}
 	.Part{
-		padding-top: 2%;
-		h2 {
-			font-size:1.6em;
-			font-weight: bold;
-			margin-bottom: 5%;
+		padding-top: 2%;	
+	}
+	.Section{
+		h2{
+		 font-size: 1.2em;
+		 font-weight: bold;
+		 margin-bottom: 2%;
 		}
-		.Section{
-			ol {
-				list-style-type:none;
-				padding-left: 12%;
-				font-size: 1.1em;
-				li {
-					padding-top: 0.5%;
-					padding-bottom: 0.5%;
-				}
-			}
-			h2{
-			 font-size: 1.2em;
-			 font-weight: bold;
-			 margin-bottom: 2%;
-			}
+		p {
+			font-size: 1.1em;
+			margin-left: 12%;
+			line-height: 120%;
+			margin-bottom:2.5%;
+			margin-top:2.5%;
+		}
+		p.Note {
+			font-size: 0.9em;
+			margin-top:2.5%;
+			margin-bottom:2.5%;
+		}
+		.List:not(.no_indent_list) *:not(:first-child):not(.list_item_no_indent){
+			margin-left:4%;
+		}
+		.Explanatory_box {
+			border: 1px solid black;
+			margin-left:10%;
+			padding-right: 2%;
 			p {
-				font-size: 1.1em;
-				margin-left: 12%;
-				line-height: 120%;
-				padding-top:0.5%;
-				padding-bottom:0.5%;
+				margin-left:2%;
+				margin-bottom:2.5%;
 			}
-			p.Note {
-				font-size: 0.9em;
+			h2 {
+				margin-left:2%;
+				margin-top:2%;
+				margin-bottom:2%;
+				font-weight:normal;
+				font-style:italic;
 			}
-			.Explanatory_box {
-				border: 1px solid black;
-				margin-left:10%;
-				padding-right: 2%;
+			.List *:not(:first-child){
+				margin-left:12%;
 				p {
-					margin-left:2%;
-				}
-				h2 {
-					margin-left:2%;
-					margin-top:2%;
-					margin-bottom:2%;
-					font-weight:normal;
-					font-style:italic;
+					margin-bottom:2.5%;
+					margin-top:2.5%;
 				}
 			}
-			.Definition {
-				defined_term{
-					font-weight: bold;
-					font-style: italic;
-				}
+		}
+		.Definition {
+			defined_term{
+				font-weight: bold;
+				font-style: italic;
 			}
+		}
+		.List:not(.no_indent_list) p:not(.Note) {
+			margin-bottom:0.5%;
+			margin-top:0.5%;
+		}
+		:not(.List) > :not(.List) > .List > .List_intro > p {
+			margin-top:2.5%;
 		}
 	}
 }
