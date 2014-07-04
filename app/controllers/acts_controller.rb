@@ -44,6 +44,12 @@ class ActsController < ApplicationController
     redirect_to acts_url
   end
 	
+	def parse  ## make this admin only
+		@act=Act.find(params[:id])
+		@act.parse
+		redirect_to @act
+	end
+	
 	def user_params
 		params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated)
 	end

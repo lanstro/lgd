@@ -1,0 +1,10 @@
+<h2>Container <%= container.id %>: type: <%= container.container_type %>, parent: <%= container.parent_id %></h2>
+<% if container.children.size > 0 %>
+	<h3>Children:</h3>
+	<% container.children.each do |container| %>
+		<%= render container %>
+	<% end %>
+	<h3>End Children</h3>
+<% else %>
+	<h3>No children</h3>
+<% end %>

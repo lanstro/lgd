@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140702060639) do
+ActiveRecord::Schema.define(version: 20140704005922) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -31,7 +31,6 @@ ActiveRecord::Schema.define(version: 20140702060639) do
 
   create_table "containers", force: true do |t|
     t.text     "number"
-    t.string   "title"
     t.date     "last_updated"
     t.text     "updating_acts"
     t.integer  "regulations"
@@ -39,9 +38,12 @@ ActiveRecord::Schema.define(version: 20140702060639) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "act_id"
+    t.integer  "parent_id"
+    t.text     "content"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
+  add_index "containers", ["parent_id"], name: "index_containers_on_parent_id"
 
   create_table "users", force: true do |t|
     t.string   "name"

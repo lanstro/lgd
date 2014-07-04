@@ -5,11 +5,15 @@
 # consider whether notes should be a structural element type?
 # more sophisticated working out whether (i) is an alphabetical element or a roman numeral
 
+DEBUG = false
+
 ####################################################################
 #   STRUCTURAL REGEXES                                             #
 ####################################################################
 
 # structural line types
+CONTAINER_LEVELS = [nil, "Chapter", "Part", "Division", "Subdivision", "Section", "Subsection", "Paragraph",
+                    "Subparagraph", "Upper Alpha"]
 CHAPTER          = 1
 PART             = 2
 DIVISION         = 3
@@ -23,6 +27,7 @@ LIST             = "List"
 DEFINITIONS_LIST = "Definitions_List"
 
 START_INDENTING  = PART
+
 
 # structural REGEX explanations
 # Chapter titles: in a string like 'Chapter xxx-yyyy' or 'Chapter xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
@@ -38,6 +43,9 @@ STRUCTURAL_REGEXES = {
 	PART        => [ /(?<=\APart\s)\s*(\w*)[-—](.+)\Z/ ,          "Part",         "Title" ],
 	CHAPTER     => [ /(?<=\AChapter\s)\s*(\w*)[-—](.+)\Z/,        "Chapter",      "Title" ],
 }
+
+KEY   = 0
+VALUE = 1
 
 # indices for STRUCTURAL_REGEXES
 REGEX        = 0
@@ -127,6 +135,237 @@ class Act < ActiveRecord::Base
 	validates :year, presence: true, numericality: {only_integer: true, greater_than: 1900, less_than_or_equal_to: Time.now.year}
 	validates :number, presence: true, numericality: {only_integer: true, greater_than: 0}
 
+	def parse
+		
+		@open_tags = []
+		@open_containers=[]
+		
+		Container.delete_all(:act_id => self.id)
+		
+		if Container.count > 0
+			@current_id = Container.maximum(:id)+1
+		else
+			@current_id=1
+		end
+		
+		File.open(Rails.root+"legislation/"+"test_parsed.txt", "w") do |output|
+			f = File.open(Rails.root+"legislation/"+"test.txt", "r:UTF-8").each_line do |line|
+				line=line.chomp
+				next if line.blank?
+				type = type_of_line(line)
+				structural_tags_to_open = []
+				single_line_tags = []
+				
+				########  DEBUG      ################
+				if line=="STOP"
+					puts "stopping: @open_containers is "+@open_containers.inspect
+					Container.import @open_containers, :validate=>true
+					return
+				end
+				
+				if DEBUG
+					puts " "
+					puts "inspecting "+line
+					puts "type is "+type.inspect
+					puts "@open_tags is "+@open_tags.inspect
+				end
+				########  END DEBUG  #############
+				
+				if @open_tags.size > 0
+					close_all_tags_lower_than(type[:type], output)
+				end
+				
+				# handle new structural elements, and incidental single line tags
+				if type[:type].is_a? Integer  # if it's a structural line
+					single_line_tags.push (type[:type] <= SECTION ? 
+					STRUCTURAL_REGEXES[type[:type]][INNER_TAG] : NORMAL )
+					structural_tags_to_open.push type[:type]
+				else
+					single_line_tags.push (type[:type])
+				end
+				
+				# handle defined terms and act references
+				line = inline_matches(line)
+				
+				if DEBUG
+					puts "structural tags to open are "+structural_tags_to_open.inspect
+					puts "single line tags are "+single_line_tags.inspect
+				end
+				
+				insert_structural_tags(structural_tags_to_open, output, type)
+				line = insert_single_line_tags(single_line_tags, line)
+				
+				indent = 0
+				if @open_tags.last and @open_tags.last > START_INDENTING
+					indent = @open_tags.last - START_INDENTING
+				end
+				indent+=1
+				output.puts "  "*indent+line
+				# PENDING CODE - set up new database objects for new 'section' of the Act
+			end
+			# it's now EOF - close any open tags
+			close_all_tags_lower_than(0, output)
+		end
+		@open_containers.each do |container|
+			#puts container.inspect
+		end
+		#Container.import @open_containers, :validate=>true
+	end
+	
+	
+	def subs_depth(num)
+		puts "subs_depth trying to determine subsection depth of "+num.inspect if DEBUG
+		num=num[0]
+		case num
+			when "0".."9"
+				return SUBSECTION
+			when "a".."z"
+			if num=="i"
+				return SUBPARAGRAPH #come back to this - sometimes i is roman, sometimes it's just an i
+			else
+				return PARAGRAPH
+			end
+			when "A".."Z"
+			return UPPER_ALPHA
+		end
+	end
+	
+	def create_tag(params)
+		result = params[:open_tag] ? "<" : "</"
+		result += params[:tag].to_s + ">"
+		indent = params[:indent] > 0 ? params[:indent] : 0
+		return "  "*indent+result
+	end
+	
+	def wrap_with_tag(str, tag)
+		return create_tag(open_tag: true, tag: tag, indent: 0)+str+create_tag(open_tag: false, tag: tag, indent: 0)
+	end
+	
+	def close_tag(output, tag)
+		if tag.is_a? Integer
+			output.puts create_tag(open_tag: false, tag: tag > SECTION ? 
+				SUBSECTION_TAG+(tag - SECTION).to_s : 
+			STRUCTURAL_REGEXES[tag][OUTER_TAG], indent: tag - START_INDENTING)
+		else
+			raise "don't know how to close this tag: "+tag.inspect
+		end
+	end
+
+	def type_of_line(line)
+		result = { type: NORMAL, matches: nil }
+		# see if it's a structural element: Chapter, Division, etc
+		STRUCTURAL_REGEXES.each do |array|
+			matches = array[VALUE][REGEX].match line
+			if matches
+				result[:type]    = array[KEY]
+				result[:matches] = matches
+				break
+			end
+		end
+		
+		# if not, see if it's a subsection
+		if !result[:matches]
+			matches = SUBSECTION_REGEX.match line
+			if matches
+				result[:type]    = subs_depth(matches[CONTAINER_NO])
+				result[:matches] = matches
+			end
+		end
+		
+		# see if it's a special type of paragraph: subheading or notes
+		if !result[:matches]
+			SINGLE_LINE_REGEXES.each do |array|
+				matches = array[VALUE].match line
+				if matches
+					result[:type]    = array[KEY]
+					result[:matches] = matches
+					break
+				end
+			end
+		end
+		
+		return result
+	end
+	
+	def close_all_tags_lower_than(depth, output)
+		
+		# if current tag is a structural tag
+		# always close previous structural tags up to and including the same depth
+		
+		if depth.is_a? Integer
+			while @open_tags.size>0 and @open_tags.last >= depth
+				puts "closing "+@open_tags.last.to_s if DEBUG
+				close_tag(output, @open_tags.pop)
+			end
+		elsif depth==NORMAL or depth==NOTES
+			if @open_tags.last > SECTION
+				puts "closing because new paragraph detected: "+@open_tags.last.to_s if DEBUG
+				close_tag(output, @open_tags.pop)
+			end
+			# work out whether to close previous subsections or not
+		elsif depth==SUBHEADING
+			# close everything up to SECTION
+			while @open_tags.size>0 and @open_tags.last > SECTION
+			  puts "closing because subheading detected: "+@open_tags.last.to_s if DEBUG
+				close_tag(output, @open_tags.pop)
+			end
+		end
+	end
+	
+	def inline_matches(line)
+		# look for inline tags like definitions, act references
+		DEFINITIONS_REGEXES.each do | hash|
+			matches = hash[:regex].match line
+			if matches
+				puts "definitions regex matched "+matches.inspect  if DEBUG
+				line = line.sub(matches[hash[:defined_term]], wrap_with_tag(matches[hash[:defined_term]], DEFINED_TERM))
+				break
+			end
+		end
+		# check for act names & ad hoc defined terms
+		
+		INLINE_REGEXES.each do |array|
+			matches = array[1].match line
+			if matches
+				puts "array is "+array.inspect if DEBUG
+				puts "matches is "+matches.inspect if DEBUG
+				line=line.gsub(matches[1], wrap_with_tag(matches[1], array[0]))
+			end
+		end
+		return line
+	end
+	
+	def insert_structural_tags(structural_tags_to_open, output, type)
+		structural_tags_to_open.each do |depth|
+			if depth <= SECTION
+				tag = STRUCTURAL_REGEXES[depth][OUTER_TAG]
+			else
+				tag=SUBSECTION_TAG+(depth - SECTION).to_s
+			end
+			output.puts            create_tag(open_tag: true, tag: tag, indent: depth - START_INDENTING)
+			@open_tags.push        depth
+			parent_container       = @open_containers.last
+
+			new_container = Container.new
+			new_container.id=             @current_id               # massive potential for database concurrency issues - fix later
+			new_container.number=         rand(50)
+			new_container.container_type= CONTAINER_LEVELS[depth]
+			new_container.act_id=         1
+			new_container.parent_id=      parent_container ? parent_container.id : nil
+			new_container.content=        "test phwar ogmg slkjsdf test"
+			@open_containers.push new_container
+			@current_id+=1
+		end
+	end
+	
+	def insert_single_line_tags(single_line_tags, line)
+		single_line_tags.each do | tag |
+			line = wrap_with_tag(line, tag)
+		end
+		return line
+	end
+
+	
 	def parsed_content(file="AIA")
 		result = []
 		File.open(Rails.root+"legislation/test_parsed.txt", "rb").each_line do |line| 
@@ -171,206 +410,7 @@ class Act < ActiveRecord::Base
 		line.gsub!('</Defined_term>',			 '</strong></em>')
 		return line
 	end
-
-	@@open_tags = []
 	
-	KEY   = 0
-	VALUE = 1
-	
-	def self.subs_depth(num)
-		puts "subs_depth trying to determine subsection depth of "+num.inspect
-		num=num[0]
-		case num
-			when "0".."9"
-				return SUBSECTION
-			when "a".."z"
-			if num=="i"
-				return SUBPARAGRAPH #come back to this - sometimes i is roman, sometimes it's just an i
-			else
-				return PARAGRAPH
-			end
-			when "A".."Z"
-			return UPPER_ALPHA
-		end
-	end
-	
-	def self.create_tag(params)
-		result = params[:open_tag] ? "<" : "</"
-		result += params[:tag].to_s + ">"
-		indent = params[:indent] > 0 ? params[:indent] : 0
-		return "  "*indent+result
-	end
-	
-	def self.wrap_with_tag(str, tag)
-		return create_tag(open_tag: true, tag: tag, indent: 0)+str+create_tag(open_tag: false, tag: tag, indent: 0)
-	end
-	
-	
-	def self.close_tag(output, tag)
-		if tag.is_a? Integer
-			output.puts create_tag(open_tag: false, tag: tag > SECTION ? 
-				SUBSECTION_TAG+(tag - SECTION).to_s : 
-			STRUCTURAL_REGEXES[tag][OUTER_TAG], indent: tag - START_INDENTING)
-		else
-			raise "don't know how to close this tag: "+tag.inspect
-		end
-	end
-
-	def self.type_of_line(line)
-		result = { type: NORMAL, matches: nil }
-		# see if it's a structural element: Chapter, Division, etc
-		STRUCTURAL_REGEXES.each do |array|
-			matches = array[VALUE][REGEX].match line
-			if matches
-				result[:type]    = array[KEY]
-				result[:matches] = matches
-				break
-			end
-		end
-		
-		# if not, see if it's a subsection
-		if !result[:matches]
-			matches = SUBSECTION_REGEX.match line
-			if matches
-				result[:type]    = subs_depth(matches[CONTAINER_NO])
-				result[:matches] = matches
-			end
-		end
-		
-		# see if it's a special type of paragraph: subheading or notes
-		if !result[:matches]
-			SINGLE_LINE_REGEXES.each do |array|
-				matches = array[VALUE].match line
-				if matches
-					result[:type]    = array[KEY]
-					result[:matches] = matches
-					break
-				end
-			end
-		end
-		
-		return result
-	end
-	
-	def self.close_all_tags_lower_than(depth, output)
-		
-		# if current tag is a structural tag
-		# always close previous structural tags up to and including the same depth
-		
-		if depth.is_a? Integer
-			while @@open_tags.size>0 and @@open_tags.last >= depth
-				puts "closing "+@@open_tags.last.to_s
-				close_tag(output, @@open_tags.pop)
-			end
-		elsif depth==NORMAL or depth==NOTES
-			if @@open_tags.last > SECTION
-				puts "closing because new paragraph detected: "+@@open_tags.last.to_s
-				close_tag(output, @@open_tags.pop)
-			end
-			# work out whether to close previous subsections or not
-		elsif depth==SUBHEADING
-			# close everything up to SECTION
-			while @@open_tags.size>0 and @@open_tags.last > SECTION
-			  puts "closing because subheading detected: "+@@open_tags.last.to_s
-				close_tag(output, @@open_tags.pop)
-			end
-		end
-	end
-	
-	def self.inline_matches(line)
-		# look for inline tags like definitions, act references
-		DEFINITIONS_REGEXES.each do | hash|
-			matches = hash[:regex].match line
-			if matches
-				puts "definitions regex matched "+matches.inspect
-				line = line.sub(matches[hash[:defined_term]], wrap_with_tag(matches[hash[:defined_term]], DEFINED_TERM))
-				break
-			end
-		end
-		# check for act names & ad hoc defined terms
-		
-		INLINE_REGEXES.each do |array|
-			matches = array[1].match line
-			if matches
-				puts "array is "+array.inspect
-				puts "matches is "+matches.inspect
-				line=line.gsub(matches[1], wrap_with_tag(matches[1], array[0]))
-			end
-		end
-		return line
-	end
-	
-	def self.insert_structural_tags(structural_tags_to_open, output, type)
-		structural_tags_to_open.each do |depth|
-			if depth <= SECTION
-				tag = STRUCTURAL_REGEXES[depth][OUTER_TAG]
-			else
-				tag=SUBSECTION_TAG+(depth - SECTION).to_s
-			end
-			output.puts      create_tag(open_tag: true, tag: tag, indent: depth - START_INDENTING)
-			@@open_tags.push depth
-		end		
-	end
-	
-	def self.insert_single_line_tags(single_line_tags, line)
-		single_line_tags.each do | tag |
-			line = wrap_with_tag(line, tag)
-		end
-		return line
-	end
-	
-	def self.parse
-		File.open(Rails.root+"legislation/"+"test_parsed.txt", "w") do |output|
-			f = File.open(Rails.root+"legislation/"+"test.txt", "r:UTF-8").each_line do |line|
-				line=line.chomp
-				next if line.blank?
-				type = type_of_line(line)
-				structural_tags_to_open = []
-				single_line_tags = []
-				
-				########  DEBUG      ################
-				return if line=="STOP"
-				puts " "
-				puts "inspecting "+line
-				puts "type is "+type.inspect
-				puts "@@open_tags is "+@@open_tags.inspect
-				########  END DEBUG  #############
-				
-				if @@open_tags.size > 0
-					close_all_tags_lower_than(type[:type], output)
-				end
-				
-				# handle new structural elements, and incidental single line tags
-				if type[:type].is_a? Integer  # if it's a structural line
-					single_line_tags.push (type[:type] <= SECTION ? 
-																     STRUCTURAL_REGEXES[type[:type]][INNER_TAG] : NORMAL )
-					structural_tags_to_open.push type[:type]
-				else
-					single_line_tags.push (type[:type])
-				end
-				
-				# handle defined terms and act references
-				line = inline_matches(line)
-				
-				puts "structural tags to open are "+structural_tags_to_open.inspect
-				puts "single line tags are "+single_line_tags.inspect
-				
-				insert_structural_tags(structural_tags_to_open, output, type)
-				line = insert_single_line_tags(single_line_tags, line)
-				
-				indent = 0
-				if @@open_tags.last and @@open_tags.last > START_INDENTING
-					indent = @@open_tags.last - START_INDENTING
-				end
-				indent+=1
-				output.puts "  "*indent+line
-				# PENDING CODE - set up new database objects for new 'section' of the Act
-			end
-			# it's now EOF - close any open tags
-			close_all_tags_lower_than(0, output)
-		end
-		
-	end
 	
 end
 

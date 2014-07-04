@@ -5,8 +5,11 @@
 	<p class="act_no">Act No. <%= @act.number %>, <%= @act.year %></p>
 	<h2><%= @act.subtitle %></h2>
 
-	<% @act.containers.each do |container| %>
-		<%= container.inspect %>
+	<%= link_to "Parse Act", parse_act_path, class: "btn btn-large btn-primary" %>
+	</br>
+	
+	<% @act.containers.where(parent_id: nil).each do |container| %>
+		<%= render container %>
 	<% end %>
 
 	<% @act.parsed_content.each do |line| %>

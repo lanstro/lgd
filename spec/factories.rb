@@ -35,7 +35,7 @@ FactoryGirl.define do
 		end
 		sequence(:title) { |n| "Title for Test SEction #{n}" }
 		container_type ["Regulation", "Section", "Schedule"].sample
-		
+		tag ["Subs_1", "Subs_2", "Part", "Division", "Section", "Paragraph"].sample
 	end
 	
 end
