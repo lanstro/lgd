@@ -1,10 +1,16 @@
-<h2>Container <%= container.id %>: type: <%= container.container_type %>, parent: <%= container.parent_id %></h2>
+<% tags = Act.html_tags(container) %>
+<% if tags %>
+  <%= raw tags[0] %>
+<% end %>
+
+<%= container.content %>
+
 <% if container.children.size > 0 %>
-	<h3>Children:</h3>
-	<% container.children.each do |container| %>
-		<%= render container %>
-	<% end %>
-	<h3>End Children</h3>
-<% else %>
-	<h3>No children</h3>
+		<% container.children.each do |container| %>
+			<%= render container %>
+		<% end %>
+<% end %>
+
+<% if tags %>
+  <%= raw tags[1] %>
 <% end %>

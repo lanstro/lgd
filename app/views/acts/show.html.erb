@@ -1,20 +1,21 @@
+<%  # encoding: UTF-8 %>
+
 <% provide(:title, @act.title) %>
 <div class = "legislation">
+	<%= link_to "Parse Act", parse_act_path, class: "btn btn-large btn-primary" %>
+	</br>
 	<%= image_tag "misc/coat_of_arms.png", alt: "Australian coat of arms", class: "coat_of_arms" %>
 	<h1><%= @act.title %></h1>
 	<p class="act_no">Act No. <%= @act.number %>, <%= @act.year %></p>
 	<h2><%= @act.subtitle %></h2>
 
-	<%= link_to "Parse Act", parse_act_path, class: "btn btn-large btn-primary" %>
-	</br>
+	
+	
 	
 	<% @act.containers.where(parent_id: nil).each do |container| %>
 		<%= render container %>
 	<% end %>
 
-	<% @act.parsed_content.each do |line| %>
-		<%= raw line %>
-	<% end %>
 </div>
 
 <p>Adapted from Comlaw under its <a href="http://www.comlaw.gov.au/content/copyright">Creative Commons Licence</a>.  Original files <a href="http://www.comlaw.gov.au/Details/C2014C00077">here</a>.</p>

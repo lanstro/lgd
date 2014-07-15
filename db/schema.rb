@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140704005922) do
+ActiveRecord::Schema.define(version: 20140714235018) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -29,6 +29,13 @@ ActiveRecord::Schema.define(version: 20140704005922) do
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
 
+  create_table "anchors", force: true do |t|
+    t.string   "anchor_text"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "container_id"
+  end
+
   create_table "containers", force: true do |t|
     t.text     "number"
     t.date     "last_updated"
@@ -44,6 +51,13 @@ ActiveRecord::Schema.define(version: 20140704005922) do
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
   add_index "containers", ["parent_id"], name: "index_containers_on_parent_id"
+
+  create_table "metadata", force: true do |t|
+    t.string   "meta_type"
+    t.string   "external_link"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "users", force: true do |t|
     t.string   "name"

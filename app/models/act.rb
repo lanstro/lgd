@@ -5,15 +5,16 @@
 # consider whether notes should be a structural element type?
 # more sophisticated working out whether (i) is an alphabetical element or a roman numeral
 
-DEBUG = false
+DEBUG = true
 
 ####################################################################
 #   STRUCTURAL REGEXES                                             #
 ####################################################################
 
 # structural line types
-CONTAINER_LEVELS = [nil, "Chapter", "Part", "Division", "Subdivision", "Section", "Subsection", "Paragraph",
-                    "Subparagraph", "Upper Alpha"]
+CONTAINER_LEVELS = [nil, "Chapter", "Part", "Division", "Subdivision", "Section", "Subs_1", "Subs_2",
+                    "Subs_3", "Subs_4"]
+
 CHAPTER          = 1
 PART             = 2
 DIVISION         = 3
@@ -23,11 +24,6 @@ SUBSECTION       = 6
 PARAGRAPH        = 7
 SUBPARAGRAPH     = 8
 UPPER_ALPHA      = 9
-LIST             = "List"
-DEFINITIONS_LIST = "Definitions_List"
-
-START_INDENTING  = PART
-
 
 # structural REGEX explanations
 # Chapter titles: in a string like 'Chapter xxx-yyyy' or 'Chapter xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
@@ -70,9 +66,17 @@ SUBSECTION_TAG   = "Subs_"
 
 # single line types
 NOTES        = "Note"
-NORMAL       = "p"
+NORMAL       = "Paragraph"
 SUBHEADING   = "Subheading"
-LIST_INTRO   = "List_intro"
+TITLE        = "Title"
+
+HTML_TAGS = {
+	CONTAINER_LEVELS[SECTION]    => ['<div class="Section">', '</div>'],
+	SUBHEADING => ['<p class="Subheading">','</p>'],
+	NOTES  => ['<p class="Note">','</p>'],
+	NORMAL  => ['<p>','</p>'],
+	TITLE  => ['<h2>','</h2>']
+}
 
 SINGLE_LINE_REGEXES = {
 	SUBHEADING => /(?<![\.:;,]|and|or)\s*\Z/ ,
@@ -137,81 +141,134 @@ class Act < ActiveRecord::Base
 
 	def parse
 		
-		@open_tags = []
+		@all_containers=[]
 		@open_containers=[]
 		
 		Container.delete_all(:act_id => self.id)
 		
+		@current_id=1
+		
 		if Container.count > 0
 			@current_id = Container.maximum(:id)+1
-		else
-			@current_id=1
 		end
 		
-		File.open(Rails.root+"legislation/"+"test_parsed.txt", "w") do |output|
-			f = File.open(Rails.root+"legislation/"+"test.txt", "r:UTF-8").each_line do |line|
-				line=line.chomp
-				next if line.blank?
-				type = type_of_line(line)
-				structural_tags_to_open = []
-				single_line_tags = []
-				
-				########  DEBUG      ################
-				if line=="STOP"
-					puts "stopping: @open_containers is "+@open_containers.inspect
-					Container.import @open_containers, :validate=>true
-					return
+		f = File.open(Rails.root+"legislation/"+"test.txt", "r:bom|UTF-8").each_line do |line|
+			line=line.chomp
+			next if line.blank?
+			type = type_of_line(line)
+			########  DEBUG      ################
+			if line=="STOP"
+				puts "stopping: @all_containers is:"
+				@all_containers.each do |container|
+					puts container.inspect
 				end
-				
-				if DEBUG
-					puts " "
-					puts "inspecting "+line
-					puts "type is "+type.inspect
-					puts "@open_tags is "+@open_tags.inspect
+				result = Container.import @all_containers, :validate=>true
+				if result.failed_instances.size>0
+					raise result.failed_instances.inspect
 				end
-				########  END DEBUG  #############
-				
-				if @open_tags.size > 0
-					close_all_tags_lower_than(type[:type], output)
-				end
-				
-				# handle new structural elements, and incidental single line tags
-				if type[:type].is_a? Integer  # if it's a structural line
-					single_line_tags.push (type[:type] <= SECTION ? 
-					STRUCTURAL_REGEXES[type[:type]][INNER_TAG] : NORMAL )
-					structural_tags_to_open.push type[:type]
-				else
-					single_line_tags.push (type[:type])
-				end
-				
-				# handle defined terms and act references
-				line = inline_matches(line)
-				
-				if DEBUG
-					puts "structural tags to open are "+structural_tags_to_open.inspect
-					puts "single line tags are "+single_line_tags.inspect
-				end
-				
-				insert_structural_tags(structural_tags_to_open, output, type)
-				line = insert_single_line_tags(single_line_tags, line)
-				
-				indent = 0
-				if @open_tags.last and @open_tags.last > START_INDENTING
-					indent = @open_tags.last - START_INDENTING
-				end
-				indent+=1
-				output.puts "  "*indent+line
-				# PENDING CODE - set up new database objects for new 'section' of the Act
+				return
 			end
-			# it's now EOF - close any open tags
-			close_all_tags_lower_than(0, output)
+			
+			if DEBUG
+				puts " "
+				puts "inspecting "+line
+				puts "type is "+type.inspect
+				puts "@open_containers is "+@open_containers.inspect
+			end
+			########  END DEBUG  #############
+			
+			
+			structural_tags_to_open = []
+			single_line_tags = []
+			
+			if @open_containers.size > 0
+				remove_containers_lower_than(type[:type])
+			end
+			
+			# handle new structural elements
+			if type[:type].is_a? Integer  # if it's a structural line
+				create_structural_container(type)
+				if type[:type] <= SECTION
+					create_container_with_content(STRUCTURAL_REGEXES[type[:type]][INNER_TAG], line)
+				else
+					create_container_with_content(NORMAL, line)
+				end
+			else
+				create_container_with_content(type[:type], line)
+			end
+			
+			# handle defined terms and act references
+			#line = inline_matches(line)
+			
+			if DEBUG
+				puts "structural tags to open are "+structural_tags_to_open.inspect
+				puts "single line tags are "+single_line_tags.inspect
+			end
+			
+			#line = insert_single_line_tags(single_line_tags, line)
+			
+			# create new paragraph type
+			#output.puts "  "*indent+line 
+			# PENDING CODE - set up new database objects for new 'section' of the Act
 		end
-		@open_containers.each do |container|
-			#puts container.inspect
+		# it's now EOF - close any open tags
+		@all_containers.each do |container|
+			puts container.inspect
 		end
-		#Container.import @open_containers, :validate=>true
+		result = Container.import @all_containers, :validate=>true
+		if result.failed_instances.size>0
+			raise result.failed_instances.inspect
+		end
 	end
 	
+	def create_container(type)
+		
+		result                 = Container.new
+		result.id=             @current_id               # massive potential for database concurrency issues - fix later
+		result.act_id=         self.id
+		result.parent_id=      @open_containers.last ? @open_containers.last.id : nil
+
+		@current_id+=1
+		return result
+	end
+	
+	def create_structural_container(type)
+		result = create_container(type)
+		result.container_type= CONTAINER_LEVELS[type[:type]]
+		result.number=         type[:matches][CONTAINER_NO]
+		@open_containers.push result
+		@all_containers.push  result
+		return result
+	end
+	
+	def create_container_with_content(type, line)
+		result = create_container(type)
+		result.container_type = type
+		result.content = line
+		result.number = 1
+		@all_containers.push   result
+		return result
+	end
+	
+	def remove_containers_lower_than(type)
+		if type.is_a? Integer
+			while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) >= type
+				@open_containers.pop
+			end
+		else
+			if type == SUBHEADING
+				while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) > SECTION
+					@open_containers.pop
+				end
+			elsif type == NOTES or type == NORMAL# come back to
+				while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) > SECTION
+					@open_containers.pop
+				end
+			else
+				raise "strange type of container type: "+type.inspect
+			end
+		end
+	end
 	
 	def subs_depth(num)
 		puts "subs_depth trying to determine subsection depth of "+num.inspect if DEBUG
@@ -230,27 +287,6 @@ class Act < ActiveRecord::Base
 		end
 	end
 	
-	def create_tag(params)
-		result = params[:open_tag] ? "<" : "</"
-		result += params[:tag].to_s + ">"
-		indent = params[:indent] > 0 ? params[:indent] : 0
-		return "  "*indent+result
-	end
-	
-	def wrap_with_tag(str, tag)
-		return create_tag(open_tag: true, tag: tag, indent: 0)+str+create_tag(open_tag: false, tag: tag, indent: 0)
-	end
-	
-	def close_tag(output, tag)
-		if tag.is_a? Integer
-			output.puts create_tag(open_tag: false, tag: tag > SECTION ? 
-				SUBSECTION_TAG+(tag - SECTION).to_s : 
-			STRUCTURAL_REGEXES[tag][OUTER_TAG], indent: tag - START_INDENTING)
-		else
-			raise "don't know how to close this tag: "+tag.inspect
-		end
-	end
-
 	def type_of_line(line)
 		result = { type: NORMAL, matches: nil }
 		# see if it's a structural element: Chapter, Division, etc
@@ -283,33 +319,7 @@ class Act < ActiveRecord::Base
 				end
 			end
 		end
-		
 		return result
-	end
-	
-	def close_all_tags_lower_than(depth, output)
-		
-		# if current tag is a structural tag
-		# always close previous structural tags up to and including the same depth
-		
-		if depth.is_a? Integer
-			while @open_tags.size>0 and @open_tags.last >= depth
-				puts "closing "+@open_tags.last.to_s if DEBUG
-				close_tag(output, @open_tags.pop)
-			end
-		elsif depth==NORMAL or depth==NOTES
-			if @open_tags.last > SECTION
-				puts "closing because new paragraph detected: "+@open_tags.last.to_s if DEBUG
-				close_tag(output, @open_tags.pop)
-			end
-			# work out whether to close previous subsections or not
-		elsif depth==SUBHEADING
-			# close everything up to SECTION
-			while @open_tags.size>0 and @open_tags.last > SECTION
-			  puts "closing because subheading detected: "+@open_tags.last.to_s if DEBUG
-				close_tag(output, @open_tags.pop)
-			end
-		end
 	end
 	
 	def inline_matches(line)
@@ -335,28 +345,6 @@ class Act < ActiveRecord::Base
 		return line
 	end
 	
-	def insert_structural_tags(structural_tags_to_open, output, type)
-		structural_tags_to_open.each do |depth|
-			if depth <= SECTION
-				tag = STRUCTURAL_REGEXES[depth][OUTER_TAG]
-			else
-				tag=SUBSECTION_TAG+(depth - SECTION).to_s
-			end
-			output.puts            create_tag(open_tag: true, tag: tag, indent: depth - START_INDENTING)
-			@open_tags.push        depth
-			parent_container       = @open_containers.last
-
-			new_container = Container.new
-			new_container.id=             @current_id               # massive potential for database concurrency issues - fix later
-			new_container.number=         rand(50)
-			new_container.container_type= CONTAINER_LEVELS[depth]
-			new_container.act_id=         1
-			new_container.parent_id=      parent_container ? parent_container.id : nil
-			new_container.content=        "test phwar ogmg slkjsdf test"
-			@open_containers.push new_container
-			@current_id+=1
-		end
-	end
 	
 	def insert_single_line_tags(single_line_tags, line)
 		single_line_tags.each do | tag |
@@ -364,53 +352,10 @@ class Act < ActiveRecord::Base
 		end
 		return line
 	end
+	
+	def self.html_tags(container)
+		return HTML_TAGS[container.container_type]
+	end
 
-	
-	def parsed_content(file="AIA")
-		result = []
-		File.open(Rails.root+"legislation/test_parsed.txt", "rb").each_line do |line| 
-			result.push parse_line(line)
-		end
-		result.delete_if { |line| line.blank? }
-		return result
-	end
-	
-	def parse_line(line)
-		line.gsub!('<Part>',     					'<div class="Part">')
-		line.gsub!('</Part>',    					'</div>')
-		line.gsub!('<Section>', 					'<div class="Section">')
-		line.gsub!('</Section>', 					'</div>')
-		line.gsub!('<Definition>',  			'<div class="Definition">')
-		line.gsub!('</Definition>', 			'</div>')
-		line.gsub!('<Subs_1>',  				  '<div class="Subs_1">')
-		line.gsub!('</Subs_1>', 				  '</div>')
-		line.gsub!('<Subs_2>',  				  '<div class="Subs_2">')
-		line.gsub!('</Subs_2>', 				  '</div>')
-		line.gsub!('<Subs_3>',  				  '<div class="Subs_3">')
-		line.gsub!('</Subs_3>', 				  '</div>')
-		line.gsub!('<Subs_4>',  				  '<div class="Subs_4">')
-		line.gsub!('</Subs_4>', 				  '</div>')
-		line.gsub!('<Explanatory_box>',  	'<div class="Explanatory_box">')
-		line.gsub!('</Explanatory_box>', 	'</div>')
-		line.gsub!('<Note>',  				    '<p class="Note">')
-		line.gsub!('</Note>', 						'</p>')
-		line.gsub!('<Title>',  				    '<h2>')
-		line.gsub!('</Title>', 						'</h2>')
-		line.gsub!('<List>',  				    '<div class="List">')
-		line.gsub!('</List>', 						'</div>')
-		line.gsub!('<Definitions_List>',  '<div class="List no_indent_list">')
-		line.gsub!('</Definitions_List>', '</div')
-		line.gsub!('<List_intro>',		    '<div class="List_intro">')
-		line.gsub!('</List_intro>', 			'</div>')
-		line.gsub!('<List_item_no_indent>','<div class="List_item_no_indent">')
-		line.gsub!('</List_item_no_indent>','</div>')
-		line.gsub!('<Subheading>',				 '<p class="Subheading">')
-		line.gsub!('</Subheading>',				 '</p>')
-		line.gsub!('<Defined_term>',			 '<em><strong>')
-		line.gsub!('</Defined_term>',			 '</strong></em>')
-		return line
-	end
-	
-	
 end
 

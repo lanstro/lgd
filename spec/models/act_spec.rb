@@ -113,11 +113,6 @@ describe Act do
 			FactoryGirl.create(:container, act: @act, number: "1A")
 		end
 		
-		
-		it "should have the right acts at the right order" do
-			expect(@act.containers.to_a).to eq [section_1, section_1A, section_2, section_4, section_5]
-		end
-		
 		it "should destroy associated containers" do
 			containers = @act.containers.to_a
 			@act.destroy

@@ -7,7 +7,6 @@ describe Container do
 	
 	before { @container = act.containers.build( number: "2A",
 																					last_updated: "2013-07-12",
-																					title: "Test",
 																					updating_acts: "1 2 4",
 																					container_type: "Regulation",
 																					regulations: 6) }
