@@ -21,6 +21,8 @@ describe Container do
 	it { should respond_to(:content) }
 	it { should respond_to(:regulations) }
 	it { should respond_to(:container_type) }
+	
+	
 	its(:act) {should eq act}
 	
 	describe "when no owning act" do

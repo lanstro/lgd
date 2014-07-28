@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140714235018) do
+ActiveRecord::Schema.define(version: 20140716053756) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -29,12 +29,24 @@ ActiveRecord::Schema.define(version: 20140714235018) do
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
 
-  create_table "anchors", force: true do |t|
-    t.string   "anchor_text"
+  create_table "acts_collections", id: false, force: true do |t|
+    t.integer "collection_id"
+    t.integer "act_id"
+  end
+
+  add_index "acts_collections", ["act_id", "collection_id"], name: "index_acts_collections_on_act_id_and_collection_id"
+
+  create_table "collections", force: true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "container_id"
   end
+
+  create_table "collections_containers", id: false, force: true do |t|
+    t.integer "collection_id"
+    t.integer "container_id"
+  end
+
+  add_index "collections_containers", ["container_id", "collection_id"], name: "index_collections_containers_on_container_id_and_collection_id"
 
   create_table "containers", force: true do |t|
     t.text     "number"
@@ -57,6 +69,9 @@ ActiveRecord::Schema.define(version: 20140714235018) do
     t.string   "external_link"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "scope_id"
+    t.integer  "metadata_content_id"
+    t.string   "anchor_text"
   end
 
   create_table "users", force: true do |t|

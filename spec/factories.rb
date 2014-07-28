@@ -36,4 +36,8 @@ FactoryGirl.define do
 		container_type ["Regulation", "Section", "Schedule"].sample
 	end
 	
+	factory :collection do
+		containers {[FactoryGirl.create(:container)]}
+	end
+	
 end

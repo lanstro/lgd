@@ -132,6 +132,7 @@ DEFINITIONS_REGEXES = [
 
 class Act < ActiveRecord::Base
 	has_many :containers, dependent: :destroy
+	has_and_belongs_to_many :collections
 	validates :title, presence: true
 	validates :last_updated, presence: true
 	validates :jurisdiction, presence: true, inclusion: { in: ["Commonwealth", "Victoria", "New South Wales", "Queensland", "Northern Territory", "Australian Capital Territory", "Western Australia", "South Australia", "Tasmania"] }
@@ -198,18 +199,13 @@ class Act < ActiveRecord::Base
 			end
 			
 			# handle defined terms and act references
-			#line = inline_matches(line)
+			check_definitions(line)
 			
 			if DEBUG
 				puts "structural tags to open are "+structural_tags_to_open.inspect
 				puts "single line tags are "+single_line_tags.inspect
 			end
 			
-			#line = insert_single_line_tags(single_line_tags, line)
-			
-			# create new paragraph type
-			#output.puts "  "*indent+line 
-			# PENDING CODE - set up new database objects for new 'section' of the Act
 		end
 		# it's now EOF - close any open tags
 		@all_containers.each do |container|
@@ -322,7 +318,14 @@ class Act < ActiveRecord::Base
 		return result
 	end
 	
-	def inline_matches(line)
+	def check_definitions(line)
+		
+		# find if there's an open definitions list
+		# if there is, record the scope
+		
+		# every time there is a term being defined, start a definition object
+		# 
+		
 		# look for inline tags like definitions, act references
 		DEFINITIONS_REGEXES.each do | hash|
 			matches = hash[:regex].match line
