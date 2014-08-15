@@ -9,11 +9,8 @@
 	<p class="act_no">Act No. <%= @act.number %>, <%= @act.year %></p>
 	<h2><%= @act.subtitle %></h2>
 
-	
-	
-	
 	<% @act.containers.where(parent_id: nil).each do |container| %>
-		<%= render container %>
+		<% render container %>
 	<% end %>
 
 </div>
