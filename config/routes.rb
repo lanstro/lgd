@@ -10,6 +10,7 @@ Lgd::Application.routes.draw do
 	resources :acts do 
 		member do
 			get 'parse'
+			get 'reset_parsing'
 		end
 	end
 	resources :sections

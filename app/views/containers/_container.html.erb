@@ -1,16 +1,43 @@
-<% tags = Act.html_tags(container) %>
-<% if tags %>
-  <%= raw tags[0] %>
+<% debug = false %>
+
+<% same_line_tag = Act.html_same_line_tags(container) %>
+<% wrappers = Act.html_children_wrapper_tags(container) %>
+
+<% if wrappers %>
+	<<%= wrappers[0] %>>
 <% end %>
 
-<%= container.content %>
-
-<% if container.children.size > 0 %>
-		<% container.children.each do |container| %>
-			<%= render container %>
+<% if container.depth >= SUBSECTION and container.depth <= SUBSUBPARAGRAPH %>
+	<table><tbody>
+		<tr>
+			<td class="table_numeral"><<%= same_line_tag[0] %>>(<%= container.number %>)<<%= same_line_tag[1] %>></td>
+			<td class="table_content">
+				<<%= same_line_tag[0] %>>
+					<% if debug %>
+						[<%= container.id %>], [<%= container.parent_id %>] 
+					<% end %>
+					<%= container.strip_number %>
+				<<%= same_line_tag[1] %>>
+			</td>
+		</tr>
+	</tbody></table>
+<% else %>
+	<<%= same_line_tag[0] %>>
+		<% if debug %>
+			[<%= container.id %>], [<%= container.parent_id %>] 
 		<% end %>
+		<%= container.content %>
+	<<%= same_line_tag[1] %>>
 <% end %>
 
-<% if tags %>
-  <%= raw tags[1] %>
+<% children = all_containers.find_all{ |c| c.parent_id == container.id } # NEED TO WRITE MUCH BETTER ALGORITHM %>
+
+<% if children.size > 0 %>
+	<% children.each do |child| %>
+		<%= render child, :all_containers => all_containers %>
+	<% end %>
+<% end %>
+
+<% if wrappers %>
+	<<%= wrappers[1] %>>
 <% end %>

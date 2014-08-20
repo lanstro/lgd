@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140716053756) do
+ActiveRecord::Schema.define(version: 20140820022940) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -53,12 +53,13 @@ ActiveRecord::Schema.define(version: 20140716053756) do
     t.date     "last_updated"
     t.text     "updating_acts"
     t.integer  "regulations"
-    t.string   "container_type"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "act_id"
     t.integer  "parent_id"
     t.text     "content"
+    t.integer  "depth"
+    t.string   "special_paragraph"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"

@@ -15,9 +15,6 @@ DEBUG = false
 
 # structural line types
 
-CONTAINER_LEVELS = [nil, "Chapter", "Part", "Division", "Subdivision", "Section", "Subs_1", "Subs_2",
-                    "Subs_3", "Subs_4", "Paragraph"]
-
 CHAPTER          = 1
 PART             = 2
 DIVISION         = 3
@@ -26,8 +23,9 @@ SECTION          = 5
 SUBSECTION       = 6
 PARAGRAPH        = 7
 SUBPARAGRAPH     = 8
-UPPER_ALPHA      = 9
-TEXT             = 10
+SUBSUBPARAGRAPH  = 9
+PARA_LIST_HEAD   = 10
+TEXT             = 11
 
 # structural REGEX explanations
 # Chapter titles: in a string like 'Chapter xxx-yyyy' or 'Chapter xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
@@ -39,20 +37,21 @@ TEXT             = 10
 	# Subsection matches a number followed by optional letters
 	# Paragraph matches lower case letters  - NEED CONFLICT RESOLUTION FOR (i)
 	# Subparagraph matches roman numerals - NEED CONFLICT RESOLUTION FOR (i)
-	# Upper Alpha matches upper case alphabeticals
-# TEXT matches semicolons at the end of lines (so paragraphs that are headers for lists)
+	# Subsubparagraph matches upper case alphabeticals
+# PARA_LIST_HEAD matches semicolons at the end of lines (so paragraphs that are headers for lists)
 
 STRUCTURAL_REGEXES = {
-	SECTION      => [ /\A(\d+\w*)\s+(.+)\Z/,                       "Section"     ],
-	SUBSECTION   => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,          "Subs_1"      ],
-	PARAGRAPH    => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                "Subs_2"      ],
-	SUBPARAGRAPH => [ /\A\t*\((M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3}))\)\s+(.+)\Z/i, "Subs_3" ],  # catches empty braces too - may need to account for that case,
-	UPPER_ALPHA  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                "Subs_4"      ],
-	TEXT         => [ /:\s*\z/,                                    "p"           ],  # this one has to come after all the subsection ones
-	SUBDIVISION  => [ /(?<=\ASubdivision\s)\s*(\w*)[-—](.+)\Z/,    "Subdivision" ],
-	DIVISION     => [ /(?<=\ADivision\s)\s*(\w*)[-—](.+)\Z/,       "Division"    ],
-	PART         => [ /(?<=\APart\s)\s*(\w*)[-—](.+)\Z/ ,          "Part",       ],
-	CHAPTER      => [ /(?<=\AChapter\s)\s*(\w*)[-—](.+)\Z/,        "Chapter",    ],
+	SECTION          => [ /\A(\d+\w*)\s+(.+)\Z/,                           "Section"     ],
+	SUBSECTION       => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,              "Subs_1"      ],
+	# VERY IMPORTANT that SUBPARAGRAPH remains above PARAGRAPH
+	SUBPARAGRAPH 	   => [ /\A\t*\(((xc|xl|l?x{0,3})(ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3" ],  # catches empty braces too - may need to account for that case in future
+	PARAGRAPH        => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                    "Subs_2"      ],
+	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                    "Subs_4"      ],
+	PARA_LIST_HEAD   => [ /:\s*\z/,                                        "p"           ],  # this one has to come after all the subsection ones
+	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——](.+)\Z/,    "Subdivision" ],
+	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——](.+)\Z/,       "Division"    ],
+	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[-——](.+)\Z/ ,          "Part",       ],
+	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[-——](.+)\Z/,        "Chapter",    ],
 }
 
 KEY   = 0
@@ -66,6 +65,31 @@ TAG   = 1
 FULL_STRING  = 0
 CONTAINER_NO = 1
 HEADING      = 2
+
+
+####################################################################
+#   SINGLE LINE REGEXES                                            #
+####################################################################
+
+# single line types
+NOTE         = "Note"
+EXAMPLE      = "Example"
+SUBHEADING   = "Subheading"
+
+SINGLE_LINE_REGEXES = {
+	SUBHEADING => /(?<![\.:;,]|and|or)\s*\Z/ ,
+	NOTE       => /\A\s*Note\s*:\s+(.*)\Z/,
+	EXAMPLE    => /\A\s*Example\s*\d*\s*:\s+(.*)\Z/
+}
+
+# Subheading regex looks for any lines that don't end in a full stop, semicolon, colon or comma.  Must be 
+# run after the subsection_regex, because a lot of subsections end in 'and', 'or' etc
+# captures the subheading in item 1
+# Notes regex looks for lines starting with 'Note:' or 'Example:' - captures that word in item 1 and the
+# text in item 2
+# list_intro is just the first line of all lists - doesn't need its own regex
+# paragraph is the 'catch all'
+
 
 
 ####################################################################
@@ -84,40 +108,145 @@ class Act < ActiveRecord::Base
 	
 	attr_accessor :nlp_act, :all_containers
 	
-	def create_container
-		
-		result                 = Container.new
-		result.id=             @current_id               # massive potential for database concurrency issues - fix later
-		result.act_id=         self.id
-		result.parent_id=      @open_containers.last ? @open_containers.last.id : nil
-		
+	def create_container(depth, content, number, special_type)
+
+		result                   = Container.new
+		result.id                = @current_id               # massive potential for database concurrency issues - fix later
+		result.act_id            = self.id
+		result.parent_id         = @open_containers.last ? @open_containers.last.id : nil
 		@current_id+=1
-		return result
-	end
-=begin	
-	def create_structural_container(type)
-		result = create_container(type)
-		result.container_type= CONTAINER_LEVELS[type[:type]]
-		result.number=         type[:matches][CONTAINER_NO]
-		@open_containers.push result
-		@all_containers.push  result
-		return result
-	end
-=end
-	def create_container_with_content(depth, content)
-		result = create_container
-		result.container_type = CONTAINER_LEVELS[depth]
-		result.content = content
-		#result.number = 1
-		@all_containers.push   result
-		@open_containers.push  result
+		
+		result.depth             = depth
+		result.content           = content
+		result.number            = number
+		result.special_paragraph = special_type
+		@all_containers.push       result
+		if depth < TEXT
+			@open_containers.push  result
+		end
 		return result
 	end
 	
-	def remove_containers_lower_than(depth)
-		while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) >= depth
+	def last_paragraph_list_head
+		return @open_containers.rindex { |container| container.depth == PARA_LIST_HEAD }
+	end
+	
+	def close_previous_container?(depth)
+		if @open_containers.size < 1
+			return false
+		end
+		
+		list = last_paragraph_list_head
+		
+		if !list
+			# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
+			if DEBUG
+				puts "no list open; current depth is "+depth.to_s
+				puts "last open container is depth "+@open_containers.last.depth.to_s+" with content "+@open_containers.last.content
+			end
+			return @open_containers.last.depth >= depth
+		end
+		
+		# there's a list - what do we do?
+		
+		if depth < PARA_LIST_HEAD
+			# it's a structural element
+			# if the new item's superior or equal to the list head's parent, close off the list 
+			head_list = list
+			while @open_containers[head_list-1].depth >= PARA_LIST_HEAD
+				head_list-=1
+			end
+			if depth <= @open_containers[head_list-1].depth
+				if DEBUG
+					puts "new section is superior to the open list - close the open list as well as the previous structural element"
+					puts "open containers is:"
+				end
+				@open_containers.each { |c| puts c.inspect }
+				@open_containers=@open_containers[0..head_list-2]
+				return false
+			end
+			# if it isn't, then it's either a child of the list head, or of the previous item
+			if DEBUG
+				puts "need to decide whether this structural entity is direct child of the list or not" 
+			end
+			if @open_containers.last.depth == PARA_LIST_HEAD
+				if DEBUG 
+					puts "it's a direct child of the list - returning false"
+				end
+				# this is the first child of a list head - it must belong to the list head
+				return false
+			else
+				# fall back to normal rules - see if last item is deeper than new item or not
+				if DEBUG
+					puts "fallback - depth is "+depth.to_s+" and about to return "+ (@open_containers.last.depth >= depth).to_s
+					puts "last container is "+@open_containers.last.inspect
+				end
+				return @open_containers.last.depth >= depth
+			end
+		elsif depth == PARA_LIST_HEAD
+			# if it's a paragraph list heading, assume that it should just open a new list
+			# MAY NEED TO REVISIT
+			return false
+		else
+			# it's a normal paragraph
+			if @open_containers.last.depth == PARA_LIST_HEAD
+				# this is the first child of a list head - it must belong to the list head
+				return false
+			else
+				# the paragraph heading has other children
+				list_depth = @open_containers[list+1].depth
+				if list_depth == TEXT
+					# shouldn't be possible - plain paragraphs shouldn't make it onto the @open_containers list
+					raise 'a plain paragraph appeared in the open_containers queue'
+				else
+					# the list children are structural elements, and now we have a paragraph
+					# should the paragraph be a child of the last structural element, or should it close off the list?
+					
+					# if the list header's parent is also a list, then assume we have to break off the inner list
+					if @open_containers[list-1].depth == PARA_LIST_HEAD
+						@open_containers = @open_containers[0..list-1]
+						return false
+					else
+					# otherwise, assume it's a child of the final element
+						return false
+					end
+				end
+			end
+		end
+	end
+	
+	def process_entity(entity)
+		depth        = nil
+		content      = nil
+		number       = nil           
+		special_type = nil
+		if entity.type == :paragraph
+			depth   = TEXT
+			content = entity.to_s
+			special_type = entity.get(:special_type)
+		elsif entity.type == :section
+			depth   = entity.get(:depth)
+			content = entity.title.to_s
+			number  = entity.get(:number)
+		else
+			raise 'unknown entity type '+entity.inspect
+		end
+		if !depth
+			raise 'section without depth assigned '+entity.inspect
+		end
+		
+		# close off open containers that need to be closed
+		puts " "
+		puts "closing previous containers for "+content
+		while close_previous_container?(depth)
 			@open_containers.pop
 		end
+		
+		# create a new container for this element
+		create_container(depth, content, number, special_type)
+		
+		# recursively call this again for each child paragraph
+		entity.paragraphs.each { |p| process_entity(p) if p != entity}
 	end
 	
 	def parse
@@ -131,32 +260,28 @@ class Act < ActiveRecord::Base
 		@open_containers = []
 		@all_containers = []
 		
-		@nlp_act.sections.each do |section|
-			# remove all open containers that are lower depth than this one
-			
-			if @open_containers.size > 0 and section.get(:depth) > 0
-				remove_containers_lower_than(section.get :depth)
-			end
-			
-			# if this section is a paragraph, work out whether previous containers do need to be closed
-			
-			# create a new container and put it into both arrays
-			
-			create_container_with_content(section.get(:depth), section.title.to_s)
-			
-			section.paragraphs.each { |p| create_container_with_content(TEXT, p.to_s) }
-			
-			
-			
-		end
+		@nlp_act.sections.each { |section| process_entity(section) }
 		# save containers to database
+		result = Container.import @all_containers, :validate=>true
 		
-		result = Container.import @all_containers, :validate=>false
-		if result.failed_instances.size>0
-			#raise result.failed_instances.inspect
+	end
+	
+	def self.html_same_line_tags(container)
+		if container.depth <= SECTION
+			return ['h2', '/h2']
+		else
+			if container.special_paragraph
+				return ['p class='+container.special_paragraph, '/p']
+			else
+				return ['p', '/p']
+			end
 		end
-		
-		return @all_containers
+	end
+	
+	def self.html_children_wrapper_tags(container)
+		if container.depth < PARA_LIST_HEAD
+			return ['div class=depth'+container.depth.to_s, '/div']
+		end
 	end
 
 	def self.from_string_lgd(string)
@@ -175,37 +300,29 @@ class Act < ActiveRecord::Base
 		end
 		
 		if matches
+			puts "structural regex matched" if DEBUG
 			result = Treat::Entities::Title.new(string)
 			result.set :depth, depth
+			result.set :number, matches[1]
 			return result
-		#elsif dot && dot >= 1 && string.count("\n") > 0
-		#	Treat::Entities::Section.new(string)
 		else
-			Treat::Entities::Paragraph.new(string)
-		end
-	end
-	
-	def display
-		puts_child(@nlp_act)
-	end
-	
-	def puts_child(root)
-		if root.children.size > 0
-			root.children.each do |child|
-				puts_child(child)
-			end
-		else
-			depth = root.get :depth
-			if depth == nil
-				depth = root.parent.get :depth
-				if depth == nil
-					depth = 0
+			puts "no structural regex" if DEBUG
+			result = Treat::Entities::Paragraph.new(string)
+			special_type = nil
+			SINGLE_LINE_REGEXES.each do |array|
+				matches = array[VALUE].match string
+				if matches
+					special_type=array[KEY]
+					break
 				end
 			end
-			puts "  "*depth+root.to_s
-			return "  "*depth+root.to_s
+			if special_type
+				result.set :special_type, special_type
+			end
 		end
+		return result
 	end
+	
 end
 
 Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}| 
@@ -223,8 +340,10 @@ Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}|
 			else
 				current = entity << Treat::Entities::Section.new
 			end
-			current.set :depth, (c.get :depth)
+			current.set :depth,  (c.get :depth)
+			current.set :number, (c.get :number)
 			c.set :depth, nil
+			c.set :number, nil
 		end
 		current << c
 	end
@@ -232,11 +351,6 @@ end
 
 
 =begin
-
-		result = Container.import @all_containers, :validate=>true
-		if result.failed_instances.size>0
-			raise result.failed_instances.inspect
-		end
 
 	def check_definitions(line)
 		
@@ -307,12 +421,6 @@ end
 #   SINGLE LINE REGEXES                                            #
 ####################################################################
 
-# single line types
-NOTES        = "Note"
-NORMAL       = "Paragraph"
-SUBHEADING   = "Subheading"
-TITLE        = "Title"
-
 HTML_TAGS = {
 	CONTAINER_LEVELS[SECTION]    => ['<div class="Section">', '</div>'],
 	SUBHEADING => ['<p class="Subheading">','</p>'],
@@ -320,19 +428,6 @@ HTML_TAGS = {
 	NORMAL  => ['<p>','</p>'],
 	TITLE  => ['<h2>','</h2>']
 }
-
-SINGLE_LINE_REGEXES = {
-	SUBHEADING => /(?<![\.:;,]|and|or)\s*\Z/ ,
-	NOTES      => /\A\s*(Note|Example)\s*:\s+(.*)\Z/
-}
-
-# Subheading regex looks for any lines that don't end in a full stop, semicolon, colon or comma.  Must be 
-# run after the subsection_regex, because a lot of subsections end in 'and', 'or' etc
-# captures the subheading in item 1
-# Notes regex looks for lines starting with 'Note:' or 'Example:' - captures that word in item 1 and the
-# text in item 2
-# list_intro is just the first line of all lists - doesn't need its own regex
-# paragraph is the 'catch all'
 
 ####################################################################
 #   LIST REGEX                                                     #
