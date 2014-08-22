@@ -249,20 +249,68 @@ class Act < ActiveRecord::Base
 		entity.paragraphs.each { |p| process_entity(p) if p != entity}
 	end
 	
+	def identify_definition_zones
+		
+		
+		@nlp_act.sections.each do |s|
+			# if it's a SECTION or higher, and its title contains a word with stem 'definit', 'define', 'dictionary'
+			
+			# if it's a subsection or lower, and there's a nearby subheading with those terms; and/or
+			# its text says 'In this '+Part/section/subsection/etc, and then there are nearby words like 'means', 'includes'
+			
+			# tag the highest relevant parent with the definition zone tag
+			
+		end
+	end
+	
+	DEFINITIONAL_FEATURE_STEMS = ["includ", "mean", "definit"]
+	DEFINITIONAL_FEATURE_WORDS = ["see", "dictionary"]
+	
+	STRUCTURAL_FEATURE_WORDS = ["Act", "Chapter", "Chapters", "Part", "Parts", "Division", "Divisions", "Subdivision", "Subdivisions",
+		"Section", , "Sections", "Subsection", "Subsections", "Paragraph", "Paragraphs", "Subparagraph", "Subparagraphs", "Regulation",
+		"Regulations"]
+	
+	def process_definitions
+		
+		# mark all sections that seem to be definitions zones as 'section'
+		
+		identify_definition_zones
+		
+		words = @nlp_act.words
+		
+		# qualify 'mean' by excluding cases where the sense of the word is 'means' as a noun
+		
+		mp = d.phrases.find_all { |p| p.words.any?{|w| w.stem=="mean"}}
+		mp.each{ |p| p.set :meaning, true}
+		pmp = mp.find_all { |p| !p.parent.get(:meaning) }
+		pmp.each{ |p| puts p.parent.children.find{ |p| p.get(:tag)=="NP" } }  # good for noun definitions, what about verb?
+		
+		# qualify 'include' by looking at the phrase's parents, and seeing whether it's a part of a definitions list or not
+		
+		
+		# find all 'acts', 'Chapters', 'Parts', etc and italicise them
+		
+		acts = d.words.find_all { |w| w == "Act" }.find_all{ |a| a.ancestor_with_type(:section).tokens[a.ancestor_with_type(:section).tokens.index(a)+1].type==:number}
+		
+		
+		
+	end
+	
 	def parse
 		
 		@nlp_act = document Rails.root+"legislation/"+"test.txt"
 		@nlp_act.chunk(:legislation)
-		#@nlp_act.apply(:segment, :tokenize)
-		#f.apply(:segment, :tokenize, :category)
+		@nlp_act.apply(:segment, :tokenize, :stem, :parse)
 		
 		@current_id = 1
 		@open_containers = []
 		@all_containers = []
 		
+		process_definitions
+		
 		@nlp_act.sections.each { |section| process_entity(section) }
 		# save containers to database
-		result = Container.import @all_containers, :validate=>true
+		#result = Container.import @all_containers, :validate=>true
 		
 	end
 	
@@ -357,9 +405,6 @@ end
 		# find if there's an open definitions list
 		# if there is, record the scope
 		
-		# every time there is a term being defined, start a definition object
-		# 
-		
 		# look for inline tags like definitions, act references
 		DEFINITIONS_REGEXES.each do | hash|
 			matches = hash[:regex].match line
@@ -393,41 +438,8 @@ end
 	def self.html_tags(container)
 		return HTML_TAGS[container.container_type]
 	end
-	
 
 	
-	def remove_containers_lower_than(type)
-		if type.is_a? Integer
-			while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) >= type
-				@open_containers.pop
-			end
-		else
-			if type == SUBHEADING
-				while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) > SECTION
-					@open_containers.pop
-				end
-			elsif type == NOTES or type == NORMAL# come back to
-				while @open_containers.size > 0 and CONTAINER_LEVELS.index(@open_containers.last.container_type) > SECTION
-					@open_containers.pop
-				end
-			else
-				raise "strange type of container type: "+type.inspect
-			end
-		end
-	end
-	
-
-####################################################################
-#   SINGLE LINE REGEXES                                            #
-####################################################################
-
-HTML_TAGS = {
-	CONTAINER_LEVELS[SECTION]    => ['<div class="Section">', '</div>'],
-	SUBHEADING => ['<p class="Subheading">','</p>'],
-	NOTES  => ['<p class="Note">','</p>'],
-	NORMAL  => ['<p>','</p>'],
-	TITLE  => ['<h2>','</h2>']
-}
 
 ####################################################################
 #   LIST REGEX                                                     #
