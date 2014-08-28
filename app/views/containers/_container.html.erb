@@ -16,7 +16,7 @@
 					<% if debug %>
 						[<%= container.id %>], [<%= container.parent_id %>] 
 					<% end %>
-					<%= container.strip_number %>
+					<%= raw container.strip_number %>
 				<<%= same_line_tag[1] %>>
 			</td>
 		</tr>
@@ -26,7 +26,7 @@
 		<% if debug %>
 			[<%= container.id %>], [<%= container.parent_id %>] 
 		<% end %>
-		<%= container.content %>
+		<%= raw container.content %>
 	<<%= same_line_tag[1] %>>
 <% end %>
 

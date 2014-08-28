@@ -90,7 +90,18 @@ SINGLE_LINE_REGEXES = {
 # list_intro is just the first line of all lists - doesn't need its own regex
 # paragraph is the 'catch all'
 
+####################################################################
+#   DEFINITIONS AND CROSS REFERENCES                               #
+####################################################################
 
+DEFINITIONAL_FEATURE_STEMS = ["includ", "mean", "definit", "see"]
+
+STRUCTURAL_FEATURE_WORDS = ["act", "chapter", "chapters", "part", "parts", "division", "divisions", "subdivision", "subdivisions",
+	"section", "sections", "subsection", "subsections", "paragraph", "paragraphs", "subparagraph", "subparagraphs", "regulation",
+	"regulations"]
+	
+SCOPE_REGEX =    /[Ii]n( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
+PURPOSES_REGEX = /[Ff]or the purposes of (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
 
 ####################################################################
 #   MODEL                                                          #
@@ -106,7 +117,7 @@ class Act < ActiveRecord::Base
 	validates :year, presence: true, numericality: {only_integer: true, greater_than: 1900, less_than_or_equal_to: Time.now.year}
 	validates :number, presence: true, numericality: {only_integer: true, greater_than: 0}
 	
-	attr_accessor :nlp_act, :all_containers
+	attr_accessor :nlp_act, :all_containers, :mp, :ip, :sp
 	
 	def create_container(depth, content, number, special_type)
 
@@ -248,59 +259,176 @@ class Act < ActiveRecord::Base
 		# recursively call this again for each child paragraph
 		entity.paragraphs.each { |p| process_entity(p) if p != entity}
 	end
-	
+
+	def definition_section_heading?(words)
+		if words.size > 3
+			return false
+		end
+		return words.any?  { |w| w.stem.downcase == "definit" or w.to_s.downcase == "dictionary" }
+	end
+
 	def identify_definition_zones
 		
-		
-		@nlp_act.sections.each do |s|
+		previous_section = nil
+		count = 0
+		@nlp_act.sections.each do |section|
+			
 			# if it's a SECTION or higher, and its title contains a word with stem 'definit', 'define', 'dictionary'
-			
-			# if it's a subsection or lower, and there's a nearby subheading with those terms; and/or
-			# its text says 'In this '+Part/section/subsection/etc, and then there are nearby words like 'means', 'includes'
-			
-			# tag the highest relevant parent with the definition zone tag
-			
+			if section.get(:depth) <= SECTION
+				if definition_section_heading?(section.title.words)
+					section.set :definition_zone, true
+				end
+			else
+				# if its text says 'In this '+Part/section/subsection/etc, and then there are nearby words like 'means', 'includes'
+				match = SCOPE_REGEX.match section.title.to_s
+				match_purposes = PURPOSES_REGEX.match section.title.to_s
+				if match and STRUCTURAL_FEATURE_WORDS.include? match[2].downcase
+					if section.paragraphs.size > 0 
+						(section.paragraphs+section.title).each do |p|
+							if p.words.any? { |w| DEFINITIONAL_FEATURE_STEMS.include?(w.stem.downcase) }
+								section.set :definition_zone, true
+								break
+							end
+						end
+					else
+						# consider adding in code to look at next sections
+						# would need to make sure next sections are actually children of current section
+					end
+				elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[1].downcase
+					if section.paragraphs.size > 0 
+						(section.paragraphs+section.title).each do |p|
+							if p.words.any? { |w| DEFINITIONAL_FEATURE_STEMS.include?(w.stem.downcase) }
+								section.set :definition_zone, true
+								break
+							end
+						end
+					else
+						# consider adding in code to look at next sections
+						# would need to make sure next sections are actually children of current section
+					end
+				# if the heading or title of this section is dictionary or definit*
+				elsif definition_section_heading?(section.title.words)
+					section.set :definition_zone, true
+				# if more elegant way of detecting subheadings found, this needs changing too
+				# if it's a subsection or lower, and the previous subheading is dictionary or definit*
+				elsif section.get(:depth) > SECTION and previous_section
+					if previous_section.paragraphs.last and definition_section_heading?(previous_section.paragraphs.last.words)
+						section.set :definition_zone, true
+					elsif previous_section.get(:depth) > SECTION and previous_section.get(:definition_zone)
+						section.set :definition_zone, true
+					end
+				end
+			end
+			previous_section = section
+			count += 1
+		end
+	end
+		
+	def entity_includes_stem_or_word?(e, s, stem=true)
+		if stem
+			e.words.any? { |w| w.stem.downcase==s }
+		else
+			e.words.any?{ |w| w.to_s.downcase == s }
 		end
 	end
 	
-	DEFINITIONAL_FEATURE_STEMS = ["includ", "mean", "definit"]
-	DEFINITIONAL_FEATURE_WORDS = ["see", "dictionary"]
+	def highest_phrases_with_word_or_stem(phrases, pattern, stem=true)
+		result = phrases.find_all do |p| 
+			if !entity_includes_stem_or_word?(p, pattern, stem) or
+				(p.parent.type == :phrase and entity_includes_stem_or_word?(p.parent, pattern, stem))
+				next false
+			end
+			next true
+		end
+		return result
+	end
 	
-	STRUCTURAL_FEATURE_WORDS = ["Act", "Chapter", "Chapters", "Part", "Parts", "Division", "Divisions", "Subdivision", "Subdivisions",
-		"Section", , "Sections", "Subsection", "Subsections", "Paragraph", "Paragraphs", "Subparagraph", "Subparagraphs", "Regulation",
-		"Regulations"]
+	def wrap_defined_terms(definition_phrases)
+		definition_phrases.each do |p| 
+			index = p.position-1
+			siblings=p.parent.children
+			while index > 0 and siblings[index].type != :phrase
+				index-=1
+			end
+			subject_words = siblings[index].words
+			subject_words.first.value = "<span class=defined_term>"+subject_words.first.value
+			subject_words.last.value  = subject_words.last.value+"</span>"
+			puts siblings[index].to_s+" || "+p.to_s
+		end
+	end
 	
 	def process_definitions
 		
-		# mark all sections that seem to be definitions zones as 'section'
+		puts "process_definitions called"
+		definition_zones = @nlp_act.entities_with_feature(:definition_zone, true)
 		
-		identify_definition_zones
+		definition_zones.each do |zone|
+			puts "parsing "+zone.inspect
+			zone.apply(:parse)
+		end
 		
-		words = @nlp_act.words
+		phrases = []
+		definition_zones.each do |def_zone|
+			phrases+=def_zone.phrases
+		end
+		puts "phrases found"
+
+		puts "phrases including 'mean'"
+		@mp = highest_phrases_with_word_or_stem(phrases, "mean", true)
 		
-		# qualify 'mean' by excluding cases where the sense of the word is 'means' as a noun
+		# exclude where 'means' is used as a noun
+		@mp.delete_if do |p|
+			means = p.words.find{ |w| w.to_s.downcase=="means"}
+			if means 
+				means.category
+				next means.get(:category) == "noun"
+			end
+		end
+		wrap_defined_terms(@mp)
 		
-		mp = d.phrases.find_all { |p| p.words.any?{|w| w.stem=="mean"}}
-		mp.each{ |p| p.set :meaning, true}
-		pmp = mp.find_all { |p| !p.parent.get(:meaning) }
-		pmp.each{ |p| puts p.parent.children.find{ |p| p.get(:tag)=="NP" } }  # good for noun definitions, what about verb?
+		@ip = highest_phrases_with_word_or_stem(phrases, "includ", true)
+		if @ip and @mp # might need to be more sophisticated - check not just phrase overlap but sentence/paragraph
+			@ip -= @mp
+		end
+		wrap_defined_terms(@ip)
 		
-		# qualify 'include' by looking at the phrase's parents, and seeing whether it's a part of a definitions list or not
-		
+		@sp = highest_phrases_with_word_or_stem(phrases, "see", false)
+		# exclude 'Note: see'
+		@sp.delete_if do |p|
+			para = p.ancestor_with_type(:zone)
+			index = para.words.index { |w| w.to_s.downcase == "see" }
+			if !index or index==0 or para.words[index-1].to_s.downcase == 'note'
+				next true
+			end
+			next false
+		end
+		if @sp # might need to be more sophisticated - check not just phrase overlap but sentence/paragraph
+			@sp -= @ip
+			@sp -= @mp
+		end
+		wrap_defined_terms(@sp)
 		
 		# find all 'acts', 'Chapters', 'Parts', etc and italicise them
 		
-		acts = d.words.find_all { |w| w == "Act" }.find_all{ |a| a.ancestor_with_type(:section).tokens[a.ancestor_with_type(:section).tokens.index(a)+1].type==:number}
-		
-		
-		
+		#acts = d.words.find_all { |w| w == "Act" }.find_all{ |a| a.ancestor_with_type(:section).tokens[a.ancestor_with_type(:section).tokens.index(a)+1].type==:number}
+
 	end
 	
 	def parse
 		
 		@nlp_act = document Rails.root+"legislation/"+"test.txt"
 		@nlp_act.chunk(:legislation)
-		@nlp_act.apply(:segment, :tokenize, :stem, :parse)
+		puts "chunked"
+		@nlp_act.apply(:segment)
+		puts "segmented"
+		@nlp_act.apply(:tokenize)
+		puts "tokenized"
+		@nlp_act.apply(:stem)
+		puts "stemmed"
+		
+		# mark all sections that seem to be definitions zones as 'definition_zone's
+		identify_definition_zones
+		puts "definition zones identified"
 		
 		@current_id = 1
 		@open_containers = []
@@ -310,7 +438,7 @@ class Act < ActiveRecord::Base
 		
 		@nlp_act.sections.each { |section| process_entity(section) }
 		# save containers to database
-		#result = Container.import @all_containers, :validate=>true
+		result = Container.import @all_containers, :validate=>true
 		
 	end
 	
