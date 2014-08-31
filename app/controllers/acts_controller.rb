@@ -1,6 +1,6 @@
 class ActsController < ApplicationController
 	
-	before_action :admin_user,     only: [:new, :edit, :update, :create, :destroy]
+	before_action :admin_user,     only: [:new, :edit, :update, :create, :destroy, :parse, :reset_parsing]
 	
   def new
 		@act = Act.new
@@ -44,13 +44,13 @@ class ActsController < ApplicationController
     redirect_to acts_url
   end
 	
-	def parse  ## make this admin only
+	def parse  
 		@act=Act.find(params[:id])
 		@act.parse
 		redirect_to @act
 	end
 	
-	def reset_parsing ## make admin only
+	def reset_parsing
 		@act=Act.find(params[:id])
 		@act.containers.destroy_all
 		redirect_to @act

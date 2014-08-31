@@ -1,2 +1,11 @@
-<h1>Sections#new</h1>
-<p>Find me in app/views/sections/new.html.erb</p>
+<% provide(:title, 'Create new container') %>
+<h1>Create new container</h1>
+
+<div class="row">
+  <div class="span6 offset1">
+    <%= form_for(@container) do |f| %>
+			<%= render 'form', f: f, errors: @container.errors %>
+      <%= f.submit "Create new container", class: "btn btn-large btn-primary" %>
+    <% end %>
+  </div>
+</div>

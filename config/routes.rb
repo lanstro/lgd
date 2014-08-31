@@ -13,7 +13,7 @@ Lgd::Application.routes.draw do
 			get 'reset_parsing'
 		end
 	end
-	resources :sections
+	resources :containers
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

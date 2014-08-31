@@ -17,6 +17,9 @@
 						[<%= container.id %>], [<%= container.parent_id %>] 
 					<% end %>
 					<%= raw container.strip_number %>
+					<% if current_user.admin? %>
+						<%= link_to "edit", edit_container_path(container) %>
+					<% end %>
 				<<%= same_line_tag[1] %>>
 			</td>
 		</tr>
@@ -27,6 +30,9 @@
 			[<%= container.id %>], [<%= container.parent_id %>] 
 		<% end %>
 		<%= raw container.content %>
+		<% if current_user.admin? %>
+			<%= link_to "edit", edit_container_path(container) %>
+		<% end %>
 	<<%= same_line_tag[1] %>>
 <% end %>
 

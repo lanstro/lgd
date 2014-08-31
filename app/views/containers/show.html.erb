@@ -1,2 +1,8 @@
-<h1>Sections#show</h1>
-<p>Find me in app/views/sections/show.html.erb</p>
+<% provide(:title, @container.citation+", "+@act.title) %>
+
+
+
+<div class = "legislation" >
+	<h1><%= @container.citation+", "+@act.title %></h1>
+	<%= render @container, :all_containers => @act.containers %>
+</div>
