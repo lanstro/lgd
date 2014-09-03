@@ -17,7 +17,7 @@
 						[<%= container.id %>], [<%= container.parent_id %>] 
 					<% end %>
 					<%= raw container.strip_number %>
-					<% if current_user.admin? %>
+					<% if current_user and current_user.admin? %>
 						<%= link_to "edit", edit_container_path(container) %>
 					<% end %>
 				<<%= same_line_tag[1] %>>
@@ -30,17 +30,17 @@
 			[<%= container.id %>], [<%= container.parent_id %>] 
 		<% end %>
 		<%= raw container.content %>
-		<% if current_user.admin? %>
+		<% if current_user and current_user.admin? %>
 			<%= link_to "edit", edit_container_path(container) %>
 		<% end %>
 	<<%= same_line_tag[1] %>>
 <% end %>
 
-<% children = all_containers.find_all{ |c| c.parent_id == container.id } # NEED TO WRITE MUCH BETTER ALGORITHM %>
+<% children = all_containers.find_all{ |k, v| v.parent_id == container.id } # TODO MEDIUM: NEED TO WRITE MUCH BETTER ALGORITHM %>
 
 <% if children.size > 0 %>
-	<% children.each do |child| %>
-		<%= render child, :all_containers => all_containers %>
+	<% children.each do |k, v| %>
+		<%= render v, :all_containers => all_containers %>
 	<% end %>
 <% end %>
 

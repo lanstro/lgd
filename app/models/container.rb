@@ -1,6 +1,3 @@
-CONTAINER_LEVELS = [nil, "Chapter", "Part", "Division", "Subdivision", "Section", "Subsection", "Paragraph",
-											"Subparagraph", "Sub-subparagraph", "Text", "Text"]
-
 ####################################################################
 #   DEFINITIONS AND CROSS REFERENCES                               #
 ####################################################################
@@ -10,9 +7,10 @@ DEFINITIONAL_FEATURE_STEMS = ["includ", "mean", "definit", "see"]
 STRUCTURAL_FEATURE_WORDS = ["act", "chapter", "chapters", "part", "parts", "division", "divisions", "subdivision", "subdivisions",
 	"section", "sections", "subsection", "subsections", "paragraph", "paragraphs", "subparagraph", "subparagraphs", "regulation",
 	"regulations"]
-
+	
 # structural line types
 
+ACT              = 0
 CHAPTER          = 1
 PART             = 2
 DIVISION         = 3
@@ -24,10 +22,30 @@ SUBPARAGRAPH     = 8
 SUBSUBPARAGRAPH  = 9
 PARA_LIST_HEAD   = 10
 TEXT             = 11
+
+
+STRUCTURAL_ALIASES = {
+
+	ACT =>             ["Act"],
+	CHAPTER =>         ["Chapter", "Ch", "Chap"],
+	PART =>            ["Part", "Pt"],
+	DIVISION =>        ["Division", "Div"],
+	SUBDIVISION =>     ["Subdivision", "Sub division", "Subdiv", "Sub", "Sdiv"],
+	SECTION =>         ["Section", "s", "Sec"],
+	SUBSECTION =>      ["Subsection", "Sub", "Ss", "s", "para"],
+	PARAGRAPH =>       ["Paragraph", "p", "para", "s"],
+	SUBPARAGRAPH =>    ["Subparagraph", "Sub-paragraph", "subpara", "sub-para", "subp", "s", "para"],
+	SUBSUBPARAGRAPH => ["Subsubparagraph", "Sub-subparagraph", "subpara", "subp", "subparagraph", "s", "para"],
+	PARA_LIST_HEAD =>  ["Text"],
+	TEXT =>            ["Text"]
+
+}
 	
 SCOPE_REGEX =    /[Ii]n( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
 PURPOSES_REGEX = /[Ff]or the purposes of (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
 
+# TODO HIGH: search for containers by human name (eg s23(1)(b), with space, or with 'section')
+# 
 											
 class Container < ActiveRecord::Base
 		
@@ -55,7 +73,40 @@ class Container < ActiveRecord::Base
 	end
 	
 	def type
-		return CONTAINER_LEVELS[self.depth].downcase
+		return STRUCTURAL_ALIASES[self.depth][0].downcase
+	end
+	
+	def names
+		if self.depth >= PARA_LIST_HEAD
+			return nil
+		end
+		result = []
+		num = self.depth < SECTION ? self.number : subsection_citation
+		num_start = /\d/.match(num[0]) ? true : false
+		
+		STRUCTURAL_ALIASES[self.depth].each do |name|
+			result.push name+" "+num
+			if num_start
+				result.push name+num
+			end
+		end
+		result.push num
+		return result
+	end
+	
+	def subsection_citation(current=self)
+		if current.depth >= PARA_LIST_HEAD or current.depth < SECTION
+			return nil
+		end
+		result = ""
+		while current.depth > SECTION
+			if current.number
+				result = "("+current.number+")" + result
+			end
+			current=current.parent
+		end
+		result = current.number+result
+		return result
 	end
 	
 	def citation
@@ -82,15 +133,7 @@ class Container < ActiveRecord::Base
 			else
 				current=self
 			end
-			start+= current.type+" "
-			while current.depth > SECTION
-				if current.number
-					result = "("+current.number+")" + result
-				end
-				current=current.parent
-			end
-			result = current.number+result
-			return start+result
+			return start+=current.type+" "+subsection_citation(current)
 		end
 	end
 	

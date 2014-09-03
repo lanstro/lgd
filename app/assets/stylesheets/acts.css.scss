@@ -5,6 +5,7 @@
 .legislation {
 	font-family: "Times New Roman", Times, serif;
 	font-size: 14px;
+	position:relative;
 	.reference {
 		font-style:italic;
 	}
@@ -40,6 +41,9 @@
 		line-height: 120%;
 		margin-bottom:2%;
 		margin-top:2%;
+	}
+	p.act_no {
+		margin-left: 0%;
 	}
 	p.Note, p.Example {
 		font-size: 0.9em;
@@ -91,3 +95,49 @@
 	}
 }
 
+#sidebar h2 {
+	margin-top:0px;
+}
+
+#sidebar .nav{
+	overflow-y: auto;
+	height: 100%;
+}
+
+#sidebar .nav_heading {
+	color: grey;
+	font-size: 0.9em;
+}
+
+#sidebar .nav_section {
+	color: grey;
+	font-size: 0.8em;
+}
+
+#sidebar .nav_section{
+	display:none
+}
+
+#sidebar .active>ul>.nav_section {
+	display: block;           
+}
+
+.active>.nav_heading {
+	font-weight:bold;
+}
+
+.nav_section.active {
+	color: #563d7c; 
+	border-left: 2px solid black; 
+	padding-left: 1%;
+}
+
+.fixed {
+	position:fixed;
+}
+
+@media screen and (max-width: 600px){
+	#sidebar {
+			display:none
+	}
+}

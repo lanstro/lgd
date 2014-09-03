@@ -278,11 +278,14 @@ class Act < ActiveRecord::Base
 	
 	def self.html_same_line_tags(container)
 		if container.depth <= SECTION
+			#return ['h2 id='+container.id.to_s, '/h2']
 			return ['h2', '/h2']
 		else
 			if container.special_paragraph
+				#return ['p class='+container.special_paragraph+' id='+container.id.to_s, '/p']
 				return ['p class='+container.special_paragraph, '/p']
 			else
+				#return ['p id='+container.id.to_s, '/p']
 				return ['p', '/p']
 			end
 		end
@@ -290,7 +293,7 @@ class Act < ActiveRecord::Base
 	
 	def self.html_children_wrapper_tags(container)
 		if container.depth < PARA_LIST_HEAD
-			return ['div class=depth'+container.depth.to_s, '/div']
+			return ['div class=depth'+container.depth.to_s+' id='+container.id.to_s, '/div']
 		end
 	end
 
@@ -331,6 +334,17 @@ class Act < ActiveRecord::Base
 			end
 		end
 		return result
+	end
+	
+	# TODO MEDIUM - much better iterator required here
+	
+	def iterate_containers
+		current_index = 1
+		size = @all_containers.size
+		while current_index <= size
+			yield @all_containers[current_index]
+			current_index+=1
+		end
 	end
 	
 end
