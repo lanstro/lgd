@@ -11,6 +11,7 @@ Lgd::Application.routes.draw do
 		member do
 			get 'parse'
 			get 'reset_parsing'
+			get 'containers_json'
 		end
 	end
 	resources :containers

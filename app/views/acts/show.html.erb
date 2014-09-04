@@ -7,28 +7,13 @@
 		<%= link_to "Parse Act", parse_act_path, class: "btn btn-large btn-primary" %>
 		<%= link_to "Reset Parse", reset_parsing_act_path, class: "btn btn-large btn-primary" %>
 		</br>
-		<div class = "legislation">	
-			<%= image_tag "misc/coat_of_arms.png", alt: "Australian coat of arms", class: "coat_of_arms" %>
-			<h1><%= @act.title %></h1>
-			<p class="act_no">No. <%= @act.number %>, <%= @act.year %> as amended</p>
-			<h2><%= @act.subtitle %></h2>
-			
-			<% # TODO MEDIUM:  NEED TO WRITE MUCH BETTER ALGORITHM %>
-			
-			<% all_containers = @act.all_containers %>				
-			<% root_containers = all_containers.find_all { |k, v| v.parent_id == nil } %>
-				
-			<% root_containers.each do |k, v| %>
-				<%= render v, :all_containers => all_containers %>
-			<% end %>
-		</div>
+		<div class = "legislation" data-legislation_id=<%= @act.id %>>	
 
-		<br />
-		<br />
-		<br />
-		<br />
+			<div id="backbone">
+			</div>
+		
 		<p>Adapted from Comlaw under its <a href="http://www.comlaw.gov.au/content/copyright">Creative Commons Licence</a>.  Original files <a href="http://www.comlaw.gov.au/Details/C2014C00077">here</a>.</p>
-
+		</div>
 	</div>
 	<nav class="col-md-2 hidden-print" id="sidebar">
 		<ul class="fixed nav nav-stacked col-md-2">
@@ -38,6 +23,8 @@
 				<input type="submit" value="Go!">
 			</form>
 			<h2>Contents</h2>
+			<% all_containers = @act.all_containers %>	
+			<% root_containers = all_containers.find_all { |k, v| v.parent_id == nil } %>
 			<% root_containers.each do |k, v| %>
 				<li>
 					<a href="#<%= v.id %>" class="nav_heading"><%= v.content %></a>
@@ -51,21 +38,3 @@
 		</ul>
 	</nav>
 </div>
-
-<script>
-	<% all_names=[]  %>
-	<% all_containers.each do |k, v| %>
-		<% names = v.names %>
-		<% all_names.push names if names %>
-	<% end %>
-	$all_names=<%= raw all_names.flatten %>
-	$("#quicknav").autocomplete({ 
-		autoFocus: true,
-		delay:     100,
-		minLength: 2,
-		source:    function(request, response) {
-			var results = $.ui.autocomplete.filter($all_names, request.term);
-			response(results.slice(0, 10));
-    }
-	})
-</script>

@@ -56,6 +56,13 @@ class ActsController < ApplicationController
 		redirect_to @act
 	end
 	
+	def containers_json
+		@act = Act.find_by_id(params[:id])
+		respond_to do |format|
+			format.json { render :json => @act.all_containers.values}
+		end
+	end
+	
 	def user_params
 		params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated)
 	end

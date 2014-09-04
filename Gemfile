@@ -3,12 +3,20 @@ ruby '1.9.3'
 
 gem 'rails', '4.0.5'
 gem 'sprockets'
+gem 'sass-rails', '4.0.3'
+gem 'uglifier', '2.1.1'
+gem 'jquery-rails'
+gem 'jquery-ui-rails'
+gem 'turbolinks', '1.1.1'
+gem 'jbuilder', '1.0.2'
+gem "activerecord-import", ">= 0.4.0"
+gem 'ejs'
+
 gem 'thin'
 gem 'bcrypt-ruby', '3.1.2'
 gem 'faker', '1.1.2'
 gem 'will_paginate'
-#gem 'bootstrap-will_paginate'
-gem 'jquery-ui-rails'
+gem 'rails-backbone', github: 'codebrew/backbone-rails', branch: 'master'
 
 group :development, :test do
   gem 'sqlite3', '1.3.8'
@@ -28,13 +36,6 @@ group :test do
   gem 'cucumber-rails', '1.4.0', :require => false
   gem 'database_cleaner', github: 'bmabey/database_cleaner'
 end
-
-gem 'sass-rails', '4.0.3'
-gem 'uglifier', '2.1.1'
-gem 'jquery-rails'
-gem 'turbolinks', '1.1.1'
-gem 'jbuilder', '1.0.2'
-gem "activerecord-import", ">= 0.4.0"
 
 group :doc do
   gem 'sdoc', '0.3.20', require: false

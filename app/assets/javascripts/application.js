@@ -15,5 +15,10 @@
 //= require jquery_ujs
 //= require turbolinks
 //= require bootstrap.min
+//= require underscore
+//= require backbone
+//= require_tree ./backbone/templates/
+// this is to make sure that the models fire before collection
+//= require_tree ./backbone/models/
 //= require_tree .
 
