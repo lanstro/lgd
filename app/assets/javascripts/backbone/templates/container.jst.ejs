@@ -1,5 +1,31 @@
-<% if(depth < 5){ %>
+<! --
+	TODO LOW: need to work out way to use defined constants in here more elegantly
+-->
+
+<% if(depth <= 5){ %>
 	<h2><%= content %></h2>
 <% } else { %>
-	<p><%= content %></p>
+	<% if(depth <= 9){ %>
+		<table><tbody>
+			<tr>
+				<td class="table_numeral"><p>(<%= number %>)</p></td>
+				<td class="table_content"><p> <%= strip_number %></p></td>
+			</tr>
+		</tbody></table>
+	<% } else { %>
+		<% if(special_paragraph){ %>
+			<p class=<%= special_paragraph %>><%= content %></p>
+		<% } else { %>
+			<p><%= content %></p>
+		<% } %>
+	<% } %>
 <% } %>
+
+<!--
+	
+	def self.html_children_wrapper_tags(container)
+		if container.depth < PARA_LIST_HEAD
+			return ['div class=depth'+container.depth.to_s+' id='+container.id.to_s, '/div']
+		end
+	end
+-->

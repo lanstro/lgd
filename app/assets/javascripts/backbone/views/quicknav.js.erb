@@ -1,0 +1,64 @@
+var Lgd = Lgd || {};
+
+Lgd.QuickNav = Backbone.View.extend({
+	el: '#contents',
+	
+	// should be initialized by the Lgd.view render()
+	initialize: function(){
+		this.collection= Lgd.act;
+		
+		_.bindAll(this, 'render');
+
+		this.listenTo(this.collection, "sync", this.render);
+		
+	},
+	
+	renderItem: function(child, leaf){
+		var text="<a href='#"+child.get('id')+"'>"+child.get('content')+"</a>";
+		if(leaf)
+			this.content += "<li class='nav_section'>"+text+"</li>";
+		else
+			this.content += text;
+	},
+	
+	renderChildren: function(child){
+		
+		if(child == "root"){
+			_.each(this.collection.findChildren(child), function(c){
+				this.renderChildren(c);
+			}, this);
+			return;
+		}
+		else {
+			if(child.get('depth') > <%= SECTION %>)
+				return;
+			if(child.get('depth') == <%= SECTION %>){
+				this.renderItem(child, true);
+				return;
+			}
+		}
+
+		this.content+="<li class='nav_heading'>";
+		this.renderItem(child, false);
+		this.content += "<ul>";
+		console.log("appending opening ul");
+
+		_.each(this.collection.findChildren(child), function(c){
+			this.renderChildren(c);
+		}, this);
+		
+		console.log("appending closing ul");
+		this.content += "</li></ul>";
+	},
+	
+	render: function(){
+		this.$el.empty();
+		this.content="";
+		this.renderChildren("root");
+		console.log(this.content);
+		this.$el.append(this.content);
+	}
+	
+	
+	
+})

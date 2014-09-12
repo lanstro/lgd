@@ -2,54 +2,16 @@
 #   DEFINITIONS AND CROSS REFERENCES                               #
 ####################################################################
 
-DEFINITIONAL_FEATURE_STEMS = ["includ", "mean", "definit", "see"]
-
-STRUCTURAL_FEATURE_WORDS = ["act", "chapter", "chapters", "part", "parts", "division", "divisions", "subdivision", "subdivisions",
-	"section", "sections", "subsection", "subsections", "paragraph", "paragraphs", "subparagraph", "subparagraphs", "regulation",
-	"regulations"]
-	
-# structural line types
-
-ACT              = 0
-CHAPTER          = 1
-PART             = 2
-DIVISION         = 3
-SUBDIVISION      = 4
-SECTION          = 5
-SUBSECTION       = 6
-PARAGRAPH        = 7
-SUBPARAGRAPH     = 8
-SUBSUBPARAGRAPH  = 9
-PARA_LIST_HEAD   = 10
-TEXT             = 11
-
-
-STRUCTURAL_ALIASES = {
-
-	ACT =>             ["Act"],
-	CHAPTER =>         ["Chapter", "Ch", "Chap"],
-	PART =>            ["Part", "Pt"],
-	DIVISION =>        ["Division", "Div"],
-	SUBDIVISION =>     ["Subdivision", "Sub division", "Subdiv", "Sub", "Sdiv"],
-	SECTION =>         ["Section", "s", "Sec"],
-	SUBSECTION =>      ["Subsection", "Sub", "Ss", "s", "para"],
-	PARAGRAPH =>       ["Paragraph", "p", "para", "s"],
-	SUBPARAGRAPH =>    ["Subparagraph", "Sub-paragraph", "subpara", "sub-para", "subp", "s", "para"],
-	SUBSUBPARAGRAPH => ["Subsubparagraph", "Sub-subparagraph", "subpara", "subp", "subparagraph", "s", "para"],
-	PARA_LIST_HEAD =>  ["Text"],
-	TEXT =>            ["Text"]
-
-}
-	
 SCOPE_REGEX =    /[Ii]n( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
 PURPOSES_REGEX = /[Ff]or the purposes of (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
 
-# TODO HIGH: search for containers by human name (eg s23(1)(b), with space, or with 'section')
-# 
-											
+DEFINITION_WRAPPERS = ["<span class=defined_term>", "</span>"]
+REFERENCE_WRAPPERS  = ["<span class=reference>",    "</span>"]
+
 class Container < ActiveRecord::Base
 		
 	belongs_to :act
+	acts_as_list scope: :act
 	belongs_to :parent,   class_name: "Container"
 	has_many   :children, class_name: "Container", foreign_key: "parent_id"
 	has_and_belongs_to_many :collections
@@ -60,16 +22,32 @@ class Container < ActiveRecord::Base
 	validates :depth, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true
 	
-	default_scope -> {order('id ASC')} # need to refine - maybe use acts_as_list (if it can handle multiple scopes), ranked-model (if it's been fixed) or implement own linked list structure
+	default_scope -> {order('position ASC')} 
 	
-	attr_accessor :nlp_handle, :children_ids, :mp, :ip, :sp
+	if Rails.env.development?
+		attr_accessor :nlp_handle, :mp, :ip, :sp
+	end
 		
-	def siblings
-		if self.new_record?
-			return self.parent_id ? @parsing_act.all_containers[self.parent_id].children_ids : nil
-		else
-			return self.parent ? parent.children : nil
+	def previous_sibling(previous_containers)
+		parent = self.new_record? ? self.parent_id : self.parent
+		if !parent
+			return nil
 		end
+		siblings=[]
+		if self.new_record? and previous_containers.size>0
+			previous_containers.each do |k, v|
+				if v.parent_id == parent
+					siblings.push v
+				end
+			end
+		else
+			siblings = parent.children
+		end
+		index = siblings.index self
+		if siblings.size <= 1 or index==0
+			return nil
+		end
+		return siblings[index-1]
 	end
 	
 	def type
@@ -144,15 +122,6 @@ class Container < ActiveRecord::Base
 			return content[0..45]+"... "+content[-15..-1]
 		end
 	end
-	
-	def strip_number
-		if self.depth >= SUBSECTION and self.depth <= SUBSUBPARAGRAPH
-			close_brace_index = self.content.index(')')
-			return self.content[close_brace_index+1..-1].strip
-		else
-			return self.content
-		end
-	end
 
 	def definition_section_heading?
 		if !self.new_record? and !@nlp_handle
@@ -165,7 +134,7 @@ class Container < ActiveRecord::Base
 		return words.any?  { |w| w.stem.downcase == "definit" or w.to_s.downcase == "dictionary" }
 	end
 	
-	def is_definition_zone?
+	def is_definition_zone?(previous_containers)
 		if self.depth <= SECTION
 			return definition_section_heading?
 		end
@@ -181,21 +150,14 @@ class Container < ActiveRecord::Base
 			# if more elegant way of detecting subheadings found, this needs changing too
 			# if it's a subsection or lower, and the previous subheading is dictionary or definit*
 		end
-		parent = self.new_record? ? @parsing_act.all_containers[self.parent_id] : self.parent
-		if parent and parent.is_definition_zone?
+		parent = self.new_record? ? previous_containers[self.parent_id] : self.parent
+		if parent and parent.is_definition_zone?(previous_containers)
 			return true
 		end
 		# treat same as previous sibling
-		s = siblings
-		if s 
-			index = s.index( self.new_record? ? self.id : self)
-		end
-		if s and s.size > 1 and index > 0
-			if self.new_record?
-				return @parsing_act.all_containers[s[index-1]].is_definition_zone?
-			else
-				return s[index-1].is_definition_zone?
-			end
+		previous = previous_sibling(previous_containers)
+		if previous
+			return previous.is_definition_zone?(previous_containers)
 		end
 		return false
 	end
@@ -205,15 +167,13 @@ class Container < ActiveRecord::Base
 		@nlp_handle.apply(:segment, :tokenize, :stem)
 	end
 		
-	def parse(parsing_act=act)
+	def parse(previous_containers = {})
 		initialize_nlp
-		@parsing_act = parsing_act
-		if is_definition_zone?
+		if is_definition_zone?(previous_containers)
 			process_definitions
 		end
 		process_references
 	end
-		
 	
 	def entity_includes_stem_or_word?(e, s, stem=true, downcase=true)
 		if stem
@@ -255,7 +215,7 @@ class Container < ActiveRecord::Base
 				index-=1
 			end
 			subject_words = siblings[index].words
-			wrap_words_with_tags(subject_words, "<span class=defined_term>", "</span>")
+			wrap_words_with_tags(subject_words, DEFINITION_WRAPPERS[0], DEFINITION_WRAPPERS[1])
 		end
 	end
 	
@@ -334,18 +294,22 @@ class Container < ActiveRecord::Base
 					current-=1
 				end
 				next if !first_word
-				wrap_words_with_tags([first_word, last_word], "<span class=reference>", "</span>")
+				wrap_words_with_tags([first_word, last_word], REFERENCE_WRAPPERS[0], REFERENCE_WRAPPERS[1])
 				self.content = @nlp_handle.to_s
 			end
-			
-			
 		end
-		
-		
-		
 		# TODO MEDIUM: find all 'acts', 'Chapters', 'Parts', etc and metadata them
-		
-		
 	end
+	
+=begin
+	def strip_number
+		if self.depth >= SUBSECTION and self.depth <= SUBSUBPARAGRAPH
+			close_brace_index = self.content.index(')')
+			return self.content[close_brace_index+1..-1].strip
+		else
+			return self.content
+		end
+	end
+=end
 	
 end

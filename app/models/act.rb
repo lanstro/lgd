@@ -4,25 +4,9 @@
 
 include Treat::Core::DSL
 
-DEBUG = true
-
 ####################################################################
 #   STRUCTURAL REGEXES                                             #
 ####################################################################
-
-# structural line types
-
-CHAPTER          = 1
-PART             = 2
-DIVISION         = 3
-SUBDIVISION      = 4
-SECTION          = 5
-SUBSECTION       = 6
-PARAGRAPH        = 7
-SUBPARAGRAPH     = 8
-SUBSUBPARAGRAPH  = 9
-PARA_LIST_HEAD   = 10
-TEXT             = 11
 
 # structural REGEX explanations
 # Chapter titles: in a string like 'Chapter xxx-yyyy' or 'Chapter xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
@@ -87,7 +71,7 @@ SINGLE_LINE_REGEXES = {
 # list_intro is just the first line of all lists - doesn't need its own regex
 # paragraph is the 'catch all'
 
-DATABASE_IMPORT_COLUMNS = [:id, :act_id, :parent_id, :depth, :content, :number, :special_paragraph]
+#DATABASE_IMPORT_COLUMNS = [:id, :act_id, :parent_id, :depth, :content, :number, :special_paragraph, :position]
 
 ####################################################################
 #   MODEL                                                          #
@@ -96,45 +80,43 @@ DATABASE_IMPORT_COLUMNS = [:id, :act_id, :parent_id, :depth, :content, :number, 
 class Act < ActiveRecord::Base
 	has_many :containers, dependent: :destroy
 	has_and_belongs_to_many :collections
-	validates :title, presence: true
+	
+	validates :title,        presence: true
 	validates :last_updated, presence: true
-	validates :jurisdiction, presence: true, inclusion: { in: ["Commonwealth", "Victoria", "New South Wales", "Queensland", "Northern Territory", "Australian Capital Territory", "Western Australia", "South Australia", "Tasmania"] }
-	validates :act_type, presence: true, inclusion: { in: %w{Act Regulations} }
-	validates :year, presence: true, numericality: {only_integer: true, greater_than: 1900, less_than_or_equal_to: Time.now.year}
-	validates :number, presence: true, numericality: {only_integer: true, greater_than: 0}
+	validates :jurisdiction, presence: true, inclusion:    { in: ["Commonwealth", "Victoria", "New South Wales", "Queensland", "Northern Territory", "Australian Capital Territory", "Western Australia", "South Australia", "Tasmania"] }
+	validates :act_type, 		 presence: true, inclusion:    { in: %w{Act Regulations} }
+	validates :year,     		 presence: true, numericality: {only_integer: true, greater_than: 1900, less_than_or_equal_to: Time.now.year}
+	validates :number,   		 presence: true, numericality: {only_integer: true, greater_than: 0}
 	
-	attr_accessor :nlp_act, :all_containers
-	
-	after_initialize do
-		@all_containers = { }
-		if !self.new_record?                                     # TODO LOW: is having every container in memory going to be viable?
-			self.containers.each do |container|
-				@all_containers[container.id] = container
-			end
-		end
+	if Rails.env.development?
+		attr_accessor :nlp_act, :all_containers
 	end
-	
+
 	def create_container(depth, content, number, special_type)
 
 		result                     = Container.new
-		result.id                  = @current_id               # massive potential for database concurrency issues - TODO HIGH
+		result.id                  = @current_id
 		result.act_id              = self.id
+		result.position            = @current_position
+		
 		if @open_containers.last
 			result.parent_id         = @open_containers.last.id
-			@open_containers.last.children_ids.push @current_id
 		end
-		@current_id+=1
+		
+		@current_id               += 1
+		@current_position         += 1
 		
 		result.depth               = depth
 		result.content             = content
 		result.number              = number
 		result.special_paragraph   = special_type
 		@all_containers[result.id] = result
+		
 		if depth < TEXT
 			@open_containers.push  result
 		end
-		result.children_ids        = []
-		result.parse(self)
+		
+		result.parse(@all_containers)
 		return result
 	end
 	
@@ -262,39 +244,23 @@ class Act < ActiveRecord::Base
 	
 	def parse
 		
-		@nlp_act = document Rails.root+"legislation/"+"test.txt"
+		@nlp_act = document Rails.root+"legislation/"+"CA.txt"
 		@nlp_act.chunk(:legislation)
 		puts "chunked"
 		
-		@current_id = 1
-		@open_containers = []
-		
+		@current_id       = Container.maximum('id') ? Container.maximum('id')+1 : 1
+		@current_id      += 1
+		@current_position = 1
+		@open_containers  = []
+		@all_containers   = {}
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
 		# save containers to database
-		result = Container.import DATABASE_IMPORT_COLUMNS, @all_containers.values, :validate=>true
+		# TODO LOW - maybe check again Container.maximum('id') and if it's different to what @current_id
+		# started off as, change all the ids and parent_ids and try again?
 		
-	end
-	
-	def self.html_same_line_tags(container)
-		if container.depth <= SECTION
-			#return ['h2 id='+container.id.to_s, '/h2']
-			return ['h2', '/h2']
-		else
-			if container.special_paragraph
-				#return ['p class='+container.special_paragraph+' id='+container.id.to_s, '/p']
-				return ['p class='+container.special_paragraph, '/p']
-			else
-				#return ['p id='+container.id.to_s, '/p']
-				return ['p', '/p']
-			end
-		end
-	end
-	
-	def self.html_children_wrapper_tags(container)
-		if container.depth < PARA_LIST_HEAD
-			return ['div class=depth'+container.depth.to_s+' id='+container.id.to_s, '/div']
-		end
+		Container.import @all_containers.values, :validate=>true
+		
 	end
 
 	def self.from_string_lgd(string)
@@ -336,41 +302,4 @@ class Act < ActiveRecord::Base
 		return result
 	end
 	
-	# TODO MEDIUM - much better iterator required here
-	
-	def iterate_containers
-		current_index = 1
-		size = @all_containers.size
-		while current_index <= size
-			yield @all_containers[current_index]
-			current_index+=1
-		end
-	end
-	
-end
-
-# TODO LOW - find better spot for this - somewhere in intializers presumably?
-
-Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}| 
-	entity.check_hasnt_children
-	zones = entity.to_s.split("\n")
-	current = entity
-	zones.each do |zone|
-		zone.strip!
-		next if zone == ''
-		c =Act.from_string_lgd(zone)
-		if c.type == :title
-			if current.type == :section
-				current = current.parent
-				current = entity << Treat::Entities::Section.new
-			else
-				current = entity << Treat::Entities::Section.new
-			end
-			current.set :depth,  (c.get :depth)
-			current.set :number, (c.get :number)
-			c.set :depth, nil
-			c.set :number, nil
-		end
-		current << c
-	end
 end

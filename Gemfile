@@ -17,6 +17,7 @@ gem 'bcrypt-ruby', '3.1.2'
 gem 'faker', '1.1.2'
 gem 'will_paginate'
 gem 'rails-backbone', github: 'codebrew/backbone-rails', branch: 'master'
+gem 'acts_as_list'
 
 group :development, :test do
   gem 'sqlite3', '1.3.8'

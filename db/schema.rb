@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140820022940) do
+ActiveRecord::Schema.define(version: 20140904002926) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 20140820022940) do
     t.text     "content"
     t.integer  "depth"
     t.string   "special_paragraph"
+    t.integer  "position"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"

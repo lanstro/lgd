@@ -21,12 +21,12 @@ class ContainersController < ApplicationController
 	end
 
   def edit
-		@container = Container.find(params[:id])
+		@container = Container.find_by(id: params[:id])
 		@act = @container.act
   end
 	
 	def update
-		@container = Container.find(params[:id])
+		@container = Container.find_by(id: params[:id])
 		if @container.update_attributes(user_params)
 			flash[:success] = "Section updated"
 			redirect_to @container
@@ -36,12 +36,12 @@ class ContainersController < ApplicationController
 	end
 
   def show
-		@container = Container.find(params[:id])
+		@container = Container.find_by(id: params[:id])
 		@act = @container.act
   end
 
   def destroy
-		Container.find(params[:id]).destroy
+		Container.find_by(id: params[:id]).destroy
     flash[:success] = "Container deleted."
     redirect_to containers_url
   end

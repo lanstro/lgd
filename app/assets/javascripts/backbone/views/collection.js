@@ -4,16 +4,16 @@ Lgd.ActView = Backbone.View.extend({
 	el: '#backbone',
 
 	initialize: function(){
-		this.collection= new Lgd.Collection();
+		this.collection= Lgd.act;
 		this.collection.fetch();
-		this.subViews = [];
 		
 		_.bindAll(this, 'render');
 
 		this.render();
 		
-		// bind render to sync
-		// bind creation of index to sync
+		this.listenTo(this.collection, "sync", this.render);
+
+		// bind creation of index for autocomplete to sync
 	},
 	render: function(){
 		this.$el.empty();

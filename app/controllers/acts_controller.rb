@@ -17,7 +17,7 @@ class ActsController < ApplicationController
 	end
 	
   def edit
-		@act = Act.find(params[:id])
+		@act = Act.find_by(id: params[:id])
   end
 	
 	def index
@@ -25,7 +25,7 @@ class ActsController < ApplicationController
 	end
 	
 	def update
-		@act = Act.find(params[:id])
+		@act = Act.find_by(id: params[:id])
     if @act.update_attributes(user_params)
 			flash[:success] = "Act updated"
       redirect_to @act
@@ -35,23 +35,23 @@ class ActsController < ApplicationController
 	end
 
   def show
-		@act = Act.find(params[:id])
+		@act = Act.find_by(id: params[:id])
   end
 
   def destroy
-		Act.find(params[:id]).destroy
+		Act.find_by(id: params[:id]).destroy
     flash[:success] = "Act deleted."
     redirect_to acts_url
   end
 	
 	def parse  
-		@act=Act.find(params[:id])
+		@act = Act.find_by(id: params[:id])
 		@act.parse
 		redirect_to @act
 	end
 	
 	def reset_parsing
-		@act=Act.find(params[:id])
+		@act = Act.find_by(id: params[:id])
 		@act.containers.destroy_all
 		redirect_to @act
 	end
@@ -59,7 +59,7 @@ class ActsController < ApplicationController
 	def containers_json
 		@act = Act.find_by_id(params[:id])
 		respond_to do |format|
-			format.json { render :json => @act.all_containers.values}
+			format.json { render :json => @act.containers}
 		end
 	end
 	

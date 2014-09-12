@@ -23,18 +23,8 @@
 				<input type="submit" value="Go!">
 			</form>
 			<h2>Contents</h2>
-			<% all_containers = @act.all_containers %>	
-			<% root_containers = all_containers.find_all { |k, v| v.parent_id == nil } %>
-			<% root_containers.each do |k, v| %>
-				<li>
-					<a href="#<%= v.id %>" class="nav_heading"><%= v.content %></a>
-					<ul>
-						<% v.children.each do |child| %>
-							<li class="nav_section"><a href="#<%= child.id %>"><%= child.content %></a></li>
-						<% end %>
-					</ul>
-				</li>
-			<% end %>
+			<div id="contents">
+			</div>
 		</ul>
 	</nav>
 </div>

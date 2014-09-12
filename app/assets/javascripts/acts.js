@@ -4,7 +4,11 @@
 $(document).ready(function(){
 	$('body').scrollspy({ target: '#sidebar' });
 	Lgd = Lgd || {};
+	Lgd.act  = new Lgd.Collection();
 	Lgd.view = new Lgd.ActView();
+	Lgd.quickNav = new Lgd.QuickNav();
+	
+	// this goes into the sync function for the collection
 	$("#quicknav").autocomplete({ 
 		autoFocus: true,
 		delay:     100,

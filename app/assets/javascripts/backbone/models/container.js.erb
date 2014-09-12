@@ -1,0 +1,64 @@
+var Lgd = Lgd || {};
+
+Lgd.Container = Backbone.Model.extend ({
+	
+	strip_number: function(){
+		var content = this.get('content');
+		if(this.get('depth') >= <%= SUBSECTION %> && this.get('depth') <= <%= SUBSUBPARAGRAPH %>){
+			var close_brace_index = content.indexOf(')');
+			return $.trim(content.slice(close_brace_index+1));
+		}
+		else {
+			return content;
+		}
+	},
+	
+	initialize: function(){
+		this.set('strip_number', this.strip_number());
+	},
+	
+	aliases: function(){
+		if(this.get('depth') >= <%= PARA_LIST_HEAD %>){
+			return null;
+		}
+		var result = [];
+		var num = null;
+		if(this.get('depth') <= <%= SECTION %>){
+			num = this.get('number');
+		}
+		else {
+			num = this.subsectionCitation();
+		}
+		var num_start = /\d/.test(num[0]);
+		_.each(<%= STRUCTURAL_ALIASES.values %>[this.get('depth')], function(name){
+			result.push(name+" "+num);
+			if(num_start){
+				result.push(name+num);
+			}
+		});
+		result.push(num);
+		return result;
+	},
+	
+	parent: function(){
+		return Lgd.view.collection.findParent(this);
+	},
+	
+	subsectionCitation: function(current){
+		if(typeof(current)==='undefined') current=this;
+		if(current.get('depth') >= <%= PARA_LIST_HEAD %> || 
+		   current.get('depth') <  <%= SECTION %> ){
+			return null;
+		}
+		result="";
+		while(current.get('depth') > <%= SECTION %>) {
+			if(current.get('number') != null) {
+				result = "("+current.get('number')+")"+result;
+			}
+			current=current.parent();
+		}
+		result=current.get('number')+result;
+		return result;
+	}
+	
+});
