@@ -153,8 +153,9 @@ class Act < ActiveRecord::Base
 				if DEBUG
 					puts "new section is superior to the open list - close the open list as well as the previous structural element"
 					puts "open containers is:"
+					@open_containers.each { |c| puts c.inspect }
 				end
-				@open_containers.each { |c| puts c.inspect }
+				
 				@open_containers=@open_containers[0..head_list-2]
 				return false
 			end
@@ -244,7 +245,7 @@ class Act < ActiveRecord::Base
 	
 	def parse
 		
-		@nlp_act = document Rails.root+"legislation/"+"CA.txt"
+		@nlp_act = document Rails.root+'legislation/'+'test.txt'
 		@nlp_act.chunk(:legislation)
 		puts "chunked"
 		
@@ -285,7 +286,7 @@ class Act < ActiveRecord::Base
 			result.set :number, matches[1]
 			return result
 		else
-			puts "no structural regex" if DEBUG
+			puts "no structural regex " if DEBUG
 			result = Treat::Entities::Paragraph.new(string)
 			special_type = nil
 			SINGLE_LINE_REGEXES.each do |array|

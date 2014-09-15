@@ -24,6 +24,8 @@ class Container < ActiveRecord::Base
 	
 	default_scope -> {order('position ASC')} 
 	
+	@is_definition_zone = nil
+	
 	if Rails.env.development?
 		attr_accessor :nlp_handle, :mp, :ip, :sp
 	end
@@ -135,31 +137,35 @@ class Container < ActiveRecord::Base
 	end
 	
 	def is_definition_zone?(previous_containers)
+		if @is_definition_zone != nil
+			puts "using memoized value"
+			return @is_definition_zone 
+		end
 		if self.depth <= SECTION
 			return definition_section_heading?
 		end
 		match = SCOPE_REGEX.match section.title.to_s
 		match_purposes = PURPOSES_REGEX.match section.title.to_s
 		if match and STRUCTURAL_FEATURE_WORDS.include? match[2].downcase
-			return true
+			return @is_definition_zone = true
 		elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[1].downcase
-			return true
+			return @is_definition_zone = true
 			# if the heading or title of this section is dictionary or definit*
 		elsif definition_section_heading?
-			return true
+			return @is_definition_zone = true
 			# if more elegant way of detecting subheadings found, this needs changing too
 			# if it's a subsection or lower, and the previous subheading is dictionary or definit*
 		end
 		parent = self.new_record? ? previous_containers[self.parent_id] : self.parent
 		if parent and parent.is_definition_zone?(previous_containers)
-			return true
+			return @is_definition_zone = true
 		end
 		# treat same as previous sibling
 		previous = previous_sibling(previous_containers)
 		if previous
-			return previous.is_definition_zone?(previous_containers)
+			return @is_definition_zone = previous.is_definition_zone?(previous_containers)
 		end
-		return false
+		return @is_definition_zone = false
 	end
 	
 	def initialize_nlp
@@ -168,11 +174,15 @@ class Container < ActiveRecord::Base
 	end
 		
 	def parse(previous_containers = {})
+		start_time=Time.now
 		initialize_nlp
 		if is_definition_zone?(previous_containers)
 			process_definitions
 		end
+		puts "parsing definitions took "+(Time.now-start_time).to_s if DEBUG
+		start_time = Time.now
 		process_references
+		puts "parsing references took "+(Time.now-start_time).to_s if DEBUG
 	end
 	
 	def entity_includes_stem_or_word?(e, s, stem=true, downcase=true)
@@ -209,12 +219,22 @@ class Container < ActiveRecord::Base
 	
 	def wrap_defined_terms(definition_phrases)
 		definition_phrases.each do |p| 
+			puts "wrapping "+p.to_s+" " if DEBUG
 			index = p.position-1
+			puts "index is "+index.to_s
+			if index==-1
+				puts "cannot wrap definition phrase as it is the first phrase" if DEBUG
+				return
+			end
 			siblings=p.parent.children
 			while index > 0 and siblings[index].type != :phrase
 				index-=1
 			end
+			puts "siblings[index] is "+siblings[index].to_s+" and index is "+index.to_s+" and inspect is "+siblings[index].inspect+" and its children are "+siblings[index].children.inspect if DEBUG
 			subject_words = siblings[index].words
+			if subject_words.size == 0
+				subject_words=siblings[index].children
+			end
 			wrap_words_with_tags(subject_words, DEFINITION_WRAPPERS[0], DEFINITION_WRAPPERS[1])
 		end
 	end
@@ -225,7 +245,6 @@ class Container < ActiveRecord::Base
 
 		puts "phrases found" if DEBUG
 		
-		puts "phrases including 'mean'" if DEBUG
 		@mp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "mean", true)
 		
 		# exclude where 'means' is used as a noun
@@ -236,6 +255,7 @@ class Container < ActiveRecord::Base
 				next means.get(:category) == "noun"
 			end
 		end
+		puts "wrapping @mp phrases "+@mp.inspect+" " if DEBUG
 		wrap_defined_terms(@mp)
 		
 		if @mp.size == 0
@@ -243,6 +263,7 @@ class Container < ActiveRecord::Base
 			if @ip and @mp 
 				@ip -= @mp
 			end
+			puts "wrapping @ip phrases "+@ip.inspect+" " if DEBUG
 			wrap_defined_terms(@ip)
 			
 			if @ip.size == 0
@@ -256,6 +277,7 @@ class Container < ActiveRecord::Base
 					end
 					next false
 				end
+				puts "wrapping @sp phrases "+@sp.inspect+" " if DEBUG
 				wrap_defined_terms(@sp)
 			end
 		end
