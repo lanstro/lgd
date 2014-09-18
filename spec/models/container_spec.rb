@@ -8,7 +8,7 @@ describe Container do
 	before { @container = act.containers.build( number: "2A",
 																					last_updated: "2013-07-12",
 																					updating_acts: "1 2 4",
-																					container_type: "Regulation",
+																					depth: 5,
 																					regulations: 6) }
 	
 	subject { @container }
@@ -20,8 +20,8 @@ describe Container do
 	it { should respond_to(:updating_acts) }
 	it { should respond_to(:content) }
 	it { should respond_to(:regulations) }
-	it { should respond_to(:container_type) }
-	
+	it { should respond_to(:depth) }
+	it { should respond_to(:comments) }
 	
 	its(:act) {should eq act}
 	
@@ -40,18 +40,18 @@ describe Container do
 		it {should_not be_valid}
 	end
 	
-	describe "when no container_type" do
-		before {@container.container_type=" "}
+	describe "when no depth" do
+		before {@container.depth=nil}
 		it {should_not be_valid}
 	end
 	
-	describe "when container_type is invalid" do
-		before {@container.container_type="lawl"}
+	describe "when depth is invalid" do
+		before {@container.depth="lawl"}
 		it {should_not be_valid}
 	end
 	
-	describe "when container_type is valid" do
-		before {@container.container_type="Regulation"}
+	describe "when depth is valid" do
+		before {@container.depth=7}
 		it {should be_valid}
 	end
 end

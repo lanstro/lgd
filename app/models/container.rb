@@ -14,13 +14,14 @@ class Container < ActiveRecord::Base
 	acts_as_list scope: :act
 	belongs_to :parent,   class_name: "Container"
 	has_many   :children, class_name: "Container", foreign_key: "parent_id"
-	has_and_belongs_to_many :collections
+	has_many :comments, dependent: :destroy
+	
 	
 	validates_presence_of :act
 	validates :act_id, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :number, presence: true, unless: lambda { self.depth == TEXT or self.depth == PARA_LIST_HEAD}
 	validates :depth, presence: true, numericality: {only_integer: true, greater_than: 0}
-	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true
+	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - needs to be a formal relation
 	
 	default_scope -> {order('position ASC')} 
 	

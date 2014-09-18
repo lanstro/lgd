@@ -22,6 +22,7 @@ describe Act do
 	it { should respond_to(:year) }
 	it { should respond_to(:number) }
 	it { should respond_to(:containers) }
+	it { should respond_to(:comments) }
 	
 	describe "when title is not present" do
 		before { @act.title = " " }

@@ -79,7 +79,7 @@ SINGLE_LINE_REGEXES = {
 
 class Act < ActiveRecord::Base
 	has_many :containers, dependent: :destroy
-	has_and_belongs_to_many :collections
+	has_many :comments, :through => :containers
 	
 	validates :title,        presence: true
 	validates :last_updated, presence: true

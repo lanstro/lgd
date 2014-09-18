@@ -33,11 +33,12 @@ FactoryGirl.define do
 			to = Time.now
 			Time.at(from+rand*(to - from))
 		end
-		container_type ["Regulation", "Section", "Schedule"].sample
+		depth 5
 	end
 	
-	factory :collection do
-		containers {[FactoryGirl.create(:container)]}
+	factory :comment do
+		user
+		sequence(:content) {|n| "phwar dummy comment #{n}" }
 	end
 	
 end

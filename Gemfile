@@ -17,6 +17,7 @@ gem 'bcrypt-ruby', '3.1.2'
 gem 'faker', '1.1.2'
 gem 'will_paginate'
 gem 'rails-backbone', github: 'codebrew/backbone-rails', branch: 'master'
+gem 'closure_tree'
 gem 'acts_as_list'
 
 group :development, :test do
@@ -34,7 +35,7 @@ group :test do
   gem 'selenium-webdriver', '2.35.1'
   gem 'capybara', '2.1.0'
   gem 'factory_girl_rails', '4.2.0'
-  gem 'cucumber-rails', '1.4.0', :require => false
+	gem 'cucumber-rails', '1.4.0', :require => false
   gem 'database_cleaner', github: 'bmabey/database_cleaner'
 end
 

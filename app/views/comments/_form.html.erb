@@ -1,0 +1,10 @@
+<%= form_for(@comment) do |f| %>
+  <%= render 'shared/error_messages', errors: @comment.errors %>
+	<%= f.hidden_field :parent_id %>
+  <div class="form-group">
+    <%= f.label :content %>
+    <%= f.text_area :content, class: 'form-control', required: true %>
+  </div>
+ 
+  <%= f.submit class: 'btn btn-primary' %>
+<% end %>

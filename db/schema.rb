@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140904002926) do
+ActiveRecord::Schema.define(version: 20140916061450) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -29,24 +29,26 @@ ActiveRecord::Schema.define(version: 20140904002926) do
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
 
-  create_table "acts_collections", id: false, force: true do |t|
-    t.integer "collection_id"
-    t.integer "act_id"
+  create_table "comment_hierarchies", id: false, force: true do |t|
+    t.integer "ancestor_id",   null: false
+    t.integer "descendant_id", null: false
+    t.integer "generations",   null: false
   end
 
-  add_index "acts_collections", ["act_id", "collection_id"], name: "index_acts_collections_on_act_id_and_collection_id"
+  add_index "comment_hierarchies", ["ancestor_id", "descendant_id", "generations"], name: "comment_anc_desc_udx", unique: true
+  add_index "comment_hierarchies", ["descendant_id"], name: "comment_desc_idx"
 
-  create_table "collections", force: true do |t|
+  create_table "comments", force: true do |t|
+    t.string   "content"
+    t.integer  "user_id"
+    t.integer  "container_id"
+    t.integer  "parent_id"
+    t.integer  "reputation"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "collections_containers", id: false, force: true do |t|
-    t.integer "collection_id"
-    t.integer "container_id"
-  end
-
-  add_index "collections_containers", ["container_id", "collection_id"], name: "index_collections_containers_on_container_id_and_collection_id"
+  add_index "comments", ["container_id"], name: "index_comments_on_container_id"
 
   create_table "containers", force: true do |t|
     t.text     "number"
@@ -65,16 +67,6 @@ ActiveRecord::Schema.define(version: 20140904002926) do
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
   add_index "containers", ["parent_id"], name: "index_containers_on_parent_id"
-
-  create_table "metadata", force: true do |t|
-    t.string   "meta_type"
-    t.string   "external_link"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "scope_id"
-    t.integer  "metadata_content_id"
-    t.string   "anchor_text"
-  end
 
   create_table "users", force: true do |t|
     t.string   "name"

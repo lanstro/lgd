@@ -3,20 +3,20 @@
 -->
 
 <% if(depth <= 5){ %>
-	<h2><%= content %></h2>
+	<h2><%= content %><a href="#">edit</a></h2>
 <% } else { %>
 	<% if(depth <= 9){ %>
 		<table><tbody>
 			<tr>
 				<td class="table_numeral"><p>(<%= number %>)</p></td>
-				<td class="table_content"><p> <%= strip_number %></p></td>
+				<td class="table_content"><p> <%= strip_number %><a href="#">edit</a></p></td>
 			</tr>
 		</tbody></table>
 	<% } else { %>
 		<% if(special_paragraph){ %>
-			<p class=<%= special_paragraph %>><%= content %></p>
+			<p class=<%= special_paragraph %>><%= content %><a href="#">edit</a></p>
 		<% } else { %>
-			<p><%= content %></p>
+			<p><%= content %><a href="#">edit</a></p>
 		<% } %>
 	<% } %>
 <% } %>

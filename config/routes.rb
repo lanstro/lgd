@@ -15,6 +15,8 @@ Lgd::Application.routes.draw do
 		end
 	end
 	resources :containers
+	resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
+	get '/comments/new/(:parent_id)', to: 'comments#new', as: :new_comment
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
