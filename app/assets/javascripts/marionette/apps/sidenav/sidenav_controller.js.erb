@@ -1,0 +1,9 @@
+Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
+	SideNav.Controller = {
+		initialize: function(){
+			var sidenavView  = new SideNav.View();
+			
+			Lgd.SideNavRegion.show(sidenavView);
+		}
+	};
+});

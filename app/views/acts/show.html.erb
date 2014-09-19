@@ -3,17 +3,16 @@
 <% provide(:title, @act.title) %>
 
 <div class="row">
-	<div class="col-md-10" role="main">
+	<div class="col-md-2" id="modes">
+	</div>
+	<div class="col-md-8" role="main">
+
 		<%= link_to "Parse Act", parse_act_path, class: "btn btn-large btn-primary" %>
 		<%= link_to "Reset Parse", reset_parsing_act_path, class: "btn btn-large btn-primary" %>
-		</br>
-		<div class = "legislation" data-legislation_id=<%= @act.id %>>	
 
-			<div id="backbone">
-			</div>
-		
-		<p>Adapted from Comlaw under its <a href="http://www.comlaw.gov.au/content/copyright">Creative Commons Licence</a>.  Original files <a href="http://www.comlaw.gov.au/Details/C2014C00077">here</a>.</p>
+		<div class = "legislation" id = "act_main" data-legislation_id=<%= @act.id %>>
 		</div>
+	
 	</div>
 	<nav class="col-md-2 hidden-print" id="sidebar">
 		<ul class="fixed nav nav-stacked col-md-2">
@@ -23,7 +22,7 @@
 				<input type="submit" value="Go!">
 			</form>
 			<h2>Contents</h2>
-			<div id="contents">
+			<div id="sidenav">
 			</div>
 		</ul>
 	</nav>

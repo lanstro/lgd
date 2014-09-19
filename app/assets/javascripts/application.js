@@ -17,8 +17,8 @@
 //= require bootstrap.min
 //= require underscore
 //= require backbone
-//= require_tree ./backbone/templates/
-// this is to make sure that the models fire before collection
-//= require_tree ./backbone/models/
+//= require backbone.marionette
+//= require_tree ./marionette/templates
+//= require ./marionette/initializer
 //= require_tree .
 

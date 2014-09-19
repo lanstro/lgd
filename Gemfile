@@ -16,7 +16,6 @@ gem 'thin'
 gem 'bcrypt-ruby', '3.1.2'
 gem 'faker', '1.1.2'
 gem 'will_paginate'
-gem 'rails-backbone', github: 'codebrew/backbone-rails', branch: 'master'
 gem 'closure_tree'
 gem 'acts_as_list'
 

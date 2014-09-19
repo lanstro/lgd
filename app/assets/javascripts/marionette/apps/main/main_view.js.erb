@@ -1,0 +1,42 @@
+Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
+	
+	Mainview.Container = Marionette.ItemView.extend ({
+		tagName: 'div',
+		template: JST['marionette/templates/container'],
+		id: function(){
+			return this.model.get('id');
+			return 1;
+		},
+		
+		className: function(){
+			return this.model.get('depth');
+			return "phwar"
+		},
+		
+		/*render: function(){
+			this.$el.html(this.template(this.model.toJSON()));
+			return this;
+		},
+		*/
+	});
+	
+	Mainview.Act = Marionette.CompositeView.extend({
+
+		template: JST['marionette/templates/test'],
+		childView: Mainview.Container,
+
+/*		render: function(){
+			console.log("rendering");
+			this.$el.empty();
+			this.collection.each(function(container){
+				
+				var containerView = new Mainview.Container({ model: container });
+				this.$el.append(containerView.el);
+			}, this);
+		}
+*/
+	})
+	
+});
+
+
