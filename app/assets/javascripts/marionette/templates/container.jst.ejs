@@ -2,10 +2,10 @@
 	TODO LOW: need to work out way to use defined constants in here more elegantly
 -->
 
-<% if(depth <= 5){ %>
+<% if(level <= 5){ %>
 	<h2><%= content %><a href="#">edit</a></h2>
 <% } else { %>
-	<% if(depth <= 9){ %>
+	<% if(level <= 9){ %>
 		<table><tbody>
 			<tr>
 				<td class="table_numeral"><p>(<%= number %>)</p></td>
@@ -24,8 +24,8 @@
 <!--
 	
 	def self.html_children_wrapper_tags(container)
-		if container.depth < PARA_LIST_HEAD
-			return ['div class=depth'+container.depth.to_s+' id='+container.id.to_s, '/div']
+		if container.level < PARA_LIST_HEAD
+			return ['div class=level'+container.level.to_s+' id='+container.id.to_s, '/div']
 		end
 	end
 -->

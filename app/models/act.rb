@@ -71,8 +71,6 @@ SINGLE_LINE_REGEXES = {
 # list_intro is just the first line of all lists - doesn't need its own regex
 # paragraph is the 'catch all'
 
-#DATABASE_IMPORT_COLUMNS = [:id, :act_id, :parent_id, :depth, :content, :number, :special_paragraph, :position]
-
 ####################################################################
 #   MODEL                                                          #
 ####################################################################
@@ -89,42 +87,40 @@ class Act < ActiveRecord::Base
 	validates :number,   		 presence: true, numericality: {only_integer: true, greater_than: 0}
 	
 	if Rails.env.development?
-		attr_accessor :nlp_act, :all_containers
+		attr_accessor :nlp_act, :open_containers
 	end
 
-	def create_container(depth, content, number, special_type)
+	def create_container(level, content, number, special_type)
 
 		result                     = Container.new
-		result.id                  = @current_id
 		result.act_id              = self.id
-		result.position            = @current_position
 		
 		if @open_containers.last
 			result.parent_id         = @open_containers.last.id
 		end
 		
-		@current_id               += 1
-		@current_position         += 1
-		
-		result.depth               = depth
+		result.level               = level
 		result.content             = content
 		result.number              = number
 		result.special_paragraph   = special_type
-		@all_containers[result.id] = result
 		
-		if depth < TEXT
+		if level < TEXT
 			@open_containers.push  result
 		end
 		
-		result.parse(@all_containers)
+		result.parse
+		puts "about to save "+result.inspect if DEBUG
+		if !result.save
+			raise result.errors.messages.inspect
+		end
 		return result
 	end
 	
 	def last_paragraph_list_head
-		return @open_containers.rindex { |container| container.depth == PARA_LIST_HEAD }
+		return @open_containers.rindex { |container| container.level == PARA_LIST_HEAD }
 	end
 	
-	def close_previous_container?(depth)
+	def close_previous_container?(level)
 		if @open_containers.size < 1
 			return false
 		end
@@ -134,22 +130,22 @@ class Act < ActiveRecord::Base
 		if !list
 			# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
 			if DEBUG
-				puts "no list open; current depth is "+depth.to_s
-				puts "last open container is depth "+@open_containers.last.depth.to_s+" with content "+@open_containers.last.content
+				puts "no list open; current level is "+level.to_s
+				puts "last open container is level "+@open_containers.last.level.to_s+" with content "+@open_containers.last.content
 			end
-			return @open_containers.last.depth >= depth
+			return @open_containers.last.level >= level
 		end
 		
 		# there's a list - what do we do?
 		
-		if depth < PARA_LIST_HEAD
+		if level < PARA_LIST_HEAD
 			# it's a structural element
 			# if the new item's superior or equal to the list head's parent, close off the list 
 			head_list = list
-			while @open_containers[head_list-1].depth >= PARA_LIST_HEAD
+			while @open_containers[head_list-1].level >= PARA_LIST_HEAD
 				head_list-=1
 			end
-			if depth <= @open_containers[head_list-1].depth
+			if level <= @open_containers[head_list-1].level
 				if DEBUG
 					puts "new section is superior to the open list - close the open list as well as the previous structural element"
 					puts "open containers is:"
@@ -163,7 +159,7 @@ class Act < ActiveRecord::Base
 			if DEBUG
 				puts "need to decide whether this structural entity is direct child of the list or not" 
 			end
-			if @open_containers.last.depth == PARA_LIST_HEAD
+			if @open_containers.last.level == PARA_LIST_HEAD
 				if DEBUG 
 					puts "it's a direct child of the list - returning false"
 				end
@@ -172,24 +168,24 @@ class Act < ActiveRecord::Base
 			else
 				# fall back to normal rules - see if last item is deeper than new item or not
 				if DEBUG
-					puts "fallback - depth is "+depth.to_s+" and about to return "+ (@open_containers.last.depth >= depth).to_s
+					puts "fallback - level is "+level.to_s+" and about to return "+ (@open_containers.last.level >= level).to_s
 					puts "last container is "+@open_containers.last.inspect
 				end
-				return @open_containers.last.depth >= depth
+				return @open_containers.last.level >= level
 			end
-		elsif depth == PARA_LIST_HEAD
+		elsif level == PARA_LIST_HEAD
 			# if it's a paragraph list heading, assume that it should just open a new list
 			# MAY NEED TO REVISIT
 			return false
 		else
 			# it's a normal paragraph
-			if @open_containers.last.depth == PARA_LIST_HEAD
+			if @open_containers.last.level == PARA_LIST_HEAD
 				# this is the first child of a list head - it must belong to the list head
 				return false
 			else
 				# the paragraph heading has other children
-				list_depth = @open_containers[list+1].depth
-				if list_depth == TEXT
+				list_level = @open_containers[list+1].level
+				if list_level == TEXT
 					# shouldn't be possible - plain paragraphs shouldn't make it onto the @open_containers list
 					raise 'a plain paragraph appeared in the open_containers queue'
 				else
@@ -197,7 +193,7 @@ class Act < ActiveRecord::Base
 					# should the paragraph be a child of the last structural element, or should it close off the list?
 					
 					# if the list header's parent is also a list, then assume we have to break off the inner list
-					if @open_containers[list-1].depth == PARA_LIST_HEAD
+					if @open_containers[list-1].level == PARA_LIST_HEAD
 						@open_containers = @open_containers[0..list-1]
 						return false
 					else
@@ -210,34 +206,31 @@ class Act < ActiveRecord::Base
 	end
 	
 	def process_entity(entity)
-		depth        = nil
+		level        = nil
 		content      = nil
 		number       = nil           
 		special_type = nil
 		if entity.type == :paragraph
-			depth   = TEXT
+			level   = TEXT
 			content = entity.to_s
 			special_type = entity.get(:special_type)
 		elsif entity.type == :section
-			depth   = entity.get(:depth)
+			level   = entity.get(:level)
 			content = entity.title.to_s
 			number  = entity.get(:number)
 		else
 			raise 'unknown entity type '+entity.inspect
 		end
-		if !depth
-			raise 'section without depth assigned '+entity.inspect
-		end
 		
 		# close off open containers that need to be closed
 		puts " " if DEBUG
 		puts "closing previous containers for "+content if DEBUG
-		while close_previous_container?(depth)
+		while close_previous_container?(level)
 			@open_containers.pop
 		end
 		
 		# create a new container for this element
-		create_container(depth, content, number, special_type)
+		create_container(level, content, number, special_type)
 		
 		# recursively call this again for each child paragraph
 		entity.paragraphs.each { |p| process_entity(p) if p != entity}
@@ -249,18 +242,9 @@ class Act < ActiveRecord::Base
 		@nlp_act.chunk(:legislation)
 		puts "chunked"
 		
-		@current_id       = Container.maximum('id') ? Container.maximum('id')+1 : 1
-		@current_id      += 1
-		@current_position = 1
 		@open_containers  = []
-		@all_containers   = {}
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
-		# save containers to database
-		# TODO LOW - maybe check again Container.maximum('id') and if it's different to what @current_id
-		# started off as, change all the ids and parent_ids and try again?
-		
-		Container.import @all_containers.values, :validate=>true
 		
 	end
 
@@ -270,11 +254,11 @@ class Act < ActiveRecord::Base
 		dot = string.count('.!?')
 		
 		matches = nil
-		depth = nil
+		level = nil
 		STRUCTURAL_REGEXES.each do |array|
 			matches = array[VALUE][REGEX].match string
 			if matches
-				depth = array[KEY]
+				level = array[KEY]
 				break
 			end
 		end
@@ -282,7 +266,7 @@ class Act < ActiveRecord::Base
 		if matches
 			puts "structural regex matched" if DEBUG
 			result = Treat::Entities::Title.new(string)
-			result.set :depth, depth
+			result.set :level, level
 			result.set :number, matches[1]
 			return result
 		else

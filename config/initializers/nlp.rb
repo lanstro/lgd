@@ -13,9 +13,9 @@ Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}|
 			else
 				current = entity << Treat::Entities::Section.new
 			end
-			current.set :depth,  (c.get :depth)
+			current.set :level,  (c.get :level)
 			current.set :number, (c.get :number)
-			c.set :depth, nil
+			c.set :level, nil
 			c.set :number, nil
 		end
 		current << c

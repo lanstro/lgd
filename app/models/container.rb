@@ -15,18 +15,12 @@ class Container < ActiveRecord::Base
 	default_scope -> {order('position ASC')} 
 	
 	belongs_to :act
-	belongs_to :parent,   class_name: "Container"
-	has_many   :children, class_name: "Container", foreign_key: "parent_id"
 	has_many :comments, dependent: :destroy
-	
 	
 	validates_presence_of :act
 	validates :act_id, presence: true, numericality: {only_integer: true, greater_than: 0}
-	validates :number, presence: true, unless: lambda { self.depth == TEXT or self.depth == PARA_LIST_HEAD}
-	validates :depth, presence: true, numericality: {only_integer: true, greater_than: 0}
+	validates :level, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - needs to be a formal relation
-	
-	
 	
 	@is_definition_zone = nil
 	
@@ -34,41 +28,19 @@ class Container < ActiveRecord::Base
 		attr_accessor :nlp_handle, :mp, :ip, :sp
 	end
 		
-	def previous_sibling(previous_containers)
-		parent = self.new_record? ? self.parent_id : self.parent
-		if !parent
-			return nil
-		end
-		siblings=[]
-		if self.new_record? and previous_containers.size>0
-			previous_containers.each do |k, v|
-				if v.parent_id == parent
-					siblings.push v
-				end
-			end
-		else
-			siblings = parent.children
-		end
-		index = siblings.index self
-		if siblings.size <= 1 or index==0
-			return nil
-		end
-		return siblings[index-1]
-	end
-	
 	def type
-		return STRUCTURAL_ALIASES[self.depth][0].downcase
+		return STRUCTURAL_ALIASES[self.level][0].downcase
 	end
 	
 	def names
-		if self.depth >= PARA_LIST_HEAD
+		if self.level >= PARA_LIST_HEAD
 			return nil
 		end
 		result = []
-		num = self.depth < SECTION ? self.number : subsection_citation
+		num = self.level < SECTION ? self.number : subsection_citation
 		num_start = /\d/.match(num[0]) ? true : false
 		
-		STRUCTURAL_ALIASES[self.depth].each do |name|
+		STRUCTURAL_ALIASES[self.level].each do |name|
 			result.push name+" "+num
 			if num_start
 				result.push name+num
@@ -79,11 +51,11 @@ class Container < ActiveRecord::Base
 	end
 	
 	def subsection_citation(current=self)
-		if current.depth >= PARA_LIST_HEAD or current.depth < SECTION
+		if current.level >= PARA_LIST_HEAD or current.level < SECTION
 			return nil
 		end
 		result = ""
-		while current.depth > SECTION
+		while current.level > SECTION
 			if current.number
 				result = "("+current.number+")" + result
 			end
@@ -95,12 +67,12 @@ class Container < ActiveRecord::Base
 	
 	def citation
 		
-		if self.depth == CHAPTER
+		if self.level == CHAPTER
 			return self.type+" "+self.number
-		elsif self.depth < SECTION
+		elsif self.level < SECTION
 			current=self
 			result=[]
-			while current and current.depth >= PART
+			while current and current.level >= PART
 				result.push self.type+" "+self.number
 				current = current.parent
 			end
@@ -108,10 +80,10 @@ class Container < ActiveRecord::Base
 		else 
 			start  = ""
 			result = ""
-			if self.depth >= PARA_LIST_HEAD
+			if self.level >= PARA_LIST_HEAD
 				start = "text in "
 				current = self.parent
-				while current.depth >= PARA_LIST_HEAD
+				while current.level >= PARA_LIST_HEAD
 					current=current.parent
 				end
 			else
@@ -130,8 +102,8 @@ class Container < ActiveRecord::Base
 	end
 
 	def definition_section_heading?
-		if !self.new_record? and !@nlp_handle
-			parse
+		if !@nlp_handle
+			initialize_nlp
 		end
 		words = @nlp_handle.words
 		if words.size > 3       # TODO LOW - make more sophisticated
@@ -140,17 +112,18 @@ class Container < ActiveRecord::Base
 		return words.any?  { |w| w.stem.downcase == "definit" or w.to_s.downcase == "dictionary" }
 	end
 	
-	def is_definition_zone?(previous_containers)
+	def is_definition_zone?
 		if @is_definition_zone != nil
 			puts "using memoized value"
 			return @is_definition_zone 
 		end
-		if self.depth <= SECTION
-			return definition_section_heading?
+		if self.level <= SECTION
+			@is_definition_zone = definition_section_heading?
+			return @is_definition_zone
 		end
-		match = SCOPE_REGEX.match section.title.to_s
+		match_scope    =    SCOPE_REGEX.match section.title.to_s
 		match_purposes = PURPOSES_REGEX.match section.title.to_s
-		if match and STRUCTURAL_FEATURE_WORDS.include? match[2].downcase
+		if match_scope and STRUCTURAL_FEATURE_WORDS.include? match_scope[2].downcase
 			return @is_definition_zone = true
 		elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[1].downcase
 			return @is_definition_zone = true
@@ -160,14 +133,13 @@ class Container < ActiveRecord::Base
 			# if more elegant way of detecting subheadings found, this needs changing too
 			# if it's a subsection or lower, and the previous subheading is dictionary or definit*
 		end
-		parent = self.new_record? ? previous_containers[self.parent_id] : self.parent
-		if parent and parent.is_definition_zone?(previous_containers)
+		if self.parent and self.parent.is_definition_zone?
 			return @is_definition_zone = true
 		end
 		# treat same as previous sibling
-		previous = previous_sibling(previous_containers)
+		previous = self.higher_item
 		if previous
-			return @is_definition_zone = previous.is_definition_zone?(previous_containers)
+			return @is_definition_zone = previous.is_definition_zone?
 		end
 		return @is_definition_zone = false
 	end
@@ -177,10 +149,10 @@ class Container < ActiveRecord::Base
 		@nlp_handle.apply(:segment, :tokenize, :stem)
 	end
 		
-	def parse(previous_containers = {})
+	def parse
 		start_time=Time.now
 		initialize_nlp
-		if is_definition_zone?(previous_containers)
+		if self.parent and self.parent.is_definition_zone?
 			process_definitions
 		end
 		puts "parsing definitions took "+(Time.now-start_time).to_s if DEBUG
@@ -246,8 +218,6 @@ class Container < ActiveRecord::Base
 	def process_definitions
 		
 		@nlp_handle.apply(:parse)
-
-		puts "phrases found" if DEBUG
 		
 		@mp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "mean", true)
 		
@@ -329,7 +299,7 @@ class Container < ActiveRecord::Base
 	
 =begin
 	def strip_number
-		if self.depth >= SUBSECTION and self.depth <= SUBSUBPARAGRAPH
+		if self.level >= SUBSECTION and self.level <= SUBSUBPARAGRAPH
 			close_brace_index = self.content.index(')')
 			return self.content[close_brace_index+1..-1].strip
 		else
@@ -338,4 +308,39 @@ class Container < ActiveRecord::Base
 	end
 =end
 	
+	def move_to_child_of(reference_instance)
+		transaction do
+			remove_from_list
+			self.update_attributes!(:parent => reference_instance)
+			add_to_list_bottom
+			save!
+		end
+	end
+	
+	def move_to_left_of(reference_instance)
+		transaction do
+			remove_from_list
+			reference_instance.reload # Things have possibly changed in this list
+			self.update_attributes!(:parent_id => reference_instance.parent_id)
+			reference_item_position = reference_instance.position
+			increment_positions_on_lower_items(reference_item_position)
+			self.update_attribute(:position, reference_item_position)
+		end
+	end
+	
+	def move_to_right_of(reference_instance)
+		transaction do
+			remove_from_list
+			reference_instance.reload # Things have possibly changed in this list
+			self.update_attributes!(:parent_id => reference_instance.parent_id)
+			if reference_instance.lower_item
+				lower_item_position = reference_instance.lower_item.position
+				increment_positions_on_lower_items(lower_item_position)
+				self.update_attribute(:position, lower_item_position)
+			else
+				add_to_list_bottom
+				save!
+			end
+		end   
+	end
 end

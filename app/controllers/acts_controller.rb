@@ -59,7 +59,7 @@ class ActsController < ApplicationController
 	def containers_json
 		@act = Act.find_by_id(params[:id])
 		respond_to do |format|
-			format.json { render :json => @act.containers}
+			format.json { render :json => @act.containers.arrange_serializable.to_json}
 		end
 	end
 	

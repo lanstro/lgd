@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140925033349) do
+ActiveRecord::Schema.define(version: 20140925052955) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -51,7 +51,7 @@ ActiveRecord::Schema.define(version: 20140925033349) do
     t.datetime "updated_at"
     t.integer  "act_id"
     t.text     "content"
-    t.integer  "depth"
+    t.integer  "level"
     t.string   "special_paragraph"
     t.integer  "position"
     t.string   "ancestry"

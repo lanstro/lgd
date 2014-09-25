@@ -33,7 +33,7 @@ FactoryGirl.define do
 			to = Time.now
 			Time.at(from+rand*(to - from))
 		end
-		depth 5
+		level 5
 	end
 	
 	factory :comment do
