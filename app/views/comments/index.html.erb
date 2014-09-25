@@ -7,5 +7,5 @@
 </p>
 
 <ul class = "comments">
-	<%= comments_tree_for @comments %>
+	<%= nested_comments @comments.arrange  %>
 </ul>

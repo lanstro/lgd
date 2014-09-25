@@ -9,9 +9,12 @@ DEFINITION_WRAPPERS = ["<span class=defined_term>", "</span>"]
 REFERENCE_WRAPPERS  = ["<span class=reference>",    "</span>"]
 
 class Container < ActiveRecord::Base
-		
+	
+	has_ancestry
+	acts_as_list scope: [:ancestry], orphan_strategy: :adopt
+	default_scope -> {order('position ASC')} 
+	
 	belongs_to :act
-	acts_as_list scope: :act
 	belongs_to :parent,   class_name: "Container"
 	has_many   :children, class_name: "Container", foreign_key: "parent_id"
 	has_many :comments, dependent: :destroy
@@ -23,7 +26,7 @@ class Container < ActiveRecord::Base
 	validates :depth, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - needs to be a formal relation
 	
-	default_scope -> {order('position ASC')} 
+	
 	
 	@is_definition_zone = nil
 	

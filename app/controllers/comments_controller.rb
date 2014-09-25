@@ -2,7 +2,7 @@ class CommentsController < ApplicationController
   
 	def index
 		# temporary function
-		@comments = Comment.hash_tree
+		@comments = Comment.all
 	end
 	
 	def new
@@ -16,6 +16,7 @@ class CommentsController < ApplicationController
 			@comment.container_id = parent.container_id
 		else
 			# TODO HIGH - change to right container
+			@comment = Comment.new(comment_params)
 			@comment.container_id=5
 		end
 		@comment.user = current_user

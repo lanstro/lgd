@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140916061450) do
+ActiveRecord::Schema.define(version: 20140925033349) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -29,25 +29,17 @@ ActiveRecord::Schema.define(version: 20140916061450) do
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
 
-  create_table "comment_hierarchies", id: false, force: true do |t|
-    t.integer "ancestor_id",   null: false
-    t.integer "descendant_id", null: false
-    t.integer "generations",   null: false
-  end
-
-  add_index "comment_hierarchies", ["ancestor_id", "descendant_id", "generations"], name: "comment_anc_desc_udx", unique: true
-  add_index "comment_hierarchies", ["descendant_id"], name: "comment_desc_idx"
-
   create_table "comments", force: true do |t|
     t.string   "content"
     t.integer  "user_id"
     t.integer  "container_id"
-    t.integer  "parent_id"
     t.integer  "reputation"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "ancestry"
   end
 
+  add_index "comments", ["ancestry"], name: "index_comments_on_ancestry"
   add_index "comments", ["container_id"], name: "index_comments_on_container_id"
 
   create_table "containers", force: true do |t|
@@ -58,15 +50,15 @@ ActiveRecord::Schema.define(version: 20140916061450) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "act_id"
-    t.integer  "parent_id"
     t.text     "content"
     t.integer  "depth"
     t.string   "special_paragraph"
     t.integer  "position"
+    t.string   "ancestry"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
-  add_index "containers", ["parent_id"], name: "index_containers_on_parent_id"
+  add_index "containers", ["ancestry"], name: "index_containers_on_ancestry"
 
   create_table "users", force: true do |t|
     t.string   "name"

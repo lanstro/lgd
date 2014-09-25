@@ -9,7 +9,6 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'turbolinks', '1.1.1'
 gem 'jbuilder', '1.0.2'
-gem "activerecord-import", ">= 0.4.0"
 gem 'ejs'
 
 gem 'thin'
@@ -17,6 +16,7 @@ gem 'bcrypt-ruby', '3.1.2'
 gem 'faker', '1.1.2'
 gem 'will_paginate'
 gem 'closure_tree'
+gem 'ancestry'
 gem 'acts_as_list'
 
 group :development, :test do

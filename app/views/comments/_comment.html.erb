@@ -10,4 +10,8 @@
 	<% unless from_reply_form %>
 		<p><%= link_to 'reply', new_comment_path(comment.id) %></p>
 	<% end %>
+	<% if current_user and current_user.admin %>
+		<%= link_to 'delete', '#' %>
+		<%= link_to 'hide', '#' %>
+	<% end %>
 </div>
