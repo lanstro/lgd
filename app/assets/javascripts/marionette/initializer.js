@@ -5,7 +5,7 @@ console.log("Lgd app initialized");
 
 Lgd.addRegions({
 	MainViewRegion: "#act_main",
-	SideNavRegion: "#sidenav",
+	SideNavRegion: "#sidebar",
 	ModesRegion: "#modes"
 });
 

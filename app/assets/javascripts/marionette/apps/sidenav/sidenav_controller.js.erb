@@ -1,9 +1,31 @@
 Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
 	SideNav.Controller = {
 		initialize: function(){
-			var sidenavView  = new SideNav.View();
+			var act = Lgd.request("Act");
+			Lgd.sidenavView  = new SideNav.Contents({
+				collection: act
+			});
+			act.on("sync", function(){
+				console.log("picked up sync - showing sidenav");
+				Lgd.SideNavRegion.show(Lgd.sidenavView);
+				
+				// this goes into the sync function for the collection
+				$("#quicknav").autocomplete({ 
+					autoFocus: true,
+					delay:     100,
+					minLength: 2,
+					source:    function(request, response) {
+						var results = $.ui.autocomplete.filter(["to be added"], request.term);
+						response(results.slice(0, 10));
+					}
+				})
+				
+			});
 			
-			Lgd.SideNavRegion.show(sidenavView);
+			
 		}
+
 	};
+	
+	
 });

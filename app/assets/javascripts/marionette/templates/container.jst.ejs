@@ -1,5 +1,7 @@
 <! --
 	TODO LOW: need to work out way to use defined constants in here more elegantly
+	Should probably just have separate templates depending on what type of container it is, so we can move
+	the logic from here into the Marionette view
 -->
 
 <% if(level <= 5){ %>
@@ -20,12 +22,3 @@
 		<% } %>
 	<% } %>
 <% } %>
-
-<!--
-	
-	def self.html_children_wrapper_tags(container)
-		if container.level < PARA_LIST_HEAD
-			return ['div class=level'+container.level.to_s+' id='+container.id.to_s, '/div']
-		end
-	end
--->

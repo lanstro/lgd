@@ -7,7 +7,7 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 				collection: act
 			});
 			act.on("sync", function(){
-				console.log("picked up sync");
+				console.log("picked up sync - showing mainview");
 				Lgd.MainViewRegion.show(contentView);
 			});
 			act.fetch();

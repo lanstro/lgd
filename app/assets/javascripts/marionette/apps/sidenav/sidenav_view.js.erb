@@ -1,61 +1,38 @@
 Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
-	SideNav.View = Backbone.View.extend({
-		el: '#sidenav',
-		
-		initialize: function(){
-			this.collection= Lgd.request("Act");
-			
-			_.bindAll(this, 'render');
-
-			this.listenTo(this.collection, "sync", this.render);
-			
-		},
-		
-		renderItem: function(child, leaf){
-			var text="<a href='#"+child.get('id')+"'>"+child.get('content')+"</a>";
-			if(leaf)
-				this.content += "<li class='nav_section'>"+text+"</li>";
-			else
-				this.content += text;
-		},
-		
-		renderChildren: function(child){
-			
-			if(child == "root"){
-				_.each(this.collection.findChildren(child), function(c){
-					this.renderChildren(c);
-				}, this);
-				return;
+	
+	SideNav.Element = Marionette.CompositeView.extend({
+		tagName: 'li',
+		template: JST['marionette/templates/contents_element'],
+		className: function(){
+			if(this.model.get('level') >= <%= DIVISION %> ){
+				return "nav_section";
 			}
 			else {
-				if(child.get('depth') > <%= SECTION %>)
-					return;
-				if(child.get('depth') == <%= SECTION %>){
-					this.renderItem(child, true);
-					return;
+				return "nav_heading";
+			}
+		},
+			
+		initialize: function(){
+			// stop recursing if child elements are lower level than section
+			if(this.model.children.models.length > 0){
+				console.log(this.model.children.models);
+				if(this.model.children.models[0].get('level') <= <%= SECTION %> ){
+					this.collection = this.model.children;
 				}
 			}
-
-			this.content+="<li class='nav_heading'>";
-			this.renderItem(child, false);
-			this.content += "<ul>";
-			//console.log("appending opening ul");
-
-			_.each(this.collection.findChildren(child), function(c){
-				this.renderChildren(c);
-			}, this);
 			
-			//console.log("appending closing ul");
-			this.content += "</li></ul>";
-		},
-		
-		render: function(){
-			console.log("rendering sidenav");
-			this.$el.empty();
-			this.content="";
-			this.renderChildren("root");
-			//console.log(this.content);
-			this.$el.append(this.content);
 		}
+	}),
+	
+	SideNav.Contents = Marionette.CompositeView.extend({
+		
+		template: JST['marionette/templates/sidenav'],
+		childView: SideNav.Element,
+		childViewContainer: 'ul',
+		tagName: 'div',
+		className: "fixed nav nav-stacked",
+		
 	})
+			
+	
 });

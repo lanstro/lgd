@@ -1,40 +1,32 @@
 Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 	
-	Mainview.Container = Marionette.ItemView.extend ({
+	Mainview.Container = Marionette.CompositeView.extend ({
 		tagName: 'div',
 		template: JST['marionette/templates/container'],
+		
+		initialize: function(){
+			this.collection = this.model.children;
+		},
+		
 		id: function(){
 			return this.model.get('id');
 			return 1;
 		},
 		
 		className: function(){
-			return this.model.get('depth');
-			return "phwar"
+			return this.model.get('level');
 		},
 		
-		/*render: function(){
-			this.$el.html(this.template(this.model.toJSON()));
-			return this;
-		},
-		*/
+		
 	});
 	
-	Mainview.Act = Marionette.CompositeView.extend({
+	Mainview.Act = Marionette.CollectionView.extend({
 
-		template: JST['marionette/templates/test'],
+		template: JST['marionette/templates/act'],
 		childView: Mainview.Container,
+		childViewContainer: 'div'
+		
 
-/*		render: function(){
-			console.log("rendering");
-			this.$el.empty();
-			this.collection.each(function(container){
-				
-				var containerView = new Mainview.Container({ model: container });
-				this.$el.append(containerView.el);
-			}, this);
-		}
-*/
 	})
 	
 });
