@@ -8,6 +8,6 @@ class Comment < ActiveRecord::Base
 	delegate :act, :to => :container, :allow_nil => true
 	validates :content, presence: true, length: { maximum: 5000 }
 	
-	has_ancestry :orphan_strategy => :adopt
+	has_ancestry orphan_strategy: :adopt, cache_depth: true
 	default_scope -> {order('created_at ASC')} 
 end

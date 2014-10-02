@@ -1,0 +1,16 @@
+<div class="well">
+	
+  <p class="text-muted">
+		<strong><%= user_name %></strong> on <%= created_at %>
+	</p>
+	<blockquote>
+		<p><%= content %></p>
+	</blockquote>
+
+	<p><a href="#">Reply</a>
+
+	<% if(admin){ %>
+		<a href="#">delete</a>
+		<a href="#">hide</a>
+	<% } %>
+</div>

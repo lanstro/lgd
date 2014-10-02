@@ -10,8 +10,8 @@ REFERENCE_WRAPPERS  = ["<span class=reference>",    "</span>"]
 
 class Container < ActiveRecord::Base
 	
-	has_ancestry
-	acts_as_list scope: [:ancestry], orphan_strategy: :adopt
+	has_ancestry orphan_strategy: :adopt, cache_depth: true
+	acts_as_list scope: [:ancestry]
 	default_scope -> {order('position ASC')} 
 	
 	belongs_to :act

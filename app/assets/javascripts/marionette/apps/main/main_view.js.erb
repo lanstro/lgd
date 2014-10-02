@@ -14,10 +14,31 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 		},
 		
 		className: function(){
-			return this.model.get('level');
+			return "depth_"+this.model.get('level');
+		},
+
+		events: {
+			"mouseenter": "mouseEnter",
+			"mouseleave": "mouseLeave",
+			"click a.expand": "moreClicked"
+		},		
+		
+		mouseEnter: function(event){
+			event.stopImmediatePropagation()
+			// make controller handle it
+			Lgd.trigger("container:mouseEnter", this.$el);
 		},
 		
+		mouseLeave: function(event){
+			event.stopImmediatePropagation()
+			// make controller handle it
+			Lgd.trigger("container:mouseLeave", this.$el);
+		},
 		
+		moreClicked: function(event){
+			event.stopImmediatePropagation();
+			console.log("plus clicked");
+		}
 	});
 	
 	Mainview.Act = Marionette.CollectionView.extend({

@@ -41,6 +41,20 @@ class CommentsController < ApplicationController
   def hide
   end
 	
+	def get_comments_by_container
+		container = Container.find_by_id(params[:id])
+		
+		respond_to do |format|
+			if !container
+				format.json { render :json => "no such section" }
+			else
+				format.json { render :json => container.comments.to_depth(7).arrange_serializable.to_json }
+			end
+			# TODO HIGH: option to show rest of tree like reddit
+			# make the 7 into a constant somewhere
+		end
+	end
+	
 	private
 
 	def comment_params

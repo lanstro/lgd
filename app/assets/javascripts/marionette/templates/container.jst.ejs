@@ -5,20 +5,23 @@
 -->
 
 <% if(level <= 5){ %>
-	<h2><%= content %><a href="#">edit</a></h2>
+	<h2><%= content %></h2>
 <% } else { %>
 	<% if(level <= 9){ %>
 		<table><tbody>
 			<tr>
 				<td class="table_numeral"><p>(<%= number %>)</p></td>
-				<td class="table_content"><p> <%= strip_number %><a href="#">edit</a></p></td>
+				<td class="table_content"><p> <%= strip_number %></p></td>
 			</tr>
 		</tbody></table>
 	<% } else { %>
 		<% if(special_paragraph){ %>
-			<p class=<%= special_paragraph %>><%= content %><a href="#">edit</a></p>
+			<p class=<%= special_paragraph %>><%= content %></p>
 		<% } else { %>
-			<p><%= content %><a href="#">edit</a></p>
+			<p><%= content %></p>
 		<% } %>
 	<% } %>
+<% } %>
+<% if(level <= 5) { %>
+	<p><a href="#" class="expand">+</a></p>
 <% } %>

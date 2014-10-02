@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140925052955) do
+ActiveRecord::Schema.define(version: 20140929010829) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 20140925052955) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "ancestry"
+    t.integer  "ancestry_depth"
   end
 
   add_index "comments", ["ancestry"], name: "index_comments_on_ancestry"
@@ -55,6 +56,7 @@ ActiveRecord::Schema.define(version: 20140925052955) do
     t.string   "special_paragraph"
     t.integer  "position"
     t.string   "ancestry"
+    t.integer  "ancestry_depth"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
