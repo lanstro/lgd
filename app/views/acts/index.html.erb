@@ -1,7 +1,7 @@
 <% provide(:title, 'All legislation') %>
 <h1>Index of legislation</h1>
 <%= will_paginate %>
-<ul class = "acts">
+<ul class = "acts" data-no-turbolink>
 	<%=  render @acts %>
 </ul>
 <%= will_paginate %>

@@ -1,3 +1,21 @@
+# == Schema Information
+#
+# Table name: acts
+#
+#  id            :integer          not null, primary key
+#  title         :string(255)
+#  last_updated  :date
+#  jurisdiction  :string(255)
+#  updating_acts :text
+#  subtitle      :string(255)
+#  regulations   :string(255)
+#  created_at    :datetime
+#  updated_at    :datetime
+#  act_type      :string(255)
+#  year          :integer
+#  number        :integer
+#
+
 require 'spec_helper'
 
 describe Act do

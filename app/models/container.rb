@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: containers
+#
+#  id                :integer          not null, primary key
+#  number            :text
+#  last_updated      :date
+#  updating_acts     :text
+#  regulations       :integer
+#  created_at        :datetime
+#  updated_at        :datetime
+#  act_id            :integer
+#  content           :text
+#  level             :integer
+#  special_paragraph :string(255)
+#  position          :integer
+#  ancestry          :string(255)
+#  ancestry_depth    :integer
+#
+
 ####################################################################
 #   DEFINITIONS AND CROSS REFERENCES                               #
 ####################################################################

@@ -4,8 +4,9 @@
 
 $(document).ready(function(){
 	
-	$('body').scrollspy({ target: '#sidebar' });
-	
-	Lgd.start();
+	if($('#act').length > 0){
+		$('body').scrollspy({ target: '#sidebar' });
+		Lgd.start();
+	}
 
 });

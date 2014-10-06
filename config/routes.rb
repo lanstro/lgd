@@ -1,3 +1,52 @@
+# == Route Map
+#
+#              Prefix Verb   URI Pattern                             Controller#Action
+#                root GET    /                                       static_pages#home
+#                help GET    /help(.:format)                         static_pages#help
+#               about GET    /about(.:format)                        static_pages#about
+#              signup GET    /signup(.:format)                       users#new
+#              signin GET    /signin(.:format)                       sessions#new
+#             signout DELETE /signout(.:format)                      sessions#destroy
+#               users GET    /users(.:format)                        users#index
+#                     POST   /users(.:format)                        users#create
+#            new_user GET    /users/new(.:format)                    users#new
+#           edit_user GET    /users/:id/edit(.:format)               users#edit
+#                user GET    /users/:id(.:format)                    users#show
+#                     PATCH  /users/:id(.:format)                    users#update
+#                     PUT    /users/:id(.:format)                    users#update
+#                     DELETE /users/:id(.:format)                    users#destroy
+#            sessions POST   /sessions(.:format)                     sessions#create
+#         new_session GET    /sessions/new(.:format)                 sessions#new
+#             session DELETE /sessions/:id(.:format)                 sessions#destroy
+#           parse_act GET    /acts/:id/parse(.:format)               acts#parse
+#   reset_parsing_act GET    /acts/:id/reset_parsing(.:format)       acts#reset_parsing
+# containers_json_act GET    /acts/:id/containers_json(.:format)     acts#containers_json
+#                acts GET    /acts(.:format)                         acts#index
+#                     POST   /acts(.:format)                         acts#create
+#             new_act GET    /acts/new(.:format)                     acts#new
+#            edit_act GET    /acts/:id/edit(.:format)                acts#edit
+#                 act GET    /acts/:id(.:format)                     acts#show
+#                     PATCH  /acts/:id(.:format)                     acts#update
+#                     PUT    /acts/:id(.:format)                     acts#update
+#                     DELETE /acts/:id(.:format)                     acts#destroy
+#          containers GET    /containers(.:format)                   containers#index
+#                     POST   /containers(.:format)                   containers#create
+#       new_container GET    /containers/new(.:format)               containers#new
+#      edit_container GET    /containers/:id/edit(.:format)          containers#edit
+#           container GET    /containers/:id(.:format)               containers#show
+#                     PATCH  /containers/:id(.:format)               containers#update
+#                     PUT    /containers/:id(.:format)               containers#update
+#                     DELETE /containers/:id(.:format)               containers#destroy
+#            comments GET    /comments(.:format)                     comments#index
+#                     POST   /comments(.:format)                     comments#create
+#        edit_comment GET    /comments/:id/edit(.:format)            comments#edit
+#             comment PATCH  /comments/:id(.:format)                 comments#update
+#                     PUT    /comments/:id(.:format)                 comments#update
+#                     DELETE /comments/:id(.:format)                 comments#destroy
+#         new_comment GET    /comments/new(/:parent_id)(.:format)    comments#new
+#                     GET    /comments/for_container(/:id)(.:format) comments#get_comments_by_container
+#
+
 Lgd::Application.routes.draw do
   root "static_pages#home"
   match "/help",   to: "static_pages#help",  via: "get"

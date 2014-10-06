@@ -20,5 +20,6 @@
 //= require backbone.marionette
 //= require_tree ./marionette/templates
 //= require ./marionette/initializer
+//= require ckeditor-jquery
 //= require_tree .
 

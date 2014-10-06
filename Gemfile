@@ -18,6 +18,14 @@ gem 'will_paginate'
 gem 'closure_tree'
 gem 'ancestry'
 gem 'acts_as_list'
+gem 'ckeditor_rails'
+gem 'annotate', '~> 2.6.5'
+
+group :development do
+  gem 'meta_request'
+	gem 'bullet'
+end
+
 
 group :development, :test do
   gem 'sqlite3', '1.3.8'

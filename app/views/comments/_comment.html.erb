@@ -4,7 +4,7 @@
     <%= l(comment.created_at, format: '%B, %d %Y %H:%M:%S') %></p>
  
   <blockquote>
-    <p><%= comment.content %></p>
+    <p><%= raw comment.content %></p>
   </blockquote>
 	<% from_reply_form ||= nil %>
 	<% unless from_reply_form %>

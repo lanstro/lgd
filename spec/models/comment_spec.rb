@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: comments
+#
+#  id             :integer          not null, primary key
+#  content        :string(255)
+#  user_id        :integer
+#  container_id   :integer
+#  reputation     :integer
+#  created_at     :datetime
+#  updated_at     :datetime
+#  ancestry       :string(255)
+#  ancestry_depth :integer
+#
+
 require 'spec_helper'
 
 describe Comment do

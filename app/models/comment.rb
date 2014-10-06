@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: comments
+#
+#  id             :integer          not null, primary key
+#  content        :string(255)
+#  user_id        :integer
+#  container_id   :integer
+#  reputation     :integer
+#  created_at     :datetime
+#  updated_at     :datetime
+#  ancestry       :string(255)
+#  ancestry_depth :integer
+#
+
 class Comment < ActiveRecord::Base
 	
 	validates :user_id, presence: true, numericality: {only_integer: true, greater_than: 0}

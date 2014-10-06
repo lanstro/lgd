@@ -1,4 +1,22 @@
 # encoding: UTF-8
+# == Schema Information
+#
+# Table name: acts
+#
+#  id            :integer          not null, primary key
+#  title         :string(255)
+#  last_updated  :date
+#  jurisdiction  :string(255)
+#  updating_acts :text
+#  subtitle      :string(255)
+#  regulations   :string(255)
+#  created_at    :datetime
+#  updated_at    :datetime
+#  act_type      :string(255)
+#  year          :integer
+#  number        :integer
+#
+
 
 # TODO LOW - more sophisticated working out whether (i) is an alphabetical element or a roman numeral
 

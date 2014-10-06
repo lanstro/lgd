@@ -6,6 +6,6 @@
 	<%= link_to 'Add new topic', new_comment_path, class: 'btn btn-primary btn-lg' %>
 </p>
 
-<ul class = "comments">
+<ul class = "comments" data-no-turbolink>
 	<%= nested_comments @comments.arrange  %>
 </ul>

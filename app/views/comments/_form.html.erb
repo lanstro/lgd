@@ -3,7 +3,7 @@
 	<%= f.hidden_field :parent_id %>
   <div class="form-group">
     <%= f.label :content %>
-    <%= f.text_area :content, class: 'form-control', required: true %>
+    <%= f.text_area :content, class: 'form-control ckeditor ', id: 'test', required: true %>
   </div>
  
   <%= f.submit class: 'btn btn-primary' %>
