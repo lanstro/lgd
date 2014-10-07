@@ -30,8 +30,13 @@ Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
 		childView: SideNav.Element,
 		childViewContainer: 'ul',
 		tagName: 'div',
-		className: "fixed nav nav-stacked",
-		
+		className: "affix",
+		attributes: {
+			"data-spy": "affix",
+			"data-offset-top": "60",
+			"data-offset-bottom":"60"
+		},
+		id: 'sidebar_div'
 	})
 			
 	

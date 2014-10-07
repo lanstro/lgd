@@ -99,49 +99,53 @@
 	}
 }
 
-#sidebar h2 {
-	margin-top:0px;
-}
-
-#sidebar .nav{
+#sidebar{
 	overflow-y: auto;
 	height: 80%;
-}
-
-#sidebar .nav_heading {
-	color: grey;
-	font-size: 0.9em;
-}
-
-#sidebar .nav_section {
-	color: grey;
-	font-size: 0.8em;
-}
-
-#sidebar .nav_section{
-	display:none
-}
-
-#sidebar .active>.nav_section {
-	display: block;           
-}
-
-.active>.nav_heading {
-	font-weight:bold;
-}
-
-.nav_section.active {
-	color: #563d7c; 
-	border-left: 2px solid black; 
-	padding-left: 1%;
-}
-
-.fixed {
-	position:fixed;
-}
-
-@media screen and (max-width: 600px){
-	#sidebar {
-			display:none
+  h2 {
+		margin-top:0px;
 	}
+	.nav{
+		overflow-y: auto;
+		height: 80%;
+	}
+	.nav_heading {
+		color: grey;
+		font-size: 0.9em;
+	}
+	.nav_section {
+		color: grey;
+		font-size: 0.8em;
+		display:none;
+	}
+	.active>.nav_section {
+		display: block;           
+	}
+	.active>.nav_heading {
+		font-weight:bold;
+	}
+	.nav_section.active {
+		color: #563d7c; 
+		border-right: 2px solid black; 
+	}
+	#sidebar_div {
+		width: auto;
+	}
+	&:after{
+		content: ".";
+		display: block;
+		height: 0;
+		clear: both;
+		visibility: hidden;
+	}
+}
+
+#sidebar.affix-top {
+	position: static;
+	width: auto;
+}
+
+#sidebar.affix {
+	position: fixed;
+	width: auto;
 }
