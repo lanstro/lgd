@@ -1,18 +1,16 @@
 
 var Lgd = new Marionette.Application();
 
-console.log("Lgd app initialized");
-
 Lgd.addRegions({
-	MainViewRegion: "#act_main",
+	MainViewRegion: "#legislation_main",
 	SideNavRegion: "#sidebar",
-	ModesRegion: "#modes"
+	ModesRegion: "#secondary"
 });
 
 $(document).ready(function(){
 	
 	Lgd.on('start', function(options){
-		
+		console.log("Lgd app controllers initializing");
 		Lgd.MainView.Controller.initialize();
 		Lgd.Modes.Controller.initialize();
 		Lgd.SideNav.Controller.initialize();

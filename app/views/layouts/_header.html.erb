@@ -1,36 +1,34 @@
 <header class="navbar navbar-default" role="navigation" id="topnavbar">
-	<div class="navbar-inner">
-		<div class="container-fluid">
-			<%= link_to image_tag("misc/logo_small.png", alt: "logo", id:"logo"), root_path %>
-			<%= link_to "Legal Guide Dog", root_path, id:"header_title" %>
-			<p id="alpha">Alpha</p>
-			<nav>
-        <ul class="navbar-nav nav navbar-right">
-					<li><%= link_to "Legislation", acts_path %>
-					<li><%= link_to "About", about_path %></li>
-          <li><%= link_to "Help", help_path %></li>
-          <% if signed_in? %>
-						<% if current_user.admin? %>
-							<li><%= link_to "Users", users_path %></li>
-						<% end %>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                Account <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-                <li><%= link_to "Profile", current_user %></li>
-                <li><%= link_to "Settings", edit_user_path(current_user) %></li>
-                <li class="divider"></li>
-                <li>
-                  <%= link_to "Sign out", signout_path, method: "delete" %>
-                </li>
-              </ul>
-            </li>
-          <% else %>
-            <li><%= link_to "Sign in", signin_path %></li>
-          <% end %>
-        </ul>
-			</nav>
-		</div>
+	<div class="container-fluid">
+		<%= link_to image_tag("misc/logo_small.png", alt: "logo", id:"logo"), root_path %>
+		<%= link_to "Legal Guide Dog", root_path, id:"header_title" %>
+		<p id="alpha">Alpha</p>
+		<nav>
+			<ul class="navbar-nav nav navbar-right">
+				<li><%= link_to "Legislation", acts_path %>
+				<li><%= link_to "About", about_path %></li>
+				<li><%= link_to "Help", help_path %></li>
+				<% if signed_in? %>
+					<% if current_user.admin? %>
+						<li><%= link_to "Users", users_path %></li>
+					<% end %>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+							Account <b class="caret"></b>
+						</a>
+						<ul class="dropdown-menu">
+							<li><%= link_to "Profile", current_user %></li>
+							<li><%= link_to "Settings", edit_user_path(current_user) %></li>
+							<li class="divider"></li>
+							<li>
+								<%= link_to "Sign out", signout_path, method: "delete" %>
+							</li>
+						</ul>
+					</li>
+				<% else %>
+					<li><%= link_to "Sign in", signin_path %></li>
+				<% end %>
+			</ul>
+		</nav>
 	</div>
 </header>

@@ -4,7 +4,7 @@
 
 $(document).ready(function(){
 	
-	if($('#act').length > 0){
+	if($('#legislation_main').length > 0){
 		$('body').scrollspy({ target: '#sidebar' });
 		Lgd.start();
 	}

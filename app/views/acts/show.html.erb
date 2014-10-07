@@ -2,18 +2,12 @@
 
 <% provide(:title, @act.title) %>
 
-<div class="row" id="act">
-	<div class="col-md-2" id="modes">
-	</div>
-	<div class="col-md-8" role="main">
-
-		<%= link_to "Parse Act", parse_act_path, class: "btn btn-large btn-primary" %>
-		<%= link_to "Reset Parse", reset_parsing_act_path, class: "btn btn-large btn-primary" %>
-
-		<div class = "legislation" id = "act_main" data-legislation_id=<%= @act.id %>>
-		</div>
-	
-	</div>
-	<nav class="col-md-2 hidden-print" id="sidebar">
+<div class="row">
+	<nav id="sidebar" class=".hidden-xs col-sm-3 col-md-3 hidden-print">
 	</nav>
+	<div id="legislation_main" class="col-xs-12 col-sm-9 col-md-6" role="main" data-legislation_id=<%= @act.id %>>
+
+	</div>
+	<div id="secondary" class=".hidden-sm col-md-3 hidden-print">
+	</div>
 </div>

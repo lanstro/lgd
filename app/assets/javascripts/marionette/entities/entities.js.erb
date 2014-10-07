@@ -15,11 +15,21 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 		
 		initialize: function(){
 			this.set('strip_number', this.strip_number());
+			this.set('shortContent', this.shortContent());
 			var children = this.get("children");
 			if(children){
 				this.children = new Entities.ContainerCollection(children);
 				this.unset("children");
 			}
+			
+		},
+		
+		shortContent: function(){
+			if(this.get('level') < <%= SECTION %> || 
+			   this.get('content').length < 40 ){
+				return this.get('content');
+			}
+			return this.get('content').substring(0, 40)+"...";
 		},
 		
 		aliases: function(){
@@ -71,7 +81,7 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 		model: Entities.Container,
 		comparator: 'position',
 		initialize: function(){
-			this.url=$('.legislation').data('legislation_id')+'/containers_json.json';
+			this.url=$('#legislation_main').data('legislation_id')+'/containers_json.json';
 		},
 		
 	});
