@@ -126,6 +126,14 @@
 	display: block;           
 }
 
+#sidebar:after{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+
 .active>.nav_heading {
 	font-weight:bold;
 }
