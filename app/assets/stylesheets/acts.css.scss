@@ -100,8 +100,9 @@
 }
 
 #sidebar{
-	overflow-y: auto;
-	height: 80%;
+	form {
+		width:80%;
+	}
   h2 {
 		margin-top:0px;
 	}
@@ -130,6 +131,13 @@
 	}
 	#sidebar_div {
 		width: auto;
+		&:after{
+			content: ".";
+			display: block;
+			height: 0;
+			clear: both;
+			visibility: hidden;
+		}
 	}
 	&:after{
 		content: ".";
@@ -138,6 +146,10 @@
 		clear: both;
 		visibility: hidden;
 	}
+}
+
+.fixed{
+	position:fixed;
 }
 
 #sidebar.affix-top {
