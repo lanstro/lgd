@@ -2,7 +2,7 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 	
 	Mainview.Container = Marionette.CompositeView.extend ({
 		tagName: 'div',
-		template: JST['marionette/templates/container'],
+		template: JST['marionette/templates/main/container'],
 		
 		initialize: function(){
 			this.collection = this.model.children;
@@ -20,30 +20,30 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 		events: {
 			"mouseenter": "mouseEnter",
 			"mouseleave": "mouseLeave",
-			"click a.expand": "moreClicked"
+			"click div.expand_modes": "moreClicked"
 		},		
 		
 		mouseEnter: function(event){
-			event.stopImmediatePropagation()
+			event.stopImmediatePropagation();
 			// make controller handle it
 			Lgd.trigger("container:mouseEnter", this.$el);
 		},
 		
 		mouseLeave: function(event){
-			event.stopImmediatePropagation()
+			event.stopImmediatePropagation();
 			// make controller handle it
 			Lgd.trigger("container:mouseLeave", this.$el);
 		},
 		
 		moreClicked: function(event){
 			event.stopImmediatePropagation();
-			console.log("plus clicked");
+			Lgd.trigger("container:moreClicked", this.$el, this.model.get('id'));
 		}
 	});
 	
 	Mainview.Act = Marionette.CollectionView.extend({
 
-		template: JST['marionette/templates/act'],
+		template: JST['marionette/templates/main/act'],
 		childView: Mainview.Container,
 		childViewContainer: 'div'
 		

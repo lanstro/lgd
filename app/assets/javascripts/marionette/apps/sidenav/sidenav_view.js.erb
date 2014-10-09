@@ -2,7 +2,7 @@ Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
 	
 	SideNav.Element = Marionette.CompositeView.extend({
 		tagName: 'li',
-		template: JST['marionette/templates/contents_element'],
+		template: JST['marionette/templates/sidenav/contents_element'],
 		className: function(){
 			if(this.model.get('level') >= <%= DIVISION %> ){
 				return "nav_section";
@@ -15,7 +15,6 @@ Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
 		initialize: function(){
 			// stop recursing if child elements are lower level than section
 			if(this.model.children.models.length > 0){
-				console.log(this.model.children.models);
 				if(this.model.children.models[0].get('level') <= <%= SECTION %> ){
 					this.collection = this.model.children;
 				}
@@ -26,12 +25,11 @@ Lgd.module('SideNav', function(SideNav, Lgd, Backbone, Marionette, $, _){
 	
 	SideNav.Contents = Marionette.CompositeView.extend({
 		
-		template: JST['marionette/templates/sidenav'],
+		template: JST['marionette/templates/sidenav/sidenav'],
 		childView: SideNav.Element,
 		childViewContainer: 'ul',
 		tagName: 'div',
-		className: "fixed nav nav-stacked",
-		
+		className: "ltr",
 	})
 			
 	

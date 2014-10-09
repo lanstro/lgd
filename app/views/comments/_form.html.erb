@@ -1,10 +1,9 @@
-<%= form_for(@comment) do |f| %>
+<%= form_for@comment, remote:true do |f| %>
   <%= render 'shared/error_messages', errors: @comment.errors %>
 	<%= f.hidden_field :parent_id %>
   <div class="form-group">
     <%= f.label :content %>
     <%= f.text_area :content, class: 'form-control ckeditor ', id: 'test', required: true %>
+		<%= f.submit class: 'btn' %>
   </div>
- 
-  <%= f.submit class: 'btn btn-primary' %>
 <% end %>

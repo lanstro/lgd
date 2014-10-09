@@ -86,6 +86,22 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 		
 	});
 	
+	Entities.Comment = Backbone.Model.extend ({
+		initialize: function(){
+			var children = this.get("children");
+			if(children){
+				this.children = new Entities.CommentsCollection(children);
+				this.set({"showForm": false});
+				this.unset("children");
+			}
+		},
+	});
+	
+	Entities.CommentsCollection = Backbone.Collection.extend({
+		model: Entities.Comment,
+		comparator: 'reputation',
+	});
+	
 	var act;
 	
 	var initialize=function(){

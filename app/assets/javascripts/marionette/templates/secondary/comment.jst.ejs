@@ -1,0 +1,19 @@
+<p class="text-muted">
+	<strong><%= user_id %></strong> on <%= created_at %> commented:
+</p>
+<blockquote>
+	<p><%= content %></p>
+</blockquote>
+
+<% if(showForm) { %>
+	<form class="new_reply" method="post" data-remote="true" action="/comments" accept-charset="UTF-8">
+		<input class="reply_comment_parent_id" type="hidden" value="" name="comment[parent_id]">
+		<input class="reply_comment_container_id" type="hidden" value="" name="comment[container_id]">
+		<label for="comment_content">Reply to post</label>
+		<textarea class="reply_textarea form-control ckeditor" name="comment[content]" required="required">
+		</textarea>
+		<input class="submit_reply btn btn-primary" type="submit" value="Post reply" name="commit">
+	</form>
+<% } else { %>
+	<a class="comment_reply" href="#">Reply</a>
+<% } %>
