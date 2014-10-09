@@ -11,6 +11,11 @@ gem 'turbolinks', '1.1.1'
 gem 'jbuilder', '1.0.2'
 gem 'ejs'
 
+gem 'devise'
+gem 'omniauth'
+gem 'omniauth-facebook'
+gem 'omniauth-linkedin'
+
 gem 'thin'
 gem 'bcrypt-ruby', '3.1.2'
 gem 'faker', '1.1.2'
