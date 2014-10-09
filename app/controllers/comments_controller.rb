@@ -1,5 +1,5 @@
 class CommentsController < ApplicationController
-  
+  	
 	def index
 		# temporary function
 		@comments = Comment.all
@@ -10,23 +10,32 @@ class CommentsController < ApplicationController
 	end
 	
 	def create
+		error = nil
 		if params[:comment][:parent_id].to_i > 0
 			parent=Comment.find_by_id(params[:comment].delete(:parent_id))
-			@comment = parent.children.build(comment_params)
-			@comment.container_id = parent.container_id
+			if parent
+				@comment = parent.children.build(comment_params)
+				@comment.container_id = parent.container_id
+			else
+				error = "Error posting comment: the comment being replied to does not exist."
+			end
 		else
-			# TODO HIGH - change to right container
+			# container_id should be part of the params
 			@comment = Comment.new(comment_params)
-			@comment.container_id=5
 		end
 		@comment.user = current_user
-		if @comment.save
-			flash[:success] = 'Your comment was successfully added!'
-			redirect_to comments_path
-		else
-			# flash error messages
-			render 'new'
+		
+		respond_to do |format|
+			if !error and @comment.save
+				format.json { render :json => { success: true, message: "Thank you.  Comment added." } }
+			elsif error
+				format.json { render :json => { success: false, message: error } }
+			else
+				format.json { render :json => { success: false, message: "Error saving comment. "+@comment.errors.messages.to_s } }
+			end
+			
 		end
+		
   end
 
   def edit
@@ -42,7 +51,7 @@ class CommentsController < ApplicationController
   end
 	
 	def get_comments_by_container
-		container = Container.find_by_id(params[:id])
+		container = Container.find_by_id(params[:container_id])
 		
 		respond_to do |format|
 			if !container
@@ -58,6 +67,6 @@ class CommentsController < ApplicationController
 	private
 
 	def comment_params
-		params.require(:comment).permit(:content)
+		params.require(:comment).permit(:content, :container_id)
 	end
 end

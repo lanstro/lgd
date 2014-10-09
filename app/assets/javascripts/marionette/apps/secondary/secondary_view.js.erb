@@ -1,0 +1,138 @@
+// TODO medium -
+// admin hide/delete posts
+// spinner while comments being posted
+// validate that text is not empty and not >5000 characters
+// reload panel when new posts successful
+// icons replacing navigation tabs
+// close tab
+
+Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
+	Secondary.Layout = Marionette.LayoutView.extend({
+		template: JST['marionette/templates/secondary/secondary_layout'],
+		
+		regions: {
+			body:        "#secondary_body"
+		},
+		
+		className: "fixed secondary_container",
+		
+		onRender: function(){
+			console.log("secondary body is rendering");
+			console.log("id is "+this.container_id);
+			var secondaryView = new Secondary.CommentsLayout({
+				"container_id": this.container_id
+			});
+			// TODO LOW - store user's preference for which sub-window to show
+			this.body.show(secondaryView);
+		},
+		
+		initialize: function(args){
+			this.container_id = args.container_id
+		}
+	});
+	
+
+	Secondary.CommentsLayout = Marionette.LayoutView.extend({
+		template: JST['marionette/templates/secondary/secondary_comments_layout'],
+		
+		regions: {
+			comments:        "#secondary_comments",
+			form:            "#secondary_new_thread_form"
+		},
+		
+		events: {
+			"click a.new_thread": "showForm"
+		},
+		
+		showForm: function(event){
+			event.stopImmediatePropagation();
+			var commentsForm = new Secondary.CommentsForm();
+			this.form.show(commentsForm);
+			this.$('.ckeditor').ckeditor();
+			this.$('#new_comment_container_id').val(this.container_id);
+		},
+		
+		onRender: function(){
+			
+			var commentsCollection = new Lgd.Entities.CommentsCollection({});
+			commentsCollection.url = $('#legislation_main').data('legislation_id')+'/comments_json/'+this.container_id+'.json';
+			commentsCollection.fetch();
+			
+			var commentsView        = new Secondary.CommentsRootView();
+			commentsView.collection = commentsCollection;
+			
+			commentsCollection.on('sync', function(){
+				console.log("Comments layout has detected end of fetch for comments collection, and would now like to render.");
+				this.comments.show(commentsView);
+			}, this);
+			
+			var commentsButton = new Secondary.NewThreadButton();
+			this.form.show(commentsButton);
+			
+		},
+		
+		initialize: function(args){
+			this.container_id = args.container_id
+		}
+	});
+
+	
+	Secondary.Comment = Marionette.CompositeView.extend({
+
+		template: JST['marionette/templates/secondary/comment'],
+		tagName: 'div',
+		className: function(){
+			var result = "well";
+			if(this.model.get('ancestry_depth') > 0)
+				result+=" replies";
+			return result;
+		},
+		initialize: function(){
+			this.collection = this.model.children;
+		},
+		
+		events: {
+			"click a.comment_reply": "replyClicked",
+			"click input.submit_reply": "postComment"
+		},
+		
+		replyClicked: function(event){
+			event.stopImmediatePropagation();
+			this.model.set({"showForm": true});
+			this.render();
+			this.$('.ckeditor').ckeditor();
+			this.$('.reply_comment_parent_id').val(this.model.get('id'));
+			this.$('.reply_comment_container_id').val(this.model.get('container_id'));
+			this.$('.new_reply').attr("action", ("/comments/"+this.model.get('id')+"/new"));
+		},
+		
+		
+		
+	});
+	
+	
+	Secondary.CommentsRootView = Marionette.CollectionView.extend({
+		template:           JST['marionette/templates/secondary/comment_root'],
+		childView:          Secondary.Comment,
+		childViewContainer: 'div',
+	});
+	
+	Secondary.CommentsForm = Marionette.ItemView.extend({
+		template: JST['marionette/templates/secondary/secondary_comments_form'],
+
+	});
+	
+	Secondary.NewThreadButton = Marionette.ItemView.extend({
+		template: _.template('<a class="new_thread" href="#">Add a comment!</a>'),
+		// TODO MEDIUM - check whether user logged in when they do this
+	});
+	
+	Secondary.ExceptionsView = Marionette.ItemView.extend({
+		template: JST['marionette/templates/secondary/secondary_exceptions'],
+	});
+	
+	
+	Secondary.HistoryView = Marionette.ItemView.extend({
+		template: JST['marionette/templates/secondary/secondary_history'],
+	});
+});
