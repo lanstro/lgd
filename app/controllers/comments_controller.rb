@@ -1,5 +1,7 @@
 class CommentsController < ApplicationController
-  	
+  before_filter :authenticate_user!, except: [:get_comments_by_container]
+	before_filter :ensure_signup_complete, only: [:new, :create, :update, :destroy]
+	
 	def index
 		# temporary function
 		@comments = Comment.all

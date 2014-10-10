@@ -15,6 +15,10 @@
 #  year          :integer
 #  number        :integer
 #
+# Indexes
+#
+#  index_acts_on_year_and_number  (year,number)
+#
 
 require 'spec_helper'
 

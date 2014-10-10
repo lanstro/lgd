@@ -15,6 +15,8 @@ gem 'devise'
 gem 'omniauth'
 gem 'omniauth-facebook'
 gem 'omniauth-linkedin'
+gem 'omniauth-github'
+gem 'omniauth-google-oauth2'
 
 gem 'thin'
 gem 'bcrypt-ruby', '3.1.2'

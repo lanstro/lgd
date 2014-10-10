@@ -12,6 +12,11 @@
 #  ancestry       :string(255)
 #  ancestry_depth :integer
 #
+# Indexes
+#
+#  index_comments_on_ancestry      (ancestry)
+#  index_comments_on_container_id  (container_id)
+#
 
 require 'spec_helper'
 

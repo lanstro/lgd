@@ -72,12 +72,6 @@ p {
 	padding-top:1.5%;
 }
 
-#main_image{
-	display:block;
-	margin:5% auto 2% auto;
-	width:20%;
-}
-
 .container-fluid{
 	width:90%;
 	margin: 0% auto;
@@ -85,30 +79,6 @@ p {
 
 .navbar-inner{
 	min-height:0px;
-}
-
-/* sidebar */
-
-aside {
-  section {
-    padding: 10px 0;
-    border-top: 1px solid gray;
-    &:first-child {
-      border: 0;
-      padding-top: 0;
-    }
-    span {
-      display: block;
-      margin-bottom: 0.2%;
-      line-height: 1;
-    }
-    h1 {
-      font-size: 1.4em;
-      text-align: left;
-      margin-bottom: 0.2%;
-      margin-top: 0px;
-    }
-  }
 }
 
 /* forms */
@@ -135,16 +105,6 @@ input {
   @extend .error;
 }
 
-.users {
-  list-style: none;
-  margin: 0;
-  li {
-    overflow: auto;
-    padding: 0.2% 0;
-    border-top: 1px solid gray;
-    &:last-child {
-      border-bottom: 1px solid gray;
-    }
-  }
+.close {
+	font-size:1em;
 }
-

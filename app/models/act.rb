@@ -16,7 +16,10 @@
 #  year          :integer
 #  number        :integer
 #
-
+# Indexes
+#
+#  index_acts_on_year_and_number  (year,number)
+#
 
 # TODO LOW - more sophisticated working out whether (i) is an alphabetical element or a roman numeral
 

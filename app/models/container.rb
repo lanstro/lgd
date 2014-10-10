@@ -17,6 +17,11 @@
 #  ancestry          :string(255)
 #  ancestry_depth    :integer
 #
+# Indexes
+#
+#  index_containers_on_act_id_and_number  (act_id,number)
+#  index_containers_on_ancestry           (ancestry)
+#
 
 ####################################################################
 #   DEFINITIONS AND CROSS REFERENCES                               #

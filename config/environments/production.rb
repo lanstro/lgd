@@ -77,4 +77,22 @@ Lgd::Application.configure do
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
   config.log_formatter = ::Logger::Formatter.new
+	
+	# General Settings
+	config.app_domain = 'legalguidedog.com.au'
+
+	# Email
+	config.action_mailer.delivery_method = :smtp
+	config.action_mailer.perform_deliveries = true
+	config.action_mailer.default_url_options = {host: 'legalguidedog.com.au', port: 3000 }
+	config.action_mailer.smtp_settings = {
+		address: 'smtp.gmail.com', 
+		port: '587',
+		enable_starttls_auto: true,
+		user_name: 'legal.guide.dog',
+		password: 'hWat234876',
+		authentication: :plain,
+		domain: 'legalguidedog.com.au'
+	}
+	
 end

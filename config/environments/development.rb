@@ -27,6 +27,23 @@ Lgd::Application.configure do
   # number of complex assets.
   config.assets.debug = true
 	
+	# General Settings
+	config.app_domain = 'localhost'
+
+	# Email
+	config.action_mailer.delivery_method = :smtp
+	config.action_mailer.perform_deliveries = true
+	config.action_mailer.default_url_options = {host: 'localhost', port: 3000 }
+	config.action_mailer.smtp_settings = {
+		address: 'smtp.gmail.com', 
+		port: '587',
+		enable_starttls_auto: true,
+		user_name: 'legal.guide.dog',
+		password: 'hWat234876',
+		authentication: :plain,
+		domain: 'legalguidedog.com.au'
+	}
+	
 	config.after_initialize do
 		Bullet.enable = true
 		Bullet.alert = true
