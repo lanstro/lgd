@@ -1,16 +1,22 @@
 source 'https://rubygems.org'
-ruby '1.9.3'
 
+# basics
+ruby '1.9.3'
 gem 'rails', '4.0.5'
+gem 'thin'
+
+# asset pipeline; look & feel
 gem 'sprockets'
-gem 'sass-rails', '4.0.3'
-gem 'uglifier', '2.1.1'
+gem 'sass-rails'
+gem 'uglifier'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
-gem 'turbolinks', '1.1.1'
-gem 'jbuilder', '1.0.2'
+gem 'turbolinks'
+# gem 'jbuilder', '1.0.2'
 gem 'ejs'
+gem 'will_paginate'
 
+# authentication
 gem 'devise'
 gem 'omniauth'
 gem 'omniauth-facebook'
@@ -18,13 +24,15 @@ gem 'omniauth-linkedin'
 gem 'omniauth-github'
 gem 'omniauth-google-oauth2'
 
-gem 'thin'
-gem 'bcrypt-ruby', '3.1.2'
-gem 'faker', '1.1.2'
-gem 'will_paginate'
-gem 'closure_tree'
+# authorization
+gem 'pundit'
+
+# data structure
 gem 'ancestry'
 gem 'acts_as_list'
+
+# other
+gem 'faker', '1.1.2'
 gem 'ckeditor_rails'
 gem 'annotate', '~> 2.6.5'
 
@@ -62,6 +70,7 @@ group :production do
   gem 'rails_12factor', '0.0.2'
 end
 
+# nlp
 gem 'treat'
 gem 'activesupport'
 gem 'stanford-core-nlp'
