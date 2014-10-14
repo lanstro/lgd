@@ -28,8 +28,6 @@ class ActsController < ApplicationController
 		@acts=policy_scope(Act)
 		if @acts
 			@acts=@acts.paginate(page: params[:page])
-		else
-			raise "no @acts.  @acts is "+@acts.inspect
 		end
 	end
 	

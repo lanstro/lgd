@@ -1,7 +1,7 @@
 <% provide(:title, 'All legislation') %>
 <h1>Index of legislation</h1>
 <% if !@acts or @acts.size == 0 %>
-	<p>No legislation available.  @acts is <%= @acts.inspect %></p>
+	<p>No legislation available.</p>
 <% else %>
 	<%= will_paginate %>
 	<ul class = "acts" data-no-turbolink>
