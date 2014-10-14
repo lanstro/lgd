@@ -1,7 +1,12 @@
 <li>
 	<%= link_to act.title, act %>
-  <% if current_user and current_user.admin? %>
+	<% if !act.published %>
+		 (unpublished)
+	<% end %>
+  <% if policy(act).edit? %>
 		| <%=  link_to "edit", edit_act_path(act) %>
+	<% end %>
+	<% if policy(act).destroy? %>
     | <%= link_to "delete", act, method: :delete,
                                  data: { confirm: "You sure?" } %>
   <% end %>

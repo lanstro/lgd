@@ -14,6 +14,7 @@
 #  act_type      :string(255)
 #  year          :integer
 #  number        :integer
+#  published     :boolean
 #
 # Indexes
 #

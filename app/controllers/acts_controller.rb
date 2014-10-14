@@ -1,13 +1,15 @@
 class ActsController < ApplicationController
 	
-	before_action :admin_user,     only: [:new, :edit, :update, :create, :destroy, :parse, :reset_parsing]
+	after_filter :verify_authorized, except: [:show, :index, :containers_json]
 	
   def new
 		@act = Act.new
+		authorize @act
   end
 
 	def create
 		@act = Act.new(user_params)
+		authorize @act
     if @act.save
 			flash[:success] = "New act created!"
       redirect_to @act
@@ -18,14 +20,22 @@ class ActsController < ApplicationController
 	
   def edit
 		@act = Act.find_by(id: params[:id])
+		authorize @act
   end
 	
 	def index
-		@acts=Act.paginate(page: params[:page])
+		
+		@acts=policy_scope(Act)
+		if @acts
+			@acts=@acts.paginate(page: params[:page])
+		else
+			raise "no @acts.  @acts is "+@acts.inspect
+		end
 	end
 	
 	def update
 		@act = Act.find_by(id: params[:id])
+		authorize @act
     if @act.update_attributes(user_params)
 			flash[:success] = "Act updated"
       redirect_to @act
@@ -39,19 +49,23 @@ class ActsController < ApplicationController
   end
 
   def destroy
-		Act.find_by(id: params[:id]).destroy
+		@act = Act.find_by(id: params[:id])
+		authorize @act
+		@act.destroy
     flash[:success] = "Act deleted."
     redirect_to acts_url
   end
 	
 	def parse  
 		@act = Act.find_by(id: params[:id])
+		authorize @act
 		@act.parse
 		redirect_to @act
 	end
 	
 	def reset_parsing
 		@act = Act.find_by(id: params[:id])
+		authorize @act
 		@act.containers.destroy_all
 		redirect_to @act
 	end
@@ -64,6 +78,20 @@ class ActsController < ApplicationController
 			# option to show rest of tree like reddit
 			# make the 7 into a constant somewhere
 		end
+	end
+	
+	def publish
+		@act = Act.find_by_id(params[:id])
+		authorize @act
+		@act.published=true
+		@act.save
+	end
+	
+	def unpublish
+		@act = Act.find_by_id(params[:id])
+		authorize @act
+		@act.published=false
+		@act.save
 	end
 	
 	def user_params

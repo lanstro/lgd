@@ -1,10 +1,14 @@
 <% provide(:title, 'All legislation') %>
 <h1>Index of legislation</h1>
-<%= will_paginate %>
-<ul class = "acts" data-no-turbolink>
-	<%=  render @acts %>
-</ul>
-<%= will_paginate %>
-<% if current_user and current_user.admin? %>
-	<%= link_to "Create new legislation", new_act_path %>
+<% if !@acts or @acts.size == 0 %>
+	<p>No legislation available.  @acts is <%= @acts.inspect %></p>
+<% else %>
+	<%= will_paginate %>
+	<ul class = "acts" data-no-turbolink>
+		<%=  render @acts %>
+	</ul>
+	<%= will_paginate %>
+	<% if policy(@acts).new? %>
+		<%= link_to "Create new legislation", new_act_path %>
+	<% end %>
 <% end %>

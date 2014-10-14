@@ -48,12 +48,16 @@
 #
 
 Lgd::Application.routes.draw do
-  devise_for :users, :controllers => { omniauth_callbacks: 'omniauth_callbacks' }
+  # static pages
   root "static_pages#home"
   match "/help",   to: "static_pages#help",  via: "get"
 	match "/about",  to: "static_pages#about", via: "get"
-
+	
+	# users
+	devise_for :users, :controllers => { omniauth_callbacks: 'omniauth_callbacks'}
 	match '/users/:id/finish_signup' => 'users#finish_signup', via: [:get, :patch], :as => :finish_signup
+	
+	# acts and containers
 	resources :acts do 
 		member do
 			get 'parse'
@@ -63,9 +67,9 @@ Lgd::Application.routes.draw do
 	end
 	resources :containers
 
+	#comments 
 	resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
 	post '/comments/(:parent_id)/new', to: 'comments#create'
-	post '/comments/new', to: 'comments#create', as: :new_comment
 	get '/acts/(:act_id)/comments_json/(:container_id)', to: 'comments#get_comments_by_container'
 	
   # The priority is based upon order of creation: first created -> highest priority.

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141009230258) do
+ActiveRecord::Schema.define(version: 20141014010415) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 20141009230258) do
     t.string   "act_type"
     t.integer  "year"
     t.integer  "number"
+    t.boolean  "published"
   end
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"

@@ -2,14 +2,7 @@ class CommentsController < ApplicationController
   before_filter :authenticate_user!, except: [:get_comments_by_container]
 	before_filter :ensure_signup_complete, only: [:new, :create, :update, :destroy]
 	
-	def index
-		# temporary function
-		@comments = Comment.all
-	end
-	
-	def new
-		@comment = Comment.new(parent_id: params[:parent_id])
-	end
+	after_filter :verify_authorized, except: [:create, :get_comments_by_container]
 	
 	def create
 		error = nil
@@ -41,15 +34,23 @@ class CommentsController < ApplicationController
   end
 
   def edit
+		@comment=Comment.find_by(id: params[:id])
+		authorize @comment		
   end
 
   def update
+		@comment=Comment.find_by(id: params[:id])
+		authorize @comment
   end
 
   def destroy
+		@comment=Comment.find_by(id: params[:id])
+		authorize @comment
   end
 
   def hide
+		@comment=Comment.find_by(id: params[:id])
+		authorize @comment
   end
 	
 	def get_comments_by_container
@@ -68,7 +69,7 @@ class CommentsController < ApplicationController
 	
 	private
 
-	def comment_params
-		params.require(:comment).permit(:content, :container_id)
-	end
+		def comment_params
+			params.require(:comment).permit(:content, :container_id)
+		end
 end
