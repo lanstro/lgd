@@ -42,6 +42,12 @@ class Container < ActiveRecord::Base
 	belongs_to :act
 	has_many :comments, dependent: :destroy
 	
+	has_many :scopes,     as: :scope,   class_name: "Metadatum"
+	has_many :contents,   as: :content, class_name: "Metadatum"
+	
+	delegate :definitions,          to: :scopes
+	delegate :internal_references,  to: :scopes
+	
 	validates_presence_of :act
 	validates :act_id, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :level, presence: true, numericality: {only_integer: true, greater_than: 0}

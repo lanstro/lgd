@@ -38,3 +38,6 @@ STRUCTURAL_ALIASES = {
 	TEXT =>            ["Text"]
 
 }
+
+# scopes for metadata
+SCOPE_ALL_LEGISLATION = -1

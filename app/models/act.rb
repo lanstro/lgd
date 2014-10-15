@@ -99,8 +99,14 @@ SINGLE_LINE_REGEXES = {
 
 class Act < ActiveRecord::Base
 	has_many :containers, dependent: :destroy
-	has_many :comments, :through => :containers
+	has_many :comments,   :through => :containers
 	
+	has_many :scopes,     as: :scope,   class_name: "Metadatum"
+	has_many :contents,   as: :content, class_name: "Metadatum"
+	
+	delegate :definitions,          to: :scopes
+	delegate :internal_references,  to: :scopes
+		
 	validates :title,        presence: true
 	validates :last_updated, presence: true
 	validates :jurisdiction, presence: true, inclusion:    { in: ["Commonwealth", "Victoria", "New South Wales", "Queensland", "Northern Territory", "Australian Capital Territory", "Western Australia", "South Australia", "Tasmania"] }
