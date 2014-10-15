@@ -54,7 +54,7 @@ class MetadatumController < ApplicationController
 		end
 		
 		def user_params
-			params.require(type.downcase.to_sym).permit(:scope_id, :scope_type, :content_id, :content_type, :anchor, :type)
+			params.require(type.downcase.to_sym).permit(:scope_id, :scope_type, :content_id, :content_type, :anchor, :type, :universal_scope)
 		end
 		
 		def set_type

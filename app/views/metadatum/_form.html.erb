@@ -1,19 +1,22 @@
 <%= render 'shared/error_messages', errors: errors %>
 
+<%= f.label :universal_scope %>
+<%= f.check_box :universal_scope %>
+
 <%= f.label :scope_id %>
 <%= f.number_field :scope_id %>
 
 <%= f.label :scope_type %>
-<%= f.text_field :scope_type %>
+<%= f.select(:scope_type, ["", "Act", "Container"])  %>
 
 <%= f.label :content_id %>
 <%= f.number_field :content_id %>
 
 <%= f.label :content_type %>
-<%= f.text_field :content_type %>
+<%= f.select(:content_type, ["Act", "Container"])  %>
 
 <%= f.label :anchor %>
 <%= f.text_field :anchor %>
 
 <%= f.label :type %>
-<%= f.text_field :type %>
+<%= f.select(:type, ["Definition", "Internal_reference", "Hyperlink"]) %>

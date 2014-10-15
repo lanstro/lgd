@@ -2,15 +2,16 @@
 #
 # Table name: metadata
 #
-#  id           :integer          not null, primary key
-#  scope_id     :integer
-#  scope_type   :string(255)
-#  content_id   :integer
-#  content_type :string(255)
-#  anchor       :string(255)
-#  type         :string(255)
-#  created_at   :datetime
-#  updated_at   :datetime
+#  id              :integer          not null, primary key
+#  scope_id        :integer
+#  scope_type      :string(255)
+#  content_id      :integer
+#  content_type    :string(255)
+#  anchor          :text
+#  type            :string(255)
+#  created_at      :datetime
+#  updated_at      :datetime
+#  universal_scope :boolean
 #
 # Indexes
 #

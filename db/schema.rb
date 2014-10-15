@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141015003432) do
+ActiveRecord::Schema.define(version: 20141015073120) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -78,10 +78,11 @@ ActiveRecord::Schema.define(version: 20141015003432) do
     t.string   "scope_type"
     t.integer  "content_id"
     t.string   "content_type"
-    t.string   "anchor"
+    t.text     "anchor"
     t.string   "type"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "universal_scope"
   end
 
   add_index "metadata", ["content_id", "content_type"], name: "index_metadata_on_content_id_and_content_type"

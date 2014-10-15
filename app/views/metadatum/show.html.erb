@@ -1,7 +1,11 @@
 <h1><%= @metadatum.type %></h1>
 <p>Anchor: <%= @metadatum.anchor %></p>
-<p>Scope Type: <%= @metadatum.scope_type %></p>
-<p>Scope Id: <%= @metadatum.scope_id %></p>
+<% if @metadatum.universal_scope %>
+	<p>Scope: Universal</p>
+<% else %>
+	<p>Scope Type: <%= @metadatum.scope_type %></p>
+	<p>Scope Id: <%= @metadatum.scope_id %></p>
+<% end %>
 <p>Content Type: <%= @metadatum.content_type %></p>
 <p>Content ID: <%= @metadatum.content_id %></p>
 <li>
