@@ -1,7 +1,7 @@
 # TODO Medium: work out how routing in devise works: it doesn't hit this controller
 
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
+
 	before_filter :authenticate_user!, except: [:show, :finish_signup]
 
   # GET/PATCH /users/:id/finish_signup
@@ -19,10 +19,6 @@ class UsersController < ApplicationController
   end
 
   private
-    def set_user
-      @user = User.find(params[:id])
-    end
-
     def user_params
       accessible = [ :name, :email ] # extend with your own params
       accessible << [ :password, :password_confirmation ] unless params[:user][:password].blank?

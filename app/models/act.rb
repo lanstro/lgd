@@ -102,7 +102,7 @@ class Act < ActiveRecord::Base
 	has_many :comments,   :through => :containers
 	
 	has_many :scopes,     as: :scope,   class_name: "Metadatum"
-	has_many :contents,   as: :content, class_name: "Metadatum"
+	has_many :contents,   as: :content, class_name: "Metadatum", dependent: :destroy
 	
 	delegate :definitions,          to: :scopes
 	delegate :internal_references,  to: :scopes

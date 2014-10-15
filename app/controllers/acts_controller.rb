@@ -1,6 +1,7 @@
 class ActsController < ApplicationController
 	
 	after_filter :verify_authorized, except: [:show, :index, :containers_json]
+	before_action :set_act, except: [:new, :index, :create]
 	
   def new
 		@act = Act.new
@@ -19,12 +20,10 @@ class ActsController < ApplicationController
 	end
 	
   def edit
-		@act = Act.find_by(id: params[:id])
 		authorize @act
   end
 	
 	def index
-		
 		@acts=policy_scope(Act)
 		if @acts
 			@acts=@acts.paginate(page: params[:page])
@@ -32,7 +31,6 @@ class ActsController < ApplicationController
 	end
 	
 	def update
-		@act = Act.find_by(id: params[:id])
 		authorize @act
     if @act.update_attributes(user_params)
 			flash[:success] = "Act updated"
@@ -43,11 +41,9 @@ class ActsController < ApplicationController
 	end
 
   def show
-		@act = Act.find_by(id: params[:id])
   end
 
   def destroy
-		@act = Act.find_by(id: params[:id])
 		authorize @act
 		@act.destroy
     flash[:success] = "Act deleted."
@@ -55,23 +51,20 @@ class ActsController < ApplicationController
   end
 	
 	def parse  
-		@act = Act.find_by(id: params[:id])
 		authorize @act
 		@act.parse
 		redirect_to @act
 	end
 	
 	def reset_parsing
-		@act = Act.find_by(id: params[:id])
 		authorize @act
 		@act.containers.destroy_all
 		redirect_to @act
 	end
 	
 	def containers_json
-		act = Act.find_by_id(params[:id])
 		respond_to do |format|
-			format.json { render :json => act.containers.to_depth(7).arrange_serializable.to_json}
+			format.json { render :json => @act.containers.to_depth(7).arrange_serializable.to_json}
 			# TODO HIGH: indicate when not everything has been loaded
 			# option to show rest of tree like reddit
 			# make the 7 into a constant somewhere
@@ -79,22 +72,26 @@ class ActsController < ApplicationController
 	end
 	
 	def publish
-		@act = Act.find_by_id(params[:id])
 		authorize @act
 		@act.published=true
 		@act.save
 	end
 	
 	def unpublish
-		@act = Act.find_by_id(params[:id])
 		authorize @act
 		@act.published=false
 		@act.save
 	end
 	
-	def user_params
-		params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated)
-	end
+	private
+		
+		def set_act
+			@act = Act.find_by_id(params[:id])
+		end
+		
+		def user_params
+			params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated)
+		end
 	
 end
 

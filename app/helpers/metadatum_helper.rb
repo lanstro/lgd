@@ -1,0 +1,2 @@
+module MetadatumHelper
+end

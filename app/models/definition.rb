@@ -19,10 +19,10 @@
 #
 
 class Definition < Metadatum
-	validates :scope_id, presence: true, numericality: {only_integer: true, greater_than: (SCOPE_ALL_LEGISLATION - 1) }
+	validates :scope, presence: { :message => "does not exist." }
 	validates :scope_type, presence: true, inclusion:    { in: ["Act", "Container"] }
 	
-	validates :content_id, presence: true, numericality: {only_integer: true, greater_than: 0 }
+	validates :content, presence: { :message => "does not exist." }
 	validates :content_type, presence: true, inclusion:    { in: ["Act", "Container"] }
 	
 	

@@ -1,6 +1,7 @@
 class ContainersController < ApplicationController
 	
 	after_filter :verify_authorized, except: [:show]
+	before_action :set_container, except: [:new, :create]
 		
   def new
 		@container = Container.new
@@ -19,13 +20,11 @@ class ContainersController < ApplicationController
 	end
 
   def edit
-		@container = Container.find_by(id: params[:id])
 		authorize @container
 		@act = @container.act
   end
 	
 	def update
-		@container = Container.find_by(id: params[:id])
 		authorize @container
 		if @container.update_attributes(user_params)
 			flash[:success] = "Section updated"
@@ -36,12 +35,10 @@ class ContainersController < ApplicationController
 	end
 
   def show
-		@container = Container.find_by(id: params[:id])
 		@act = @container.act
   end
 
   def destroy
-		@container=Container.find_by(id: params[:id])
 		authorize @container
 		@container.destroy
     flash[:success] = "Container deleted."
@@ -49,6 +46,11 @@ class ContainersController < ApplicationController
   end
 	
 	private
+		
+		def set_container
+			@container=Container.find_by(id: params[:id])
+		end
+		
 		def user_params
 			params.require(:container).permit(:number, :parent_id, :depth, :content, :special_paragraph)
 		end

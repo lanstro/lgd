@@ -1,0 +1,2 @@
+class DefinitionPolicy < MetadatumPolicy
+end

@@ -1,0 +1,2 @@
+class HyperlinkPolicy < MetadatumPolicy
+end

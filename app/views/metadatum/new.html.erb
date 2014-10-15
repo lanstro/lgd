@@ -1,0 +1,9 @@
+<% provide(:title, "New Metadatum") %>
+<h1>Create new metadatum</h1>
+
+<div class="row">
+	<%= form_for(@metadatum) do |f| %>
+		<%= render 'form', f: f, errors: @metadatum.errors %>
+		<%= f.submit "Create new metadatum", class: "btn btn-large btn-primary" %>
+	<% end %>
+</div>

@@ -48,6 +48,13 @@
 #
 
 Lgd::Application.routes.draw do
+  get "metadatum/new"
+  get "metadatum/edit"
+  get "metadatum/delete"
+  get "metadatum/update"
+  get "metadatum/create"
+  get "metadatum/show"
+  get "metadatum/index"
   # static pages
   root "static_pages#home"
   match "/help",   to: "static_pages#help",  via: "get"
@@ -71,6 +78,12 @@ Lgd::Application.routes.draw do
 	resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
 	post '/comments/(:parent_id)/new', to: 'comments#create'
 	get '/acts/(:act_id)/comments_json/(:container_id)', to: 'comments#get_comments_by_container'
+	
+	#metadata
+	resources :metadata,            controller: 'metadatum', type: 'Metadatum'
+	resources :internal_references, controller: 'metadatum', type: 'Internal_reference'
+	resources :definitions,         controller: 'metadatum', type: 'Definition'
+	resources :hyperlinks,          controller: 'metadatum', type: 'Hyperlink'
 	
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

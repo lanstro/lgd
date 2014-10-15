@@ -2,10 +2,8 @@
 <h1>Create new legislation</h1>
 
 <div class="row">
-  <div class="span6 offset1">
-    <%= form_for(@act) do |f| %>
-			<%= render 'form', f: f, errors: @act.errors %>
-      <%= f.submit "Create new act", class: "btn btn-large btn-primary" %>
-    <% end %>
-  </div>
+	<%= form_for(@act) do |f| %>
+		<%= render 'form', f: f, errors: @act.errors %>
+		<%= f.submit "Create new act", class: "btn btn-large btn-primary" %>
+	<% end %>
 </div>
