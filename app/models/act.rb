@@ -136,7 +136,6 @@ class Act < ActiveRecord::Base
 			@open_containers.push  result
 		end
 		
-		result.parse
 		puts "about to save "+result.inspect if DEBUG
 		if !result.save
 			raise result.errors.messages.inspect
@@ -264,6 +263,24 @@ class Act < ActiveRecord::Base
 		entity.paragraphs.each { |p| process_entity(p) if p != entity}
 	end
 	
+	# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
+	
+	def recursive_definition_parse(node)
+		
+		node.each do |child, grandchildren|
+			child.parse_definitions
+			recursive_definition_parse(grandchildren)
+		end
+		
+	end
+	
+	def parse_definitions
+		roots = self.containers.roots
+		roots.each do |container|
+			recursive_definition_parse(container.subtree.arrange)
+		end
+	end
+	
 	def parse
 		
 		@nlp_act = document Rails.root+'legislation/'+'test.txt'
@@ -273,7 +290,16 @@ class Act < ActiveRecord::Base
 		@open_containers  = []
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
+		puts "moving onto second bit"
+		puts "moving onto second bit"
+		puts "moving onto second bit"
+		puts "moving onto second bit"
+		puts "moving onto second bit"
+		puts "moving onto second bit"
 		
+		parse_definitions
+		
+		# parse_anchors
 	end
 
 	def self.from_string_lgd(string)

@@ -15,7 +15,22 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 				console.log("picked up sync - showing mainview");
 				Lgd.MainViewRegion.show(contentView);
 			});
-			act.fetch();
+			act.on("change", function(){
+				console.log("picked up change - showing mainview");
+				Lgd.MainViewRegion.show(contentView);
+			});
+			act.on("error", function(args){
+				console.log("args");
+			});
+			act.fetch({success: function(	args){
+					console.log("Success");
+					console.log(args);
+				},
+				failure: function(	args){
+					console.log("Failure");
+					console.log(args);
+				}
+			});
 			
 			// mouseover highlight
 			

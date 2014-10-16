@@ -1,3 +1,14 @@
 <li>
-	<%= metadatum.inspect %>
+	<ul>
+		<li>id: <%= metadatum.id %></li>
+		<li>anchor: <%= metadatum.id.inspect %></li>
+		<% if metadatum.universal_scope %>
+			<li>scope: universal</li>
+		<% else %>
+			<li>scope: <%= metadatum.scope.content %></li>
+		<% end %>
+		<li>linked content: <%= metadatum.content.content %></li>
+		<li>linked parent: <%= metadatum.content.parent.inspect %></li>
+		<li><%= metadatum.inspect %></li>
+	</ul>
 </li>

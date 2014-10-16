@@ -22,7 +22,7 @@ class Comment < ActiveRecord::Base
 	
 	validates :user, presence: true
 	validates :container, presence: true
-	validates :parent, :allow_blank => true
+	validates :parent, presence: true, :allow_blank => true
 	belongs_to :user
 	belongs_to :container
 	delegate :act, :to => :container, :allow_nil => true

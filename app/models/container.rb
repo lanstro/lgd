@@ -27,8 +27,17 @@
 #   DEFINITIONS AND CROSS REFERENCES                               #
 ####################################################################
 
-SCOPE_REGEX =    /[Ii]n( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
-PURPOSES_REGEX = /[Ff]or the purposes of (\w+)( [\diI]+\w*(\(\w+\))?)?[,:-]/
+SCOPE_REGEX =    /[Ii]n(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-]/
+PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-]/
+
+# for both regexes:
+# match group 1 is the whole scope, ie 'this Act', 'section 2', etc
+# match group 2 is 'this' or 'any' - optional
+# match group 3 is the structural tag, ie 'Act', 'section', etc - always there
+# match group 4 is is the number, ie '34', '(b)' - optional
+
+REGEX_WHOLE_SCOPE     = 1
+REGEX_STRUCTURAL_NAME = 3
 
 DEFINITION_WRAPPERS = ["<span class=defined_term>", "</span>"]
 REFERENCE_WRAPPERS  = ["<span class=reference>",    "</span>"]
@@ -52,10 +61,10 @@ class Container < ActiveRecord::Base
 	validates :level, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - needs to be a formal relation
 	
-	@is_definition_zone = nil
+	@definition_zone = nil
 	
 	if Rails.env.development?
-		attr_accessor :nlp_handle, :mp, :ip, :sp
+		attr_accessor :nlp_handle, :mp, :ip, :sp, :definition_zone
 	end
 		
 	def type
@@ -132,9 +141,7 @@ class Container < ActiveRecord::Base
 	end
 
 	def definition_section_heading?
-		if !@nlp_handle
-			initialize_nlp
-		end
+		initialize_nlp
 		words = @nlp_handle.words
 		if words.size > 3       # TODO LOW - make more sophisticated
 			return false
@@ -143,49 +150,72 @@ class Container < ActiveRecord::Base
 	end
 	
 	def is_definition_zone?
-		if @is_definition_zone != nil
-			puts "using memoized value"
-			return @is_definition_zone 
+		if @definition_zone != nil
+			raise "using memoized value"
+			return @definition_zone[:is_definition] 
 		end
+		initialize_nlp
 		if self.level <= SECTION
-			@is_definition_zone = definition_section_heading?
-			return @is_definition_zone
+			@definition_zone = {is_definition: definition_section_heading? }
+			return @definition_zone[:is_definition]
 		end
-		match_scope    =    SCOPE_REGEX.match section.title.to_s
-		match_purposes = PURPOSES_REGEX.match section.title.to_s
-		if match_scope and STRUCTURAL_FEATURE_WORDS.include? match_scope[2].downcase
-			return @is_definition_zone = true
-		elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[1].downcase
-			return @is_definition_zone = true
+		match_scope    =    SCOPE_REGEX.match self.content.to_s
+		match_purposes = PURPOSES_REGEX.match self.content.to_s
+		if match_scope and STRUCTURAL_FEATURE_WORDS.include? match_scope[REGEX_STRUCTURAL_NAME].downcase
+			@definition_zone = {is_definition: true,
+			                    scope:         match_scope[REGEX_WHOLE_SCOPE]}
+			return true
+		elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[REGEX_STRUCTURAL_NAME].downcase
+			@definition_zone = {is_definition: true,
+													scope:         match_purposes[REGEX_WHOLE_SCOPE]}
+			return true
 			# if the heading or title of this section is dictionary or definit*
 		elsif definition_section_heading?
-			return @is_definition_zone = true
-			# if more elegant way of detecting subheadings found, this needs changing too
-			# if it's a subsection or lower, and the previous subheading is dictionary or definit*
-		end
-		if self.parent and self.parent.is_definition_zone?
-			return @is_definition_zone = true
+			@definition_zone = {is_definition: true }
+			return true
+		else
+			parent=self.parent
+			if parent and parent.is_definition_zone?
+				@definition_zone = {is_definition: true,
+														scope: 			   parent.definition_scope}
+				return true
+			end
 		end
 		# treat same as previous sibling
 		previous = self.higher_item
 		if previous
-			return @is_definition_zone = previous.is_definition_zone?
+			@definition_zone = {is_definition: previous.is_definition_zone? ,
+			                    scope:         previous.definition_scope}
 		end
-		return @is_definition_zone = false
+		@definition_zone = { is_definition: false }
+		return false
+	end
+	
+	def definition_scope
+		if !@definition_zone
+			is_definition_zone?
+		end
+		return @definition_zone[:scope]
 	end
 	
 	def initialize_nlp
-		@nlp_handle = paragraph self.content
-		@nlp_handle.apply(:segment, :tokenize, :stem)
+		if !@nlp_handle
+			@nlp_handle = paragraph self.content
+			@nlp_handle.apply(:segment, :tokenize, :stem)
+		end
 	end
 		
-	def parse
+	def parse_definitions
 		start_time=Time.now
 		initialize_nlp
-		if self.parent and self.parent.is_definition_zone?
+		if is_definition_zone? or (self.parent and self.parent.is_definition_zone?)
 			process_definitions
 		end
-		puts "parsing definitions took "+(Time.now-start_time).to_s if DEBUG
+		puts "parsing definitions for "+self.content if DEBUG
+		puts "It took "+(Time.now-start_time).to_s if DEBUG
+	end
+	
+	def parse_references
 		start_time = Time.now
 		process_references
 		puts "parsing references took "+(Time.now-start_time).to_s if DEBUG
@@ -223,6 +253,71 @@ class Container < ActiveRecord::Base
 		words.last.value  = words.last.value + close_tag
 	end
 	
+	def translate_scope(scope_string)
+		scope_string.strip!.downcase!
+		result = {}
+		if scope_string == "any act"
+			result[:universal_scope] = true
+		else
+			result[:universal_scope] = false
+			p = phrase scope_string
+			p.tokenize
+			if p.words[0].value == "this"
+				word = p.words[1].value
+				
+				if !STRUCTURAL_FEATURE_WORDS.include?(word)
+					# should just be a log when this is live rather than a raise
+					raise "don't know what type of structural term this is "+p.words.join(" ")
+				end
+				if word == "Act"
+					result[:scope] = this.act
+				else
+					word_capitalized = word
+					word_capitalized[0] = word_capitalized[0].capitalize
+					level = nil
+					STRUCTURAL_ALIASES.each do | key, aliases|
+						if aliases.include? word or aliases.include? word_capitalized
+							level = key
+							break
+						end
+					end
+					
+					if !level
+						raise "couldn't find structural term for "+word
+					end
+					parent = self.ancestors.where(level: level).first
+					if !parent
+						raise "couldn't find parent for "+self.inspect+".  Was looking for a level "+level.to_s
+					end
+					puts "found parent for "+self.content
+					puts "it was "+parent.inspect
+					result[:scope] = parent
+				end
+			else
+				# deal with when it's something like "section xxx"
+			end
+		end
+		return result
+	end
+	
+	def create_definition(params)
+		
+		d = Definition.new
+		d.anchor = [params[:anchor]]
+		d.content=self
+		scope = translate_scope @definition_zone[:scope]
+		if scope[:universal_scope]
+			d.universal_scope = true
+		else
+			puts "about to assign scope"
+			d.scope = scope[:scope]
+			puts "successfully assigned scope"
+		end
+		if !d.save
+			raise d.errors.messages
+		end
+	end
+	
 	def wrap_defined_terms(definition_phrases)
 		definition_phrases.each do |p| 
 			puts "wrapping "+p.to_s+" " if DEBUG
@@ -230,7 +325,7 @@ class Container < ActiveRecord::Base
 			puts "index is "+index.to_s
 			if index==-1
 				puts "cannot wrap definition phrase as it is the first phrase" if DEBUG
-				return
+				next
 			end
 			siblings=p.parent.children
 			while index > 0 and siblings[index].type != :phrase
@@ -241,8 +336,11 @@ class Container < ActiveRecord::Base
 			if subject_words.size == 0
 				subject_words=siblings[index].children
 			end
+			create_definition anchor: subject_words.join(" ")
 			wrap_words_with_tags(subject_words, DEFINITION_WRAPPERS[0], DEFINITION_WRAPPERS[1])
 		end
+		self.content = @nlp_handle.to_s
+		self.save
 	end
 	
 	def process_definitions
@@ -259,35 +357,34 @@ class Container < ActiveRecord::Base
 				next means.get(:category) == "noun"
 			end
 		end
-		puts "wrapping @mp phrases "+@mp.inspect+" " if DEBUG
-		wrap_defined_terms(@mp)
+		if @mp.size>0
+			puts "wrapping @mp phrases "+@mp.inspect+" " if DEBUG
+			wrap_defined_terms(@mp)
+			return
+		end
 		
-		if @mp.size == 0
-			@ip = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "includ", true)
-			if @ip and @mp 
-				@ip -= @mp
-			end
+		@ip = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "includ", true)
+		
+		if @ip.size>0
 			puts "wrapping @ip phrases "+@ip.inspect+" " if DEBUG
 			wrap_defined_terms(@ip)
-			
-			if @ip.size == 0
-				@sp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "see", false)
-				# exclude 'Note: see'
-				@sp.delete_if do |p|
-					para = p.ancestor_with_type(:zone)
-					index = para.words.index { |w| w.to_s.downcase == "see" }
-					if !index or index==0 or para.words[index-1].to_s.downcase == 'note'
-						next true
-					end
-					next false
-				end
-				puts "wrapping @sp phrases "+@sp.inspect+" " if DEBUG
-				wrap_defined_terms(@sp)
-			end
+			return
 		end
-
-		self.content = @nlp_handle.to_s
-
+			
+		@sp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "see", false)
+		# exclude 'Note: see'
+		@sp.delete_if do |p|
+			para = p.ancestor_with_type(:zone)
+			index = para.words.index { |w| w.to_s.downcase == "see" }
+			if !index or index==0 or para.words[index-1].to_s.downcase == 'note'
+				next true
+			end
+			next false
+		end
+		if @sp.size > 0
+			puts "wrapping @sp phrases "+@sp.inspect+" " if DEBUG
+			wrap_defined_terms(@sp)
+		end
 	end
 	
 	def process_references
