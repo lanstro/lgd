@@ -39,8 +39,9 @@ PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\)
 REGEX_WHOLE_SCOPE     = 1
 REGEX_STRUCTURAL_NAME = 3
 
-DEFINITION_WRAPPERS = ["<span class=defined_term>", "</span>"]
-REFERENCE_WRAPPERS  = ["<span class=reference>",    "</span>"]
+DEFINITION_WRAPPERS        = ["<span class=defined_term>", "</span>"]
+REFERENCE_WRAPPERS         = ["<span class=reference>",    "</span>"]
+DEFINITION_ANCHOR_WRAPPERS = ["<span class=definition_anchor",    "</span>"]
 
 class Container < ActiveRecord::Base
 	
@@ -215,10 +216,10 @@ class Container < ActiveRecord::Base
 		puts "It took "+(Time.now-start_time).to_s if DEBUG
 	end
 	
-	def parse_references
+	def parse_anchors
 		start_time = Time.now
-		process_references
-		puts "parsing references took "+(Time.now-start_time).to_s if DEBUG
+		process_anchors
+		puts "parsing anchors took "+(Time.now-start_time).to_s if DEBUG
 	end
 	
 	def entity_includes_stem_or_word?(e, s, stem=true, downcase=true)
@@ -253,48 +254,66 @@ class Container < ActiveRecord::Base
 		words.last.value  = words.last.value + close_tag
 	end
 	
+	def alias_to_level(word)
+		puts "converting "+word.inspect+" to a level" if DEBUG
+		word_capitalized = word
+		word_capitalized[0] = word_capitalized[0].capitalize
+		level = nil
+		STRUCTURAL_ALIASES.each do | key, aliases|
+			if aliases.include? word or aliases.include? word_capitalized
+				level = key
+				break
+			end
+		end
+		if !level
+			raise "couldn't find structural term for "+word
+		end
+		return level
+	end
+	
 	def translate_scope(scope_string)
+		puts "translating "+scope_string.inspect+" into a scope"
 		scope_string.strip!.downcase!
 		result = {}
 		if scope_string == "any act"
 			result[:universal_scope] = true
 		else
 			result[:universal_scope] = false
-			p = phrase scope_string
-			p.tokenize
-			if p.words[0].value == "this"
-				word = p.words[1].value
-				
-				if !STRUCTURAL_FEATURE_WORDS.include?(word)
+			p = scope_string.gsub("/[.,]/", "").split(" ")
+			if p[0] == "this"
+				if !STRUCTURAL_FEATURE_WORDS.include?(p[1])
 					# should just be a log when this is live rather than a raise
-					raise "don't know what type of structural term this is "+p.words.join(" ")
+					raise "don't know what type of structural term this is "+scope_string
 				end
-				if word == "Act"
+				if p[1] == "act"
 					result[:scope] = this.act
 				else
-					word_capitalized = word
-					word_capitalized[0] = word_capitalized[0].capitalize
-					level = nil
-					STRUCTURAL_ALIASES.each do | key, aliases|
-						if aliases.include? word or aliases.include? word_capitalized
-							level = key
-							break
-						end
-					end
-					
-					if !level
-						raise "couldn't find structural term for "+word
-					end
-					parent = self.ancestors.where(level: level).first
+					parent = self.ancestors.find_by(level: alias_to_level(p[1]))
 					if !parent
 						raise "couldn't find parent for "+self.inspect+".  Was looking for a level "+level.to_s
 					end
-					puts "found parent for "+self.content
-					puts "it was "+parent.inspect
 					result[:scope] = parent
 				end
 			else
 				# deal with when it's something like "section xxx"
+				if !STRUCTURAL_FEATURE_WORDS.include?(p[0])
+					# should just be a log when this is live rather than a raise
+					raise "don't know what type of reference this is: "+p.words.join(" ")
+				end
+				level = alias_to_level(word)
+				if !p[1]
+					raise "weird structural term without a number reference: "+scope_string
+				end
+				# TODO High: write the following code
+				# if the level is higher than SECTION, then just look in the Act for that level with that number
+				# else
+					# if no braces or just one set of braces, then look for that number
+					# if multiple braces, break then up into an array
+						# if there's a number in front of the first brace, then that's the section number in the current Act
+							# go down the chain of braces and pull out the relevant subtrees at each point
+						# if no number, scope it to the current section
+							# do the same thing
+				raise "trying to find scope for "+scope_string
 			end
 		end
 		return result
@@ -387,40 +406,56 @@ class Container < ActiveRecord::Base
 		end
 	end
 	
-	def process_references
+	def process_anchors
 		
-		# find all Act names so we can italicise them
+		if self.level <= SECTION
+			return
+		end
 		
-		if entity_includes_stem_or_word?(@nlp_handle, "Act", false, false)
-			indices = []
-			index = 0
-			tokens = @nlp_handle.tokens
-			
-			tokens.each do |w|
-				if w.type == :word and w.value == "Act"
-					indices.push index
+		relevant_metadata = self.act.relevant_metadata
+		# then add anything with scope == this item or its parents
+		current = self
+		
+		while current != nil
+			current.scopes.each do |meta|
+				if meta.content != self
+					relevant_metadata.push meta
 				end
-				index+=1
 			end
-			
-			indices.each do |i|
-				
-				next if !tokens[i+1] or tokens[i+1].type!= :number
-				last_word = tokens[i+1]
-				first_word = nil
-				current=i-2
-				while current > 0 
-					if tokens[current].value.downcase == 'the'
-						first_word = tokens[current+1]
-						break
-					end
-					current-=1
-				end
-				next if !first_word
-				wrap_words_with_tags([first_word, last_word], REFERENCE_WRAPPERS[0], REFERENCE_WRAPPERS[1])
-				self.content = @nlp_handle.to_s
+			current=current.parent
+		end
+		
+		relevant_metadata.each do |meta|
+			meta.anchor.each do |anchor|
+				# no good - need to recognise word boundaries
+				self.content.gsub!(/#{anchor}(?=[\W])/, DEFINITION_ANCHOR_WRAPPERS[0]+" data-metadata-link='"+meta.id.to_s+"'>"+anchor+DEFINITION_ANCHOR_WRAPPERS[1])
 			end
 		end
+		
+		words=self.content.split(" ")
+		indices = words.each_index.select{ |i| words[i] == 'Act' }
+			
+		indices.each do |i|
+			if words[i+1] and words[i+1].to_i > 0
+				last_word_index = i+1
+			else
+				last_word_index = i
+			end
+			first_word = nil
+			current=i-2
+			while current > 0 
+				if words[current].downcase == 'the'
+					first_word_index=current+1
+					break
+				end
+				current-=1
+			end
+			next if !first_word
+			words[first_word_index] = REFERENCE_WRAPPERS[0]+words[first_word_index]
+			words[last_word_index]  = words[last_word_index]+REFERENCE_WRAPPERS[1]
+		end
+		self.content = words.join(" ")
+		self.save
 		# TODO MEDIUM: find all 'acts', 'Chapters', 'Parts', etc and metadata them
 	end
 	

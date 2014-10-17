@@ -265,22 +265,24 @@ class Act < ActiveRecord::Base
 	
 	# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
 	
-	def recursive_definition_parse(node)
-		
+	def recursive_definition_parse(node, task)
 		node.each do |child, grandchildren|
-			child.parse_definitions
-			recursive_definition_parse(grandchildren)
+			if task == :definitions
+				child.parse_definitions
+			elsif task == :anchors
+				child.parse_anchors
+			end
+			recursive_definition_parse(grandchildren, task)
 		end
-		
 	end
 	
-	def parse_definitions
+	def parse_tree(task)
 		roots = self.containers.roots
 		roots.each do |container|
-			recursive_definition_parse(container.subtree.arrange)
+			recursive_definition_parse(container.subtree.arrange, task)
 		end
 	end
-	
+
 	def parse
 		
 		@nlp_act = document Rails.root+'legislation/'+'test.txt'
@@ -297,9 +299,21 @@ class Act < ActiveRecord::Base
 		puts "moving onto second bit"
 		puts "moving onto second bit"
 		
-		parse_definitions
+		parse_tree :definitions
+		parse_tree :anchors
+	end
+	
+	def relevant_metadata
+		# gather all relevant anchors
+		# start with those with universal scope
+		relevant_metadata = Metadatum.where(universal_scope:true)
+		# add to it the metadata with scope being the entire Act
+		if self.scopes.size > 0
+			relevant_metadata.push self.scopes
+		end
 		
-		# parse_anchors
+		return relevant_metadata
+		
 	end
 
 	def self.from_string_lgd(string)
