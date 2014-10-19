@@ -2,19 +2,7 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 
 	Entities.Container = Backbone.Model.extend ({
 		
-		strip_number: function(){
-			var content = this.get('content');
-			if(this.get('level') >= <%= SUBSECTION %> && this.get('level') <= <%= SUBSUBPARAGRAPH %>){
-				var close_brace_index = content.indexOf(')');
-				return $.trim(content.slice(close_brace_index+1));
-			}
-			else {
-				return content;
-			}
-		},
-		
 		initialize: function(){
-			this.set('strip_number', this.strip_number());
 			this.set('shortContent', this.shortContent());
 			var children = this.get("children");
 			if(children){

@@ -25,6 +25,7 @@
 # TODO LOW - more sophisticated working out whether (i) is an alphabetical element or a roman numeral
 
 include Treat::Core::DSL
+include LgdLog
 
 ####################################################################
 #   STRUCTURAL REGEXES                                             #
@@ -35,7 +36,6 @@ include Treat::Core::DSL
 # Part titles: in a string like 'Part xxx-yyyy' or 'Part xxx - yyy', extracts the xxx into variable 1 and yyyy into 2,
 # Section titles: in a string like 'ddww yyyyy', extracts ddww into variable 1 and yyyyy into variable 2
 # Subsection titles: in a string like (xx) yyyy', extracts (xx) into variable 1 and yyyy into variable 2
-# Notes and examples: matches whole line if the string starts with 'Note: ' or 'Example: '
 # Subsection and lower matches things that start with 0 or more tabs, then things within ()s:
 	# Subsection matches a number followed by optional letters
 	# Paragraph matches lower case letters  - NEED CONFLICT RESOLUTION FOR (i)
@@ -44,17 +44,17 @@ include Treat::Core::DSL
 # PARA_LIST_HEAD matches semicolons at the end of lines (so paragraphs that are headers for lists)
 
 STRUCTURAL_REGEXES = {
-	SECTION          => [ /\A(\d+\w*)\s+(.+)\Z/,                           "Section"     ],
-	SUBSECTION       => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,              "Subs_1"      ],
-	# VERY IMPORTANT that SUBPARAGRAPH remains above PARAGRAPH
-	SUBPARAGRAPH 	   => [ /\A\t*\(((xc|xl|l?x{0,3})(ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3" ],  # catches empty braces too - may need to account for that case in future
-	PARAGRAPH        => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                    "Subs_2"      ],
-	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                    "Subs_4"      ],
-	PARA_LIST_HEAD   => [ /:\s*\z/,                                        "p"           ],  # this one has to come after all the subsection ones
-	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——](.+)\Z/,    "Subdivision" ],
-	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——](.+)\Z/,       "Division"    ],
-	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[-——](.+)\Z/ ,          "Part",       ],
-	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[-——](.+)\Z/,        "Chapter",    ],
+	SECTION          => [ /\A(\d+\w*)\s+(.+)\Z/,                                      "Section"     ],
+	SUBSECTION       => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,                         "Subs_1"      ],
+	# VERY IMPORTANT that SUBPARAGRAPH remains above PARAGRAPH, as it loops through this in order, and several roman numeral sequences register under both regexes
+	SUBPARAGRAPH 	   => [ /\A\t*\(((?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3" ],  # catches empty braces too - may need to account for that case in future
+	PARAGRAPH        => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                               "Subs_2"      ],
+	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                               "Subs_4"      ],
+	PARA_LIST_HEAD   => [ /:\s*\z/,                                                   "p"           ],  # this one has to come after all the subsection ones
+	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——](.+)\Z/,              "Subdivision" ],
+	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——](.+)\Z/,                 "Division"    ],
+	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[-——](.+)\Z/ ,                    "Part",       ],
+	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[-——](.+)\Z/,                  "Chapter",    ],
 }
 
 KEY   = 0
@@ -98,6 +98,7 @@ SINGLE_LINE_REGEXES = {
 ####################################################################
 
 class Act < ActiveRecord::Base
+		
 	has_many :containers, dependent: :destroy
 	has_many :comments,   :through => :containers
 	
@@ -121,11 +122,8 @@ class Act < ActiveRecord::Base
 	def create_container(level, content, number, special_type)
 
 		result                     = Container.new
-		result.act_id              = self.id
-		
-		if @open_containers.last
-			result.parent_id         = @open_containers.last.id
-		end
+		result.act                 = self
+		result.parent              = @open_containers.last
 		
 		result.level               = level
 		result.content             = content
@@ -136,7 +134,7 @@ class Act < ActiveRecord::Base
 			@open_containers.push  result
 		end
 		
-		puts "about to save "+result.inspect if DEBUG
+		log "about to save "+result.inspect if DEBUG
 		if !result.save
 			raise result.errors.messages.inspect
 		end
@@ -154,11 +152,16 @@ class Act < ActiveRecord::Base
 		
 		list = last_paragraph_list_head
 		
+		if DEBUG
+			log "should we close previous container?  New level is "+level.inspect+" open containers is:"
+			@open_containers.each { |c| log c.inspect }
+		end
+		
 		if !list
 			# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
 			if DEBUG
-				puts "no list open; current level is "+level.to_s
-				puts "last open container is level "+@open_containers.last.level.to_s+" with content "+@open_containers.last.content
+				log "no list open; current level is "+level.to_s
+				log "last open container is level "+@open_containers.last.level.to_s+" with content "+@open_containers.last.content
 			end
 			return @open_containers.last.level >= level
 		end
@@ -173,36 +176,27 @@ class Act < ActiveRecord::Base
 				head_list-=1
 			end
 			if level <= @open_containers[head_list-1].level
-				if DEBUG
-					puts "new section is superior to the open list - close the open list as well as the previous structural element"
-					puts "open containers is:"
-					@open_containers.each { |c| puts c.inspect }
-				end
-				
-				@open_containers=@open_containers[0..head_list-2]
-				return false
+				log "new section is superior to the open list's parent - close the open list, and then return true so that the open list's parent gets removed too"
+				@open_containers=@open_containers[0..head_list-1]
+				return true
 			end
 			# if it isn't, then it's either a child of the list head, or of the previous item
-			if DEBUG
-				puts "need to decide whether this structural entity is direct child of the list or not" 
-			end
+			log "need to decide whether this structural entity is direct child of the list or not" if DEBUG
 			if @open_containers.last.level == PARA_LIST_HEAD
-				if DEBUG 
-					puts "it's a direct child of the list - returning false"
-				end
+				log "it's a direct child of the list - returning false" if DEBUG 
 				# this is the first child of a list head - it must belong to the list head
 				return false
 			else
 				# fall back to normal rules - see if last item is deeper than new item or not
 				if DEBUG
-					puts "fallback - level is "+level.to_s+" and about to return "+ (@open_containers.last.level >= level).to_s
-					puts "last container is "+@open_containers.last.inspect
+					log "fallback - level is "+level.to_s+" and about to return "+ (@open_containers.last.level >= level).to_s
+					log "last container is "+@open_containers.last.inspect
 				end
 				return @open_containers.last.level >= level
 			end
 		elsif level == PARA_LIST_HEAD
-			# if it's a paragraph list heading, assume that it should just open a new list
-			# MAY NEED TO REVISIT
+			# if it's a paragraph list heading, assume that it should just open a new sub-list under the existing list
+			# TODO low: MAY NEED TO REVISIT
 			return false
 		else
 			# it's a normal paragraph
@@ -243,15 +237,21 @@ class Act < ActiveRecord::Base
 			special_type = entity.get(:special_type)
 		elsif entity.type == :section
 			level   = entity.get(:level)
-			content = entity.title.to_s
+			content = entity.get(:strip_number)
+			if !content
+				content=entity.title.to_s
+			end
 			number  = entity.get(:number)
 		else
 			raise 'unknown entity type '+entity.inspect
 		end
 		
+		log "\n\n" if DEBUG
+		log "processing entity "+content+"\nlevel: "+level.inspect+"\nnumber: "+number.inspect if DEBUG
+		
 		# close off open containers that need to be closed
-		puts " " if DEBUG
-		puts "closing previous containers for "+content if DEBUG
+		log " " if DEBUG
+		log "closing previous containers for "+content if DEBUG
 		while close_previous_container?(level)
 			@open_containers.pop
 		end
@@ -265,21 +265,26 @@ class Act < ActiveRecord::Base
 	
 	# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
 	
-	def recursive_definition_parse(node, task)
+	def recursive_tree_parse(node, task)
 		node.each do |child, grandchildren|
 			if task == :definitions
 				child.parse_definitions
 			elsif task == :anchors
 				child.parse_anchors
+			elsif task == :annotations
+				child.recalculate_annotations
 			end
-			recursive_definition_parse(grandchildren, task)
+			recursive_tree_parse(grandchildren, task)
 		end
 	end
 	
 	def parse_tree(task)
+		if task != :definitions and task != :anchors and task != :annotations
+			return
+		end
 		roots = self.containers.roots
 		roots.each do |container|
-			recursive_definition_parse(container.subtree.arrange, task)
+			recursive_tree_parse(container.subtree.arrange, task)
 		end
 	end
 
@@ -287,20 +292,14 @@ class Act < ActiveRecord::Base
 		
 		@nlp_act = document Rails.root+'legislation/'+'test.txt'
 		@nlp_act.chunk(:legislation)
-		puts "chunked"
+		log "chunked"
 		
 		@open_containers  = []
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
-		puts "moving onto second bit"
-		puts "moving onto second bit"
-		puts "moving onto second bit"
-		puts "moving onto second bit"
-		puts "moving onto second bit"
-		puts "moving onto second bit"
-		
-		parse_tree :definitions
-		parse_tree :anchors
+		#parse_tree :definitions
+		#parse_tree :anchors
+		#parse_tree :annotations
 	end
 	
 	def relevant_metadata
@@ -332,13 +331,14 @@ class Act < ActiveRecord::Base
 		end
 		
 		if matches
-			puts "structural regex matched" if DEBUG
+			log "structural regex matched" if DEBUG
 			result = Treat::Entities::Title.new(string)
 			result.set :level, level
 			result.set :number, matches[1]
+			result.set :strip_number, matches[2]
 			return result
 		else
-			puts "no structural regex " if DEBUG
+			log "no structural regex " if DEBUG
 			result = Treat::Entities::Paragraph.new(string)
 			special_type = nil
 			SINGLE_LINE_REGEXES.each do |array|

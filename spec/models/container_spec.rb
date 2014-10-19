@@ -16,6 +16,7 @@
 #  position          :integer
 #  ancestry          :string(255)
 #  ancestry_depth    :integer
+#  annotated_content :text
 #
 # Indexes
 #

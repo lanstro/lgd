@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141015073120) do
+ActiveRecord::Schema.define(version: 20141017070255) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -29,6 +29,16 @@ ActiveRecord::Schema.define(version: 20141015073120) do
   end
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
+
+  create_table "annotations", force: true do |t|
+    t.integer  "metadatum_id"
+    t.integer  "container_id"
+    t.string   "anchor"
+    t.integer  "position"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "category"
+  end
 
   create_table "comments", force: true do |t|
     t.string   "content"
@@ -58,6 +68,7 @@ ActiveRecord::Schema.define(version: 20141015073120) do
     t.integer  "position"
     t.string   "ancestry"
     t.integer  "ancestry_depth"
+    t.text     "annotated_content"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"

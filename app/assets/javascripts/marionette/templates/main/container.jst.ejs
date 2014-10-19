@@ -4,21 +4,25 @@
 	the logic from here into the Marionette view
 -->
 
-<% if(level <= 5){ %>
-	<h2><%= content %></h2>
+<% if(!annotated_content) annotated_content = content %>
+
+<% if(level < 5){ %>
+	<h2><%= ["Chapter", "Part", "Division", "Subdivision"][level-1]+" "+number+"--"+annotated_content %></h2>
+<% } else if(level == 5) { %>
+	<h2><%= number+" "+annotated_content %></h2>
 <% } else { %>
 	<% if(level <= 9){ %>
 		<table><tbody>
 			<tr>
 				<td class="table_numeral"><p>(<%= number %>)</p></td>
-				<td class="table_content"><p> <%= strip_number %></p></td>
+				<td class="table_content"><p> <%= annotated_content %></p></td>
 			</tr>
 		</tbody></table>
 	<% } else { %>
 		<% if(special_paragraph){ %>
-			<p class=<%= special_paragraph %>><%= content %></p>
+			<p class=<%= special_paragraph %>><%= annotated_content %></p>
 		<% } else { %>
-			<p><%= content %></p>
+			<p><%= annotated_content %></p>
 		<% } %>
 	<% } %>
 <% } %>

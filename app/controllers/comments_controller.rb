@@ -3,7 +3,7 @@ class CommentsController < ApplicationController
 	before_filter :ensure_signup_complete, only: [:new, :create, :update, :destroy]
 	
 	after_filter :verify_authorized, except: [:create, :get_comments_by_container]
-	before_action :set_and_authorize_comment, except: :create
+	before_action :set_and_authorize_comment, except: [:create, :get_comments_by_container]
 	
 	def create
 		error = nil

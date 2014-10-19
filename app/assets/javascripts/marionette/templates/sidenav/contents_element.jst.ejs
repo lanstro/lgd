@@ -1,1 +1,7 @@
-<a href='#<%= id %>'><%= shortContent %></a>
+<a href='#<%= id %>'>
+	<% if(level < 5){ %>
+		<%= ["Chapter", "Part", "Division", "Subdivision"][level-1]+" "+number+"-"+shortContent %>
+	<% } else { %>
+		<%= number+" "+shortContent %>
+	<% } %>
+</a>

@@ -23,6 +23,8 @@ class Metadatum < ActiveRecord::Base
 	belongs_to :scope,    polymorphic: true
 	belongs_to :content,  polymorphic: true
 	
+	has_many :annotations, dependent: :destroy
+	
 	validates_presence_of :anchor
 	validates :type, presence: true, inclusion:    { in: ["Definition", "Internal_reference", "Hyperlinks"] }
 	

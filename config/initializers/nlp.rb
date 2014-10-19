@@ -15,8 +15,10 @@ Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}|
 			end
 			current.set :level,  (c.get :level)
 			current.set :number, (c.get :number)
+			current.set :strip_number, (c.get :strip_number)
 			c.set :level, nil
 			c.set :number, nil
+			c.set :strip_number, nil
 		end
 		current << c
 	end
