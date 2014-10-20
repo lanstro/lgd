@@ -41,7 +41,7 @@ class Annotation < ActiveRecord::Base
 		elsif self.category=="Placeholder"
 			return "<span class='reference'>"
 		elsif self.category=="Metadatum"
-			data = "data-metadata_link='"+self.metadatum.id.to_s+"'"
+			data = "data-metadata_link='"+self.metadatum.content.id.to_s+"'"
 			case self.metadatum.type
 				when "Definition"
 					return "<span class='definition_anchor'"+data+">"
@@ -52,7 +52,7 @@ class Annotation < ActiveRecord::Base
 	end
 	
 	def close_tag
-		if self.category=="Hyperlink"
+		if self.category=="Hyperlink" 
 			return "</a>"
 		else
 			return "</span>"

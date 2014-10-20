@@ -4,12 +4,22 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 		
 		initialize: function(){
 			this.set('shortContent', this.shortContent());
+			this.set('calcID', this.calcID());
 			var children = this.get("children");
 			if(children){
 				this.children = new Entities.ContainerCollection(children);
 				this.unset("children");
 			}
 			
+		},
+		
+		calcID: function(){
+			if(this.get('level') <= <%= SECTION %>){
+				return ["", "Ch", "Pt", "Div", "Subdiv", "s"][this.get('level')]+this.get('number');
+			}
+			else {
+				return this.get('id');
+			}
 		},
 		
 		shortContent: function(){

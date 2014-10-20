@@ -64,10 +64,9 @@ class ActsController < ApplicationController
 	
 	def containers_json
 		respond_to do |format|
-			format.json { render :json => @act.containers.to_depth(7).arrange_serializable.to_json}
+			format.json { render :json => @act.containers.arrange_serializable.to_json}
+			#format.json { render :json => @act.containers.roots[0].subtree.arrange_serializable.to_json}
 			# TODO HIGH: indicate when not everything has been loaded
-			# option to show rest of tree like reddit
-			# make the 7 into a constant somewhere
 		end
 	end
 	

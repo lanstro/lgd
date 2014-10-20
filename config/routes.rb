@@ -72,8 +72,9 @@ Lgd::Application.routes.draw do
 			get 'containers_json'
 		end
 	end
-	resources :containers
-
+	
+	match '/show_json/:id' => 'containers#show_json', via: [:get]
+	
 	#comments 
 	resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
 	post '/comments/(:parent_id)/new', to: 'comments#create'

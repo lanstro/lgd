@@ -1,6 +1,6 @@
 class ContainersController < ApplicationController
 	
-	after_filter :verify_authorized, except: [:show]
+	after_filter :verify_authorized, except: [:show, :show_json]
 	before_action :set_container, except: [:new, :create]
 		
   def new
@@ -34,9 +34,6 @@ class ContainersController < ApplicationController
 		end
 	end
 
-  def show
-		@act = @container.act
-  end
 
   def destroy
 		authorize @container
@@ -44,6 +41,12 @@ class ContainersController < ApplicationController
     flash[:success] = "Container deleted."
     redirect_to containers_url
   end
+	
+	def show_json
+		respond_to do |format|
+			format.json { render :json => { annotated_content: @container.annotated_content} }
+		end
+	end
 	
 	private
 		

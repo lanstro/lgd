@@ -9,8 +9,7 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 		},
 		
 		id: function(){
-			return this.model.get('id');
-			return 1;
+			return this.model.get('calcID');
 		},
 		
 		className: function(){
@@ -40,7 +39,41 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 			var alias = this.model.aliases()[0];
 			alias = alias.substring(0, 1).toLowerCase() + alias.substring(1);
 			Lgd.trigger("container:moreClicked", this.$el, this.model.get('id'), alias);
-		}
+		},
+		
+		onShow: function(){
+			console.log("Doing onShow for "+this.id());
+			var anchors = this.$el.children('p').children('span.definition_anchor');
+			if(anchors.length == 0)
+				anchors = $('span.definition_anchor', this.$el.children('table'));
+			if(anchors.length > 0){
+				var that=this;
+				console.log(anchors);
+				anchors.each(function(index, element){
+					$(element).popover({ 
+						html:      true,
+						placement: "auto top",
+						content:   function(){
+							var div_id =  "tmp-id-" + $.now();
+							var metadata_link = $(element).data("metadata_link");
+							return popup_text(div_id, metadata_link);
+						}
+					});
+				});
+				var popup_text = function(div_id, metadata_link){
+					$.ajax({
+						url: '/show_json/'+metadata_link+'.json',
+						success: function(response){
+							console.log("successful response: "+response);
+							$('#'+div_id).html(response.annotated_content);
+						}
+					});
+					return '<div id="'+ div_id +'">Loading...</div>';
+				}
+			}
+			
+		},
+		
 	});
 	
 	Mainview.Act = Marionette.CollectionView.extend({
