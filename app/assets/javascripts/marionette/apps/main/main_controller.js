@@ -60,6 +60,14 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 				
 			});
 			
+			// view tracker
+			
+			var ContainerViews = new Backbone.ChildViewContainer();
+			
+			Lgd.reqres.setHandler("ContainerViews", function(){
+				return ContainerViews;
+			});
+			
 			
 		},
 		

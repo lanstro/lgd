@@ -6,6 +6,7 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 		
 		initialize: function(){
 			this.collection = this.model.children;
+			Lgd.request("ContainerViews").add(this, this.model.get('id'));
 		},
 		
 		id: function(){
@@ -52,10 +53,13 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 				anchors.each(function(index, element){
 					$(element).popover({ 
 						html:      true,
-						placement: "auto top",
+						placement: "bottom",
 						content:   function(){
-							var div_id =  "tmp-id-" + $.now();
 							var metadata_link = $(element).data("metadata_link");
+							var cont = Lgd.request("ContainerViews").findByCustom(metadata_link);
+							if (cont != undefined)
+								return cont.model.get("annotated_content");
+							var div_id =  "tmp-id-" + $.now();
 							return popup_text(div_id, metadata_link);
 						}
 					});

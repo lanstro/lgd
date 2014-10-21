@@ -148,7 +148,7 @@ class Container < ActiveRecord::Base
 	def recalculate_annotations
 		text=self.content.dup
 		
-		annotations=self.annotations(order: "position ASC")
+		annotations=self.annotations.order("position ASC")
 		
 		# check that the positions given by the annotation and the words there are all correct
 		# if they are, put down a 3 character marker "{*}"
@@ -158,23 +158,42 @@ class Container < ActiveRecord::Base
 		
 		annotations.delete_if do |annotation|
 			start  = annotation.position
-			start_modified  = start + 3*marker_positions.count{ |p| p <= start }
 			finish = annotation.position + annotation.anchor.length-1
-			finish_modified = finish + 3*marker_positions.count{ |p| p <= finish }
+			
+			start_modified  = start
+			finish_modified = finish
+			
+			marker_positions.each do |p|
+				if p < start_modified
+					start_modified+=3
+				end
+				if p < finish_modified
+					finish_modified+=3
+				end
+			end
+			
+			
+			
+			log "start is "+start.to_s+" and start_modified is "+start_modified.to_s
+			log "finish is "+finish.to_s+" and finish_modified is "+finish_modified.to_s
 			if self.content[start..finish] == annotation.anchor
-				log "processing annotations: matched anchor and text" if DEBUG
+				log "processing annotations: matched anchor and text: #{annotation.anchor}" if DEBUG
 				text.insert(finish_modified+1, finish_marker)
 				text.insert(start_modified,    start_marker)
 				marker_positions.push start_modified, finish_modified+1
+				log "partially prepared annotation looks like "+text if DEBUG
 				next false
 			else
 				log "processing annotations: no match" if DEBUG
 				log "anchor text is "+annotation.anchor+" and found text is "+self.content[start..finish] if DEBUG
 				# probably also flag the annotation and remove it from this array
-				warn "failed to find anchor position while recalculating annotation for "+self.content+":\nstart position is "+start.to_s+" and end position is "+finish.to_s+"\nannotation details wrong - annotation is "+annotation.inspect+" and container is id: "+self.id+" with text: "+self.content
+				warn "failed to find anchor position while recalculating annotation for "+self.content+":\nstart position is "+start.to_s+" and end position is "+finish.to_s+"\nannotation details wrong - annotation is "+annotation.inspect+" and container is id: "+self.id.to_s+" with text: "+self.content
 				next true
 			end
+			
 		end
+		
+		log "half prepared annotation looks like "+text if DEBUG
 		
 		# annotate the content
 		
@@ -387,6 +406,15 @@ class Container < ActiveRecord::Base
 				index-=1
 			end
 			log "siblings[index] is "+siblings[index].to_s+" and index is "+index.to_s+" and inspect is "+siblings[index].inspect+" and its children are "+siblings[index].children.inspect if DEBUG
+			
+			if siblings[index].words.size == 1
+				word = siblings[index].words.first
+				# reject if coordinating conjunction (eg 'and'), determiner (eg 'the') 
+				if word.tag== "CC" or word.tag=="DT"
+					next
+				end
+			end
+			
 			subject_words = siblings[index].to_s
 			metadatum = create_definition anchor: subject_words
 			create_annotation category: "Defined_term", anchor: subject_words, position: self.content.index(subject_words)
@@ -424,13 +452,13 @@ class Container < ActiveRecord::Base
 		relevant_metadata.each do |meta|
 			next if meta.content == self
 			meta.anchor.each do |anchor|
-				if /#{anchor}(?=[\W])/.match self.content
+				if /\b#{anchor}\b/.match self.content
 					# exclude any anchors that are a subset of an existing metadatum anchor
-					if self.contents.any? { |content | content.anchor.any? { |a| /#{anchor}/.match a } }
+					if self.contents.any? { |content | content.anchor.any? { |a| /\b#{anchor}\b/.match a } }
 						next
 					end
 					log "trying to make a new annotation with anchor "+anchor+", index of "+self.content.index(anchor).to_s if DEBUG
-					create_annotation anchor: anchor, position: self.content.index(anchor), metadatum: meta
+					create_annotation anchor: anchor, position: self.content.index(/\b#{anchor}\b/), metadatum: meta
 				end
 			end
 		end
