@@ -8,7 +8,7 @@
   </blockquote>
 	<% from_reply_form ||= nil %>
 	<% unless from_reply_form %>
-		<p><%= link_to 'reply', new_comment_path(comment.id) %></p>
+		<p><%= link_to 'reply', "#" %></p>
 	<% end %>
 	<% if current_user and current_user.admin %>
 		<%= link_to 'delete', '#' %>

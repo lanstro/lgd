@@ -14,6 +14,7 @@ if(typeof(CKEDITOR) != 'undefined') {
 		config.height='4em';
 		config.removePlugins = 'elementspath';
 		config.resize_enabled = false;
+		config.startupFocus = false;
 		/*
 		config.toolbar_Comment = [
 		{ name: 'document',                                                     items: [ 'Source', 'Preview'] },

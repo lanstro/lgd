@@ -1,9 +1,10 @@
 Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 	Secondary.Controller = {
-		initialize: function(){
-			
+		initialize: function(){			
 			Lgd.on("container:moreClicked", function(element, container_id, container_citation){
 				console.log("Container "+container_id+"'s expand clicked.");
+				// TODO medium - instead of making a new layout each time, just keep it hidden until
+				// one of the +s is clicked, then cycle the main part of the secondary layout
 				var secondaryLayout  = new Secondary.Layout({
 					"container_id": 			container_id,
 					"container_citation": container_citation
@@ -11,6 +12,14 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 				
 				Lgd.SecondaryRegion.show(secondaryLayout);
 				$('.ckeditor').ckeditor();
+
+			});
+			// view tracker
+			
+			var CommentViews = new Backbone.ChildViewContainer();
+			
+			Lgd.reqres.setHandler("CommentViews", function(){
+				return CommentViews;
 			});
 		},
 		

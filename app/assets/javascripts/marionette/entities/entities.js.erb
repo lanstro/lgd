@@ -53,10 +53,6 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 			return result;
 		},
 		
-		parent: function(){
-			return Lgd.view.collection.findParent(this);
-		},
-		
 		subsectionCitation: function(current){
 			if(typeof(current)==='undefined') current=this;
 			if(current.get('level') >= <%= PARA_LIST_HEAD %> || 
@@ -86,13 +82,13 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 	
 	Entities.Comment = Backbone.Model.extend ({
 		initialize: function(){
-			var children = this.get("children");
-			if(children){
-				this.children = new Entities.CommentsCollection(children);
-				this.set({"showForm": false});
-				this.unset("children");
-			}
+			this.children = new Entities.CommentsCollection(this.get("children"));
+			this.unset("children");
+			this.set({"showForm": false});
 		},
+		schema: {
+			content:  'TextArea'
+		}
 	});
 	
 	Entities.CommentsCollection = Backbone.Collection.extend({

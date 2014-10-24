@@ -7,6 +7,10 @@ class CommentPolicy < ApplicationPolicy
 		@comment  = comment
 	end
 	
+	def index?
+		true
+	end
+	
 	def edit?
 		user.admin? or comment.user == user
 	end

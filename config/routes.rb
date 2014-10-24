@@ -48,13 +48,7 @@
 #
 
 Lgd::Application.routes.draw do
-  get "metadatum/new"
-  get "metadatum/edit"
-  get "metadatum/delete"
-  get "metadatum/update"
-  get "metadatum/create"
-  get "metadatum/show"
-  get "metadatum/index"
+
   # static pages
   root "static_pages#home"
   match "/help",   to: "static_pages#help",  via: "get"
@@ -71,13 +65,16 @@ Lgd::Application.routes.draw do
 			get 'reset_parsing'
 			get 'containers_json'
 		end
+		resources :containers do
+			resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
+		end
 	end
+	
+
 	
 	match '/show_json/:id' => 'containers#show_json', via: [:get]
 	
 	#comments 
-	resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
-	post '/comments/(:parent_id)/new', to: 'comments#create'
 	get '/acts/(:act_id)/comments_json/(:container_id)', to: 'comments#get_comments_by_container'
 	
 	#metadata

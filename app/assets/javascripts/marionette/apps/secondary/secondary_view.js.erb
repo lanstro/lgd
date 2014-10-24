@@ -17,28 +17,104 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 		},
 		
 		className: "fixed secondary_container",
+
+		initialize: function(args){
+			this.container_id = args.container_id;
+			this.container_citation = args.container_citation;
+			
+		},
+		
+		events: {
+			"click .secondary_nav"   : "navClicked",
+		},
+		
+		navClicked: function(element){
+			switch(element.currentTarget.id){
+				case "secondary_nav_comments":
+					this.showComments();
+					break;
+				case "secondary_nav_history":
+					this.showHistory();
+					
+					break;
+				case "secondary_nav_exceptions":
+					this.showExceptions();
+					
+					break;
+				case "secondary_nav_admin":
+					this.showAdmin();
+					
+					break;
+				case "secondary_nav_close":
+					this.close();
+					
+					break;
+			}
+			return false;
+		},
 		
 		onRender: function(){
-			console.log("secondary body is rendering");
-			console.log("id is "+this.container_id);
-			var secondaryView = new Secondary.CommentsLayout({
-				"container_id": this.container_id
-			});
-			// TODO LOW - store user's preference for which sub-window to show
-			this.body.show(secondaryView);
+			//console.log("secondary body is rendering");
+			//console.log("id is "+this.container_id);
+			this.showComments();
 			// TODO LOW - consider making proper entity for this
 			this.$('.secondary_title').text("Additional information for "+this.container_citation);
 		},
 		
-		initialize: function(args){
-			this.container_id = args.container_id;
-			this.container_citation = args.container_citation;
+		showComments: function(){
+			var secondaryView = new Secondary.CommentsLayout({
+				"container_id": this.container_id
+			});
+			this.body.show(secondaryView);
+			return false;
+		},
+		
+		showHistory: function(){
+			console.log("nav history clicked");
+			var secondaryView = new Secondary.HistoryView({
+				"container_id": this.container_id
+			});
+			this.body.show(secondaryView);
+			return false;
+		},
+		
+		showExceptions: function(){
+			console.log("exceptions clicked");
+			var secondaryView = new Secondary.ExceptionsView({
+				"container_id": this.container_id
+			});
+			// TODO LOW - store user's preference for which sub-window to show
+			this.body.show(secondaryView);
+			return false;
+		},
+		
+		showAdmin: function(){
+			console.log("admin clicked");
+			var secondaryView = new Secondary.AdminView({
+				"container_id": this.container_id
+			});
+			// TODO LOW - store user's preference for which sub-window to show
+			this.body.show(secondaryView);
+			return false;
+		},
+		
+		close: function(){
+			console.log("close clicked");
+			// shut down all ckeditor instances
+			return false;
 		}
+		
+		
 	});
-	
+
+/* *********************************************************
+   *                                                       *	
+   *          Comments views                               *
+   *                                                       *
+   *********************************************************  */
 
 	Secondary.CommentsLayout = Marionette.LayoutView.extend({
-		template: JST['marionette/templates/secondary/secondary_comments_layout'],
+		template: JST['marionette/templates/secondary/comments_layout'],
 		
 		regions: {
 			comments:        "#secondary_comments",
@@ -51,31 +127,46 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 		
 		showForm: function(event){
 			event.stopImmediatePropagation();
-			var commentsForm = new Secondary.CommentsForm();
+			event.preventDefault();
+			var col = this.commentsCollection;
+			var newComment = new Lgd.Entities.Comment({
+				container_id: 		this.container_id,
+				parent_id:    		null,
+			});
+			newComment.url = col.url;
+			newComment.parentCollection = col;
+			newComment.secondaryLayout = this;
+			
+			var commentsForm = new Secondary.CommentsForm({model: newComment, templateData: {new_thread: true}});
+			
 			this.form.show(commentsForm);
-			this.$('.ckeditor').ckeditor();
-			this.$('#new_comment_container_id').val(this.container_id);
+			this.$('textarea').ckeditor();
+			return false;
+		},
+		
+		
+		showReplyButton: function(){
+			var commentsButton = new Secondary.NewThreadButton();
+			this.form.show(commentsButton);
+			return false;
 		},
 		
 		onRender: function(){
 			
-			var commentsCollection = new Lgd.Entities.CommentsCollection({});
-			commentsCollection.url = $('#legislation_main').data('legislation_id')+'/comments_json/'+this.container_id+'.json';
-			commentsCollection.fetch();
+			this.commentsCollection = new Lgd.Entities.CommentsCollection();
+			this.commentsCollection.url = $('#legislation_main').data('legislation_id')+'/containers/'+this.container_id+'/comments';
+			this.commentsCollection.fetch();
 			
-			var commentsView        = new Secondary.CommentsRootView();
-			commentsView.collection = commentsCollection;
+			var commentsView        = new Secondary.CommentsRootView({collection: this.commentsCollection});
 			
-			commentsCollection.on('sync', function(){
-				console.log("Comments layout has detected end of fetch for comments collection, and would now like to render.");
+			this.commentsCollection.once('sync', function(){
+				// console.log("Comments layout has detected end of fetch for comments collection, and would now like to render.");
 				this.comments.show(commentsView);
 			}, this);
 			
-			var commentsButton = new Secondary.NewThreadButton();
-			this.form.show(commentsButton);
+			this.showReplyButton();
 			
 		},
-		
 		initialize: function(args){
 			this.container_id = args.container_id
 		}
@@ -93,26 +184,38 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 			return result;
 		},
 		initialize: function(){
-			this.collection = this.model.children;
+			this.collection     = this.model.children;
+			if(this.collection)
+				this.collection.url = this.model.collection.url;
+			this.model.set({"showForm": false});
+			Lgd.request("CommentViews").add(this, this.model.get('id'));
 		},
 		
 		events: {
-			"click a.comment_reply": "replyClicked",
-			"click input.submit_reply": "postComment"
+			"click a.comment_reply": "replyClicked"
 		},
 		
 		replyClicked: function(event){
 			event.stopImmediatePropagation();
-			this.model.set({"showForm": true});
-			this.render();
-			this.$('.ckeditor').ckeditor();
-			this.$('.reply_comment_parent_id').val(this.model.get('id'));
-			this.$('.reply_comment_container_id').val(this.model.get('container_id'));
-			this.$('.new_reply').attr("action", ("/comments/"+this.model.get('id')+"/new"));
+			event.preventDefault();
+			var col = this.model.children;
+			var newComment = new Lgd.Entities.Comment({
+				container_id: 		this.model.get('container_id'),
+				parent_id:    		this.model.get('id'),
+			});
+			newComment.url = this.model.collection.url;
+			// console.log("new comment's url is ")
+			// console.log(newComment.url);
+			newComment.parentCollection = col;
+			newComment.originalView = this;
+			
+			var commentsForm = new Secondary.CommentsForm({model: newComment, templateData: {new_thread: false}});
+			// console.log(newComment);
+			this.$el.children('.comment_reply').after(commentsForm.render().el);
+			this.$el.children('.comment_reply').remove();
+			this.$('textarea').ckeditor();
+			return false;
 		},
-		
-		
-		
 	});
 	
 	
@@ -122,22 +225,122 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 		childViewContainer: 'div',
 	});
 	
-	Secondary.CommentsForm = Marionette.ItemView.extend({
-		template: JST['marionette/templates/secondary/secondary_comments_form'],
-
+	Secondary.CommentsForm = Backbone.Form.extend({
+		template: JST['marionette/templates/secondary/comments_form'],
+		events: {
+			"click input": "postComment"
+		},
+		postComment: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			event.preventDefault();
+			// add validations (ie not zero length)
+			// console.log("Posting new comment thread...");
+			this.commit();
+			
+			var newComment = this.model;
+			// console.log(newComment);
+			newComment.save(null, {
+				success: function(args){
+					if(args.attributes.success){
+						//console.log("success");
+						//console.log(args);
+						newComment.set(args.attributes.user_id);
+						newComment.set(args.attributes.created_at);
+						newComment.set(args.attributes.id);
+						//console.log(newComment.attributes);
+						//console.log("Finding right CKEDITOR instance");
+						var todestroy=CKEDITOR.instances[newComment.cid+"_content"];
+						//console.log("all CKEDITOR instances:");
+						//console.log(CKEDITOR.instances);
+						//console.log("Destroying this ckeditor instance: ");
+						//console.log(todestroy);
+						todestroy.destroy();
+						if(newComment.get('parent_id')){
+							//console.log("not a new thread");
+							// add new comment to appropriate collection
+							// re-render the original replied-to comment
+							//console.log("original comment's children: ");
+							//console.log(newComment.parentCollection);
+							if(newComment.parentCollection)
+								newComment.parentCollection.add(newComment);
+							else
+								newComment.originalView.model.children = new Lgd.Entities.CommentsCollection(newComment);
+							newComment.originalView.render();
+							//console.log("original comment's children now:");
+							//console.log(newComment.originalView.model.children);
+						}
+						else {
+							newComment.parentCollection.add(newComment);
+							newComment.secondaryLayout.showReplyButton();
+						}
+					}
+					else {
+						// TODO Medium: finish this, add validations
+						//console.log("failed");
+						//console.log(args);
+					}
+				}
+			});
+			return false;
+		}
 	});
 	
 	Secondary.NewThreadButton = Marionette.ItemView.extend({
-		template: _.template('<a class="new_thread" href="#">Add a comment!</a>'),
+		template: _.template('<a class="new_thread" href="#">Start a new comment thread!</a>'),
 		// TODO MEDIUM - check whether user logged in when they do this
 	});
 	
-	Secondary.ExceptionsView = Marionette.ItemView.extend({
-		template: JST['marionette/templates/secondary/secondary_exceptions'],
+	
+/* *********************************************************
+   *                                                       *	
+   *          Admin views                                  *
+   *                                                       *
+   ********************************************************* */
+	
+	// TODO HIGH: lock this to admins only
+	
+	Secondary.AdminView=Marionette.ItemView.extend({
+		template: JST['marionette/templates/secondary/admin_layout'],
+		
+		events: {
+			"click #secondary_edit_container":  "edit_current_container",
+			"click #secondary_new_metadata":    "new_metadata",
+			"click #secondary_edit_metadata":   "edit_metadata",
+			"click #secondary_new_annotation":  "new_annotation",
+			"click #secondary_edit_annotation": "edit_annotation"
+		},
+		
+		edit_current_container: function(){
+			console.log("edit container clicked");
+			return false;
+		},
+		
+		new_metadata: function(){
+			console.log("new metadata clicked");
+			return false;
+		},
+		edit_metadata: function(){
+			console.log("edit metadata clicked");
+			return false;
+		},
+		new_annotation: function(){
+			console.log("new annotation clicked");
+			return false;
+		},
+		edit_annotation: function(){
+			console.log("edit annotation clicked");
+			return false;
+		},
+		
 	});
 	
 	
+	Secondary.ExceptionsView = Marionette.ItemView.extend({
+		template: JST['marionette/templates/secondary/exceptions_layout'],
+	});
+	
 	Secondary.HistoryView = Marionette.ItemView.extend({
-		template: JST['marionette/templates/secondary/secondary_history'],
+		template: JST['marionette/templates/secondary/history_layout'],
 	});
 });
