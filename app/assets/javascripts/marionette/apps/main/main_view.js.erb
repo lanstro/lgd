@@ -37,8 +37,14 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 		
 		moreClicked: function(event){
 			event.stopImmediatePropagation();
-			var alias = this.model.aliases()[0];
-			alias = alias.substring(0, 1).toLowerCase() + alias.substring(1);
+			var alias = this.model.aliases();
+			if(alias != undefined && alias.length > 0){
+				alias = alias[0]
+				alias = alias.substring(0, 1).toLowerCase() + alias.substring(1);
+			}
+			else {
+				alias = "";
+			}
 			Lgd.trigger("container:moreClicked", this.$el, this.model.get('id'), alias);
 		},
 		

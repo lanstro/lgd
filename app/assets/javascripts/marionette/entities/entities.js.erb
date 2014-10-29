@@ -13,6 +13,15 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 			
 		},
 		
+		schema: {
+			content:           'TextArea',
+			number:            'Text',
+			level:             'Number',
+			special_paragraph: 'Checkbox',
+			position:          'Number',
+			ancestry:          'Text'  // unlikely to be right way of doing this - controller will need to do more work
+		},
+		
 		calcID: function(){
 			if(this.get('level') <= <%= SECTION %>){
 				return ["", "Ch", "Pt", "Div", "Subdiv", "s"][this.get('level')]+this.get('number');
@@ -96,6 +105,36 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 		comparator: 'reputation',
 	});
 	
+	Entities.Annotation = Backbone.Model.extend({
+		schema: {
+			anchor:        'Text',
+			metadatum_id:  'Number',
+			position:      'Number',
+			category:      'Text'
+		}
+	});
+	
+	Entities.AnnotationCollection = Backbone.Collection.extend({
+		model:      Entities.Annotation,
+		comparator: 'position',
+	});
+	
+	Entities.Meta = Backbone.Model.extend({
+		schema: {
+			content_id:      'Number',
+			scope_id:        'Number',
+			scope_type:      'Text',
+			anchor:          'Text',
+			universal_scope: 'Checkbox',
+			type:            'Text'
+		}
+	});
+		
+	Entities.MetadatumCollection = Backbone.Collection.extend({
+		model: 			Entities.Meta,
+		comparator: 'anchor',
+	});
+	
 	var act;
 	
 	var initialize=function(){
@@ -110,11 +149,17 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 			}
 			return act;
 		},
+		isAdmin: function(){
+			// TODO HIGH: have a formal user object here
+			return true;
+		}
 	};
 	
 	Lgd.reqres.setHandler("Act", function(){
 		return API.getAct();
 	});
 	
-	
+	Lgd.reqres.setHandler("isAdmin", function(){
+		return API.isAdmin();
+	});
 });

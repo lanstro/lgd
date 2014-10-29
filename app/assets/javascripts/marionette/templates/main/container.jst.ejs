@@ -26,6 +26,6 @@
 		<% } %>
 	<% } %>
 <% } %>
-<% if(level <= 5) { %>
+<% if(level <= 5 || Lgd.request("isAdmin")) { %>
 	<div class="expand_modes"></div>
 <% } %>

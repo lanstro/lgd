@@ -1,17 +1,13 @@
 class MetadatumController < ApplicationController
 	
-	after_filter :verify_authorized
+	# just a json API for the marionette front-end at acts#show
+	
+	after_filter :verify_authorized, except: :index
 	before_action :set_type
 	before_action :set_metadatum_and_authorize, except: [:new, :index, :create]
 	
-  def new
-		@metadatum = type_class.new
-		authorize @metadatum
-  end
-
-  def edit
-  end
-
+	respond_to :json
+	
   def destroy
 		@metadatum.destroy
 		flash[:success] = "Metadatum deleted."
@@ -19,32 +15,42 @@ class MetadatumController < ApplicationController
   end
 
   def update
-    if @metadatum.update_attributes(user_params)
-			flash[:success] = "Metadatum updated"
-      redirect_to @metadatum
-    else
-      render 'edit'
-    end
+		if @metadatum
+			authorize @metadatum
+			respond_to do |format|
+				if @metadatum.update_attributes(user_params)
+					format.json { render :json => {success: true } }
+				else
+					format.json { render :json => {success: false, errors: @metadatum.errors.messages } }
+				end
+			end
+		else
+			# need something to authorize
+			respond_to { |format| format.json { render :json => { success: false, errors: "No metadatum found." } } }
+		end
   end
 
   def create
 		@metadatum = type_class.new(user_params)
 		authorize @metadatum
-    if @metadatum.save
-			flash[:success] = "New metadatum created!"
-      redirect_to @metadatum
-    else
-      render 'new'
-    end
-  end
-
-  def show
+		respond_to do |format|
+			if @metadatum.save
+				format.json { render :json => { success: true, message: "Metadatum created"} }
+			else
+				format.json { render :json => { success: false, errors: @metadatum.errors.messages.to_json} }
+			end	
+		end
   end
 
   def index
-		@metadata=type_class.all
-		@metadata=@metadata.paginate(page: params[:page])
-		authorize @metadata
+		container = Container.find_by_id(params[:container_id])
+		if container
+			@metadata = container.contents
+			respond_to { |format| format.json { render :json => @metadata } }
+		else
+			respond_to { |format| format.json { render :json => "No such root container found." } }
+		end
+		
   end
 	
 	private

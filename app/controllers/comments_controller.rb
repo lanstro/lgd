@@ -39,11 +39,8 @@ class CommentsController < ApplicationController
 		
   end
 
-  def edit
-		# to finish
-  end
-
   def update
+		# TODO Medium: finish these other comment functions
 		# to finish
   end
 

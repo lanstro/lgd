@@ -8,6 +8,11 @@
 // subtitle for the right panel indicating which section/part it's attached to
 // editing comment
 
+// TODO medium:
+// since these sets of views are a hierarchy, consider keeping pointers in each of these objects to:
+// the root container; and
+// all of the views above it in the hierarchy
+
 Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 	Secondary.Layout = Marionette.LayoutView.extend({
 		template: JST['marionette/templates/secondary/secondary_layout'],
@@ -58,7 +63,10 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 			//console.log("id is "+this.container_id);
 			this.showComments();
 			// TODO LOW - consider making proper entity for this
-			this.$('.secondary_title').text("Additional information for "+this.container_citation);
+			var citation = this.container_citation
+			if(!citation)
+				citation="paragraph, container_id "+this.container_id
+			this.$('.secondary_title').text("Additional information for "+citation);
 		},
 		
 		showComments: function(){
@@ -188,7 +196,6 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 			if(this.collection)
 				this.collection.url = this.model.collection.url;
 			this.model.set({"showForm": false});
-			Lgd.request("CommentViews").add(this, this.model.get('id'));
 		},
 		
 		events: {
@@ -232,7 +239,6 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 		},
 		postComment: function(event){
 			event.stopImmediatePropagation();
-			event.preventDefault();
 			event.preventDefault();
 			// add validations (ie not zero length)
 			// console.log("Posting new comment thread...");
@@ -300,41 +306,268 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 	
 	// TODO HIGH: lock this to admins only
 	
-	Secondary.AdminView=Marionette.ItemView.extend({
+	Secondary.AdminView=Marionette.LayoutView.extend({
+	
 		template: JST['marionette/templates/secondary/admin_layout'],
 		
+		regions: {
+			form:        "#secondary_admin_form"
+		},
+		
 		events: {
+			"click #secondary_select_container": "select_container",
 			"click #secondary_edit_container":  "edit_current_container",
 			"click #secondary_new_metadata":    "new_metadata",
 			"click #secondary_edit_metadata":   "edit_metadata",
 			"click #secondary_new_annotation":  "new_annotation",
-			"click #secondary_edit_annotation": "edit_annotation"
+			"click #secondary_edit_annotation": "edit_annotations"
+		},
+		
+		select_container: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
 		},
 		
 		edit_current_container: function(){
+			event.stopImmediatePropagation();
+			event.preventDefault();
 			console.log("edit container clicked");
+			
+			var model = Lgd.request("ContainerViews").findByCustom(this.container_id).model;
+			
+			var containerForm = new Secondary.ContainerForm({model: model});
+			this.form.show(containerForm);
 			return false;
 		},
 		
-		new_metadata: function(){
+		new_metadata: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
 			console.log("new metadata clicked");
+			var newMeta = new Lgd.Entities.Meta({content_id: this.container_id, content_type: "Container"});
+			newMeta.url =  $('#legislation_main').data('legislation_id')+'/containers/'+this.container_id+'/metadata';
+			var metaForm = new Secondary.MetadatumForm({model: newMeta});
+			this.form.show(metaForm);
 			return false;
+			// need a selection system for picking which contents and scopes to link to
 		},
-		edit_metadata: function(){
+		edit_metadata: function(event){
+			// need selection system
+			event.stopImmediatePropagation();
+			event.preventDefault();
 			console.log("edit metadata clicked");
+			this.showMetadataList();
+			var region=this.form;
+			Lgd.on("metadatum:editClicked", function(metadatum){
+				console.log(metadatum);
+				console.log(this);
+				var metadatumForm = new Secondary.MetadatumForm({model: metadatum});
+				region.show(metadatumForm);
+			},this);
+			
+			Lgd.on("metadatum:returnToList", function(){
+				this.showMetadataList();
+			}, this);		
 			return false;
+			
 		},
-		new_annotation: function(){
+		
+		showMetadataList: function(){
+			var metadata = new Lgd.Entities.MetadatumCollection();
+			metadata.url = $('#legislation_main').data('legislation_id')+'/containers/'+this.container_id+'/metadata';
+			var region=this.form;
+			metadata.fetch({
+				success: function(){
+					var metadataView = new Secondary.MetadatumCollectionView({ collection: metadata });
+					region.show(metadataView);
+				}
+			});
+		},
+
+		new_annotation: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
 			console.log("new annotation clicked");
+			var newAnnotation = new Lgd.Entities.Annotation({container_id: this.container_id});
+			newAnnotation.url =  $('#legislation_main').data('legislation_id')+'/containers/'+this.container_id+'/annotations';
+			var annotationForm = new Secondary.AnnotationForm({model: newAnnotation});
+			this.form.show(annotationForm);
+			return false;
+			// need a selection system for picking which metadata to link to
+		},
+		edit_annotations: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			console.log("edit annotation clicked");
+			
+			this.showAnnotationsList();
+			var region=this.form;
+			Lgd.on("annotation:editClicked", function(annotation){
+				console.log(annotation);
+				console.log(this);
+				var annotationForm = new Secondary.AnnotationForm({model: annotation});
+				region.show(annotationForm);
+			},this);
+			
+			Lgd.on("annotation:returnToList", function(){
+				this.showAnnotationsList();
+			}, this);		
 			return false;
 		},
-		edit_annotation: function(){
-			console.log("edit annotation clicked");
-			return false;
+		showAnnotationsList: function(){
+			var annotations = new Lgd.Entities.AnnotationCollection();
+			annotations.url = $('#legislation_main').data('legislation_id')+'/containers/'+this.container_id+'/annotations';
+			var region=this.form;
+			annotations.fetch({
+				success: function(){
+					var annotationsView = new Secondary.AnnotationCollectionView({ collection: annotations });
+					region.show(annotationsView);
+				}
+			});
+		},
+		
+		initialize: function(args){
+			this.container_id = args.container_id;
 		},
 		
 	});
 	
+	Secondary.ContainerForm = Backbone.Form.extend({
+		template: JST['marionette/templates/secondary/container_form'],
+		events: {
+			"click input.submit": "updateContainer"
+		},
+		updateContainer: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			// add validations
+			console.log("Updating container");
+			this.commit();
+			
+			this.model.save(null, {
+				success: function(args){
+					if(args.attributes.success){
+						// TODO MEDIUM:
+						// - select other containers for edit
+						// - progressive loading, so that we have better url paths for these models
+						// - hover for showing what container number everything is
+						// update the model with what was sent back
+						// if parentage was changed, re-render the relevant bits
+						// update the main view if required
+						// update this form
+						// inform user that update went through
+					}
+					else {
+						// TODO Medium: finish this, add validations
+						//console.log("failed");
+						//console.log(args);
+					}
+				}
+			});
+			return false;
+		}
+	});
+	
+	Secondary.MetadatumListItem = Marionette.ItemView.extend({
+
+		template: JST['marionette/templates/secondary/metadatum_list_item'],
+		tagName: 'tr',
+		events: {
+			"click": "metadatumSelected"
+		},
+		metadatumSelected: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			console.log("Metadatum clicked: "+this.model.get("anchor"));
+			Lgd.trigger("metadatum:editClicked", this.model);
+		}
+	});
+	
+	Secondary.MetadatumCollectionView = Marionette.CompositeView.extend({
+		template:           JST['marionette/templates/secondary/metadatum_collection'],
+		childView:          Secondary.MetadatumListItem,
+		childViewContainer: 'tbody'
+	});
+	
+	Secondary.MetadatumForm = Backbone.Form.extend({
+		template: JST['marionette/templates/secondary/metadata_form'],
+		events: {
+			"click input.submit": "updateMetadatum"
+		},
+		updateMetadatum: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			// add validations
+			console.log("Updating metadatum");
+			this.commit();
+			this.model.save(null, {
+				success: function(args){
+					if(args.attributes.success){
+						Lgd.trigger("metadatum:returnToList");
+						console.log("successfully saved metadatum update");
+						// inform user that update went through
+						// reload main view?
+					}
+					else {
+						// TODO Medium: finish this, add validations
+						console.log("failed");
+						console.log(args);
+					}
+				}
+			});
+			return false;
+		}
+	});
+	
+	Secondary.AnnotationListItem = Marionette.ItemView.extend({
+
+		template: JST['marionette/templates/secondary/annotation_list_item'],
+		tagName: 'tr',
+		events: {
+			"click": "annotationSelected"
+		},
+		annotationSelected: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			console.log("Annotation clicked: "+this.model.get("anchor"));
+			Lgd.trigger("annotation:editClicked", this.model);
+		}
+	});
+	
+	Secondary.AnnotationCollectionView = Marionette.CompositeView.extend({
+		template:           JST['marionette/templates/secondary/annotation_collection'],
+		childView:          Secondary.AnnotationListItem,
+		childViewContainer: 'tbody',
+	});
+	
+	Secondary.AnnotationForm = Backbone.Form.extend({
+		template: JST['marionette/templates/secondary/annotation_form'],
+		events: {
+			"click input.submit": "updateAnnotation"
+		},
+		updateAnnotation: function(event){
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			// add validations
+			console.log("Updating annotation");
+			this.commit();
+			this.model.save(null, {
+				success: function(args){
+					if(args.attributes.success){
+						Lgd.trigger("annotation:returnToList");
+						// inform user that update went through
+						// reload main view?
+					}
+					else {
+						// TODO Medium: finish this, add validations
+						//console.log("failed");
+						//console.log(args);
+					}
+				}
+			});
+			return false;
+		}
+	});
 	
 	Secondary.ExceptionsView = Marionette.ItemView.extend({
 		template: JST['marionette/templates/secondary/exceptions_layout'],

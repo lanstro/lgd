@@ -66,11 +66,10 @@ Lgd::Application.routes.draw do
 			get 'containers_json'
 		end
 		resources :containers do
-			resources :comments, only: [:create, :destroy, :edit, :update, :hide, :index]
+			resources :comments,    only: [:create, :destroy, :update, :hide, :index]
+			resources :annotations, only: [:create, :destroy, :update, :index]
 		end
 	end
-	
-
 	
 	match '/show_json/:id' => 'containers#show_json', via: [:get]
 	
@@ -78,6 +77,12 @@ Lgd::Application.routes.draw do
 	get '/acts/(:act_id)/comments_json/(:container_id)', to: 'comments#get_comments_by_container'
 	
 	#metadata
+	
+	get    '/acts/(:act_id)/containers/(:container_id)/metadata', to: 'metadatum#index'
+	put    '/acts/(:act_id)/containers/(:container_id)/metadata/(:metadatum_id)', to: 'metadatum#update'
+	post   '/acts/(:act_id)/containers/(:container_id)/metadata/(:metadatum_id)', to: 'metadatum#create'
+	delete '/acts/(:act_id)/containers/(:container_id)/metadata/(:metadatum_id)', to: 'metadatum#delete'
+	
 	resources :metadata,            controller: 'metadatum', type: 'Metadatum'
 	resources :internal_references, controller: 'metadatum', type: 'Internal_reference'
 	resources :definitions,         controller: 'metadatum', type: 'Definition'

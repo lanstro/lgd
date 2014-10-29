@@ -39,6 +39,8 @@ class Metadatum < ActiveRecord::Base
 	
 	serialize :anchor
 		
+	# TODO MEDIUM: ensure uniqueness of content, scope, anchor
+		
 	private
 		
 		def erase_scope_if_universal
