@@ -8,7 +8,7 @@
 #  content_id      :integer
 #  content_type    :string(255)
 #  anchor          :text
-#  type            :string(255)
+#  category        :string(255)
 #  created_at      :datetime
 #  updated_at      :datetime
 #  universal_scope :boolean
@@ -26,17 +26,19 @@ class Metadatum < ActiveRecord::Base
 	has_many :annotations, dependent: :destroy
 	
 	validates_presence_of :anchor
-	validates :type, presence: true, inclusion:    { in: ["Definition", "Internal_reference", "Hyperlinks"] }
+	validates :category, presence: true, inclusion:    { in: ["Definition", "Internal_reference"] }
 	
 	validates :scope, presence: { :message => "does not exist." }, unless: :universal_scope?
 	validates :scope_type, presence: true, inclusion:    { in: ["Act", "Container"] }, unless: :universal_scope?
 		
+	validates :content, presence: { :message => "does not exist." }
+	validates :content_type, presence: true, inclusion:    { in: ["Act", "Container"] }
+		
 	before_save :erase_scope_if_universal
 	
-	scope :definitions,          -> { where(type: 'Definition') } 
-	scope :internal_references,  -> { where(type: 'Internal_reference') } 
-	scope :hyperlinks,           -> { where(type: 'Hyperlink') }
-	
+	scope :definitions,          -> { where(category: 'Definition') } 
+	scope :internal_references,  -> { where(category: 'Internal_reference') } 
+
 	serialize :anchor
 		
 	# TODO MEDIUM: ensure uniqueness of content, scope, anchor

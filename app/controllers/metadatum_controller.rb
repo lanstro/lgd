@@ -3,7 +3,6 @@ class MetadatumController < ApplicationController
 	# just a json API for the marionette front-end at acts#show
 	
 	after_filter :verify_authorized, except: :index
-	before_action :set_type
 	before_action :set_metadatum_and_authorize, except: [:new, :index, :create]
 	
 	respond_to :json
@@ -31,7 +30,7 @@ class MetadatumController < ApplicationController
   end
 
   def create
-		@metadatum = type_class.new(user_params)
+		@metadatum = Metadatum.new(user_params)
 		authorize @metadatum
 		respond_to do |format|
 			if @metadatum.save
@@ -55,28 +54,12 @@ class MetadatumController < ApplicationController
 	
 	private
 		def set_metadatum_and_authorize
-			@metadatum = type_class.find_by(id: params[:id])
+			@metadatum = Metadatum.find_by(id: params[:id])
 			authorize @metadatum
 		end
 		
 		def user_params
-			params.require(type.downcase.to_sym).permit(:scope_id, :scope_type, :content_id, :content_type, :anchor, :type, :universal_scope)
-		end
-		
-		def set_type
-			@type = type
-		end
-		
-		def type
-			metadatum_types.include?(params[:type]) ? params[:type] : "Metadatum"
-		end
-		
-		def metadatum_types
-			['Hyperlink', 'Internal_reference', 'Definition', 'Metadatum']
-		end
-		
-		def type_class
-			@type.constantize if @type.in? metadatum_types
+			params.require(:metadatum).permit(:scope_id, :scope_type, :content_id, :content_type, :anchor, :category, :universal_scope)
 		end
 		
 end

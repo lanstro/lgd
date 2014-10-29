@@ -42,10 +42,10 @@ class Annotation < ActiveRecord::Base
 			return "<span class='reference'>"
 		elsif self.category=="Metadatum"
 			data = "data-metadata_link='"+self.metadatum.content.id.to_s+"'"
-			case self.metadatum.type
+			case self.metadatum.category
 				when "Definition"
 					return "<span class='definition_anchor'"+data+">"
-				when Internal_reference
+				when "Internal_reference"
 					return "<span class='reference'"+data+">"
 			end
 		end

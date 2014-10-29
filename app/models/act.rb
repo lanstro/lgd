@@ -297,9 +297,9 @@ class Act < ActiveRecord::Base
 		@open_containers  = []
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
-		#parse_tree :definitions
-		#parse_tree :anchors
-		#parse_tree :annotations
+		parse_tree :definitions
+		parse_tree :anchors
+		parse_tree :annotations
 	end
 	
 	def relevant_metadata

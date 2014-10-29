@@ -60,9 +60,6 @@ class Container < ActiveRecord::Base
 	
 	has_many :annotations, dependent: :destroy
 	
-	delegate :definitions,          to: :scopes
-	delegate :internal_references,  to: :scopes
-	
 	validates :act, presence: true
 	validates :level, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - needs to be a formal relation
@@ -369,7 +366,7 @@ class Container < ActiveRecord::Base
 	
 	def create_definition(params)
 		
-		d = Definition.new
+		d = Metadatum.new(category: "Definition")
 		d.anchor = [params[:anchor]]
 		d.content=self
 		scope = translate_scope @definition_zone[:scope]

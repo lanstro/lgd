@@ -71,11 +71,6 @@ Lgd::Application.routes.draw do
 		end
 	end
 	
-	match '/show_json/:id' => 'containers#show_json', via: [:get]
-	
-	#comments 
-	get '/acts/(:act_id)/comments_json/(:container_id)', to: 'comments#get_comments_by_container'
-	
 	#metadata
 	
 	get    '/acts/(:act_id)/containers/(:container_id)/metadata', to: 'metadatum#index'
@@ -83,11 +78,8 @@ Lgd::Application.routes.draw do
 	post   '/acts/(:act_id)/containers/(:container_id)/metadata/(:metadatum_id)', to: 'metadatum#create'
 	delete '/acts/(:act_id)/containers/(:container_id)/metadata/(:metadatum_id)', to: 'metadatum#delete'
 	
-	resources :metadata,            controller: 'metadatum', type: 'Metadatum'
-	resources :internal_references, controller: 'metadatum', type: 'Internal_reference'
-	resources :definitions,         controller: 'metadatum', type: 'Definition'
-	resources :hyperlinks,          controller: 'metadatum', type: 'Hyperlink'
-	
+	resources :metadata,            controller: 'metadatum'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
