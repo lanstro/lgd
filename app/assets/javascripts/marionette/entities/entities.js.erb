@@ -69,7 +69,7 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 				return null;
 			}
 			result="";
-			while(current.get('level') > <%= SECTION %>) {
+			while(current.get('level') > <%= SECTION %> && current.get('level') < <%= PARA_LIST_HEAD %>) {
 				if(current.get('number') != null) {
 					result = "("+current.get('number')+")"+result;
 				}
@@ -77,6 +77,10 @@ Lgd.module("Entities", function(Entities, Lgd, Backbone, Marionette, $, _){
 			}
 			result=current.get('number')+result;
 			return result;
+		},
+		
+		parent: function(){
+			// TODO MEDIUM: need to add this back in for subsectionCitation()
 		}
 	});
 

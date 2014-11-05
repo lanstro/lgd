@@ -24,6 +24,7 @@ class Metadatum < ActiveRecord::Base
 	belongs_to :content,  polymorphic: true
 	
 	has_many :annotations, dependent: :destroy
+	has_many :flags, as: :flaggable, dependent: :destroy
 	
 	validates_presence_of :anchor
 	validates :category, presence: true, inclusion:    { in: ["Definition", "Internal_reference"] }

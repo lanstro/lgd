@@ -35,6 +35,7 @@ gem 'acts_as_list'
 gem 'faker', '1.1.2'
 gem 'ckeditor_rails'
 gem 'annotate', '~> 2.6.5'
+gem 'amatch'
 
 group :development do
   gem 'meta_request'

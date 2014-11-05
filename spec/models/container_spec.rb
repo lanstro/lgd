@@ -17,6 +17,9 @@
 #  ancestry          :string(255)
 #  ancestry_depth    :integer
 #  annotated_content :text
+#  definition_parsed :datetime
+#  references_parsed :datetime
+#  annotation_parsed :datetime
 #
 # Indexes
 #

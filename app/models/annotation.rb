@@ -17,6 +17,8 @@ class Annotation < ActiveRecord::Base
 	belongs_to :metadatum
 	belongs_to :container
 	
+	has_many :flags, as: :flaggable, dependent: :destroy
+	
 	validates :metadatum, presence: true, if: :meta_link?
 	validates :container, presence: true
 	

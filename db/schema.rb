@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141029070611) do
+ActiveRecord::Schema.define(version: 20141031023713) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 20141029070611) do
     t.integer  "year"
     t.integer  "number"
     t.boolean  "published"
+    t.string   "comlawID"
   end
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
@@ -69,10 +70,23 @@ ActiveRecord::Schema.define(version: 20141029070611) do
     t.string   "ancestry"
     t.integer  "ancestry_depth"
     t.text     "annotated_content"
+    t.datetime "definition_parsed"
+    t.datetime "references_parsed"
+    t.datetime "annotation_parsed"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
   add_index "containers", ["ancestry"], name: "index_containers_on_ancestry"
+
+  create_table "flags", force: true do |t|
+    t.string   "category"
+    t.integer  "user_id"
+    t.integer  "flaggable_id"
+    t.string   "flaggable_type"
+    t.string   "comment"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "identities", force: true do |t|
     t.integer  "user_id"

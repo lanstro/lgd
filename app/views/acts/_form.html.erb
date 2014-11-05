@@ -18,5 +18,8 @@
 <%= f.label :number, "Number" %>
 <%= f.number_field :number %>
 
+<%= f.label :comlawID, "Comlaw ID (in the form of C2014Cxxxxx)" %>
+<%= f.text_field :comlawID %>
+
 <%= f.label :last_updated, "Last updated by Comlaw" %>
 <%= f.date_select :last_updated, start_year: 2000 %>

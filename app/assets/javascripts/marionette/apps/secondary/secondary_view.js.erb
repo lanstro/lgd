@@ -328,7 +328,7 @@ Lgd.module('Secondary', function(Secondary, Lgd, Backbone, Marionette, $, _){
 			event.preventDefault();
 		},
 		
-		edit_current_container: function(){
+		edit_current_container: function(event){
 			event.stopImmediatePropagation();
 			event.preventDefault();
 			console.log("edit container clicked");

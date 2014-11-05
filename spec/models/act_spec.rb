@@ -15,6 +15,7 @@
 #  year          :integer
 #  number        :integer
 #  published     :boolean
+#  comlawID      :string(255)
 #
 # Indexes
 #

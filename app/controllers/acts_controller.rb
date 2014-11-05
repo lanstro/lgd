@@ -89,7 +89,7 @@ class ActsController < ApplicationController
 		end
 		
 		def user_params
-			params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated)
+			params.require(:act).permit(:title, :subtitle, :year, :number, :act_type, :jurisdiction, :last_updated, :comlawID)
 		end
 	
 end

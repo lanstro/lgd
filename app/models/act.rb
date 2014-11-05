@@ -16,6 +16,7 @@
 #  year          :integer
 #  number        :integer
 #  published     :boolean
+#  comlawID      :string(255)
 #
 # Indexes
 #
@@ -101,10 +102,12 @@ class Act < ActiveRecord::Base
 		
 	has_many :containers, dependent: :destroy
 	has_many :comments,   :through => :containers
+	has_many :flags, as: :flaggable, dependent: :destroy
 	
 	has_many :scopes,     as: :scope,   class_name: "Metadatum"
 	has_many :contents,   as: :content, class_name: "Metadatum", dependent: :destroy
 	
+	# TODO LOW: consider doing a regex to check validity of comlawID
 	delegate :definitions,          to: :scopes
 	delegate :internal_references,  to: :scopes
 		
@@ -114,32 +117,60 @@ class Act < ActiveRecord::Base
 	validates :act_type, 		 presence: true, inclusion:    { in: %w{Act Regulations} }
 	validates :year,     		 presence: true, numericality: {only_integer: true, greater_than: 1900, less_than_or_equal_to: Time.now.year}
 	validates :number,   		 presence: true, numericality: {only_integer: true, greater_than: 0}
+	validates :comlawID,     presence: true
 	
 	if Rails.env.development?
 		attr_accessor :nlp_act, :open_containers
 	end
 
-	def create_container(level, content, number, special_type)
-
+	def stage_container(level, content, number, special_type)
+		
 		result                     = Container.new
 		result.act                 = self
-		result.parent              = @open_containers.last
-		
 		result.level               = level
 		result.content             = content
 		result.number              = number
 		result.special_paragraph   = special_type
+		result.parent              = @open_containers.last
 		
-		if level < TEXT
-			@open_containers.push  result
-		end
+		puts "--------"
+		puts "staged "+result.inspect
+		puts "@open_containers was "+@open_containers.inspect
 		
-		log "about to save "+result.inspect if DEBUG
-		if !result.save
-			raise result.errors.messages.inspect
-		end
 		return result
+		
 	end
+	
+	def update_open_containers(container)
+		
+		puts "*************"
+		puts "updating open_containers by adding "+container.inspect
+		
+		return if container.level >= TEXT
+		
+		if container.new_record?
+			# find the saved container that proxies this one
+			@open_containers.push Container.where(level: container.level, ancestry: container.ancestry, number: container.number, content: container.content).first
+		else
+			@open_containers.push container
+		end
+		puts "open_containers is now "+open_containers.inspect
+	end
+	
+	def commit_container(container, skip_save=false)
+		if !skip_save
+			log "about to save "+container.inspect if DEBUG
+			if @current_container and container.level == @current_container.level and @current_container.parent_id == open_containers.last.id
+				container.insert_at @current_container.position
+			else
+				if !container.save
+					raise container.errors.messages.inspect
+				end
+			end
+		end
+		update_open_containers container
+		return container
+	end	
 	
 	def last_paragraph_list_head
 		return @open_containers.rindex { |container| container.level == PARA_LIST_HEAD }
@@ -170,7 +201,7 @@ class Act < ActiveRecord::Base
 		
 		if level < PARA_LIST_HEAD
 			# it's a structural element
-			# if the new item's superior or equal to the list head's parent, close off the list 
+			# if the new item is superior or equal to the list head's parent, close off the list 
 			head_list = list
 			while @open_containers[head_list-1].level >= PARA_LIST_HEAD
 				head_list-=1
@@ -195,38 +226,48 @@ class Act < ActiveRecord::Base
 				return @open_containers.last.level >= level
 			end
 		elsif level == PARA_LIST_HEAD
-			# if it's a paragraph list heading, assume that it should just open a new sub-list under the existing list
-			# TODO low: MAY NEED TO REVISIT
-			return false
-		else
-			# it's a normal paragraph
-			if @open_containers.last.level == PARA_LIST_HEAD
-				# this is the first child of a list head - it must belong to the list head
-				return false
-			else
-				# the paragraph heading has other children
-				list_level = @open_containers[list+1].level
-				if list_level == TEXT
-					# shouldn't be possible - plain paragraphs shouldn't make it onto the @open_containers list
-					raise 'a plain paragraph appeared in the open_containers queue'
-				else
-					# the list children are structural elements, and now we have a paragraph
-					# should the paragraph be a child of the last structural element, or should it close off the list?
-					
-					# if the list header's parent is also a list, then assume we have to break off the inner list
-					if @open_containers[list-1].level == PARA_LIST_HEAD
-						@open_containers = @open_containers[0..list-1]
-						return false
-					else
-					# otherwise, assume it's a child of the final element
-						return false
-					end
+			# if it's a paragraph list heading, assume that it should start a new sub-list and close the existing list
+			# unless the PARA_LIST_HEAD is the first child of a structural element, and contains either the word 'outline' or
+			# is a definitional zone
+			# maybe better to get user input?
+			if @open_containers[list].previous_container == @open_containers[list-1]
+				if /[Oo]utline/.match @open_containers[list-1].content or @open_containers[list].is_definition_zone?
+					return false
 				end
 			end
+			return true
+		else
+			if @open_containers[list].children.size == 0
+				# this is the first child of the list - it must belong to the list head
+				return false
+			elsif @open_containers[list].children.first.level == level
+				# the list's children are also paragraphs, so this paragraph presumably belongs in the list
+				return false
+			end
+			# the paragraph heading has other children
+			# assume this breaks the list up
+			# maybe better to get user input?
+			return true
 		end
+=begin
+				
+				list_level = @open_containers[list+1].level
+				# the list children are structural elements, and now we have a paragraph
+				# should the paragraph be a child of the last structural element, or should it close off the list?
+				
+				# if the list header's parent is also a list, then assume we have to break off the inner list
+				if @open_containers[list-1].level == PARA_LIST_HEAD
+					@open_containers = @open_containers[0..list-1]
+					return false
+				else
+				# otherwise, assume it's a child of the final element
+					return false
+				end
+			end
+=end
 	end
 	
-	def process_entity(entity)
+	def process_entity(entity, skip_save=false)
 		level        = nil
 		content      = nil
 		number       = nil           
@@ -249,6 +290,9 @@ class Act < ActiveRecord::Base
 		log "\n\n" if DEBUG
 		log "processing entity "+content+"\nlevel: "+level.inspect+"\nnumber: "+number.inspect if DEBUG
 		
+		puts "press enter to continue"
+		# STDIN.gets
+		
 		# close off open containers that need to be closed
 		log " " if DEBUG
 		log "closing previous containers for "+content if DEBUG
@@ -256,11 +300,74 @@ class Act < ActiveRecord::Base
 			@open_containers.pop
 		end
 		
-		# create a new container for this element
-		create_container(level, content, number, special_type)
+		new_container = stage_container(level, content, number, special_type)
 		
+		puts "###########"
+		puts "###########"
+		puts "###########"
+		puts "considering @current_container of "+@current_container.inspect
+		puts "against #{new_container.inspect}"
+		
+		compare = @current_container <=> new_container
+		
+		while @current_container and compare < 0 
+			raise "deleted section found"
+			# the container currently being processed is higher precedence than what's in the database, so what's in the database has been deleted
+			flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
+			flag.save
+			@current_container = @current_container.next_container
+			compare = @current_container <=> new_container
+		end
+			
+		if @current_container and compare == 0  # ie it's the same container
+			puts "same section found"
+			if @current_container.content == content
+				log "Not adding this object as it is already in database:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+			else
+				log "overwriting this object:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+				@current_container.content           = content
+				@current_container.annotated_content = nil
+				@current_container.definition_parsed = nil
+				@current_container.references_parsed = nil
+				@current_container.annotation_parsed = nil
+				@current_container.save
+			end
+=begin
+			if entity.paragraphs.size > 0
+				# because we're about to return, we're skipping over comparing against all of this entity's normal paragraph children 
+				# if there is a list head in the children, skip to that
+				# otherwise, skip over to the next sibling, if it exists
+				# if it doesn't exist, skip to parent's next sibling
+				child_list = @current_container.children.where(level: PARA_LIST_HEAD).order("position ASC").first
+				if child_list
+					@current_container=child_list
+				else
+					current = @current_container
+					sibling = @current_container.lower_items.keep_if{ |i| i.level < TEXT }.first
+					while !sibling and current.parent
+						current = current.parent
+						sibling = current.lower_items.keep_if{ |i| i.level < TEXT }.first
+					end
+					@current_container = sibling
+				end
+			else
+				@current_container = @current_container.next_container
+			end
+=end
+			@current_container = @current_container.next_container
+			puts "about to return"
+			skip_save=true
+		end
+		
+		if !skip_save
+			raise "new section found"
+		end
+		
+		# create a new container for this element
+		
+		commit_container(new_container, skip_save)
 		# recursively call this again for each child paragraph
-		entity.paragraphs.each { |p| process_entity(p) if p != entity}
+		entity.paragraphs.each { |p| process_entity(p, skip_save) if p != entity}
 	end
 	
 	# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
@@ -290,16 +397,99 @@ class Act < ActiveRecord::Base
 
 	def parse
 		
-		@nlp_act = document Rails.root+'legislation/'+'test.txt'
+		@update_act = false
+		
+		if self.containers.size > 0
+			puts "This Act has already been parsed in the past, with comlawID "+self.comlawID.to_s+".  Do you want to continue? (Y)es, (N)o"
+			response = STDIN.gets
+			if response[0].downcase != "y"
+				return
+			end
+			
+			keep_looping = true
+			while keep_looping
+				puts "What is the comlawID of the file you'd like to process?  (Type 'quit', 'exit' or 'cancel' to return).  Leave blank if it's the same as the current ComlawID."
+				response=STDIN.gets.strip
+				if ["quit", "exit", "cancel"].include? response.downcase
+					return
+				end
+				if response.downcase == self.comlawID.downcase
+					puts "That seems to be the same document as what is already in the database.  Are you sure you want to continue? (Y)es, (N)o"
+					confirmation = STDIN.gets
+					if confirmation[0].downcase != "y"
+						return
+					end
+				elsif response.length != 0
+					puts "Thank you, comlawID now set to "+response
+					puts "When did Comlaw publish "+response+"?  Format: dd/mm/yyyy"
+					begin
+						new_date = STDIN.gets.strip.to_date
+						rescue ArgumentError
+						puts "Invalid date."
+					end
+					if new_date < self.last_updated
+						puts "That is an older version of the Act than the one in the database.  Exiting."
+						return
+					end
+					self.last_updated = new_date
+					self.comlawID = response
+				end
+				if self.valid?
+					@update_act = true
+					keep_looping=false
+				else
+					puts "Sorry, your input for the invalid.  Please start again."
+					self.reload
+				end
+			end
+			
+		end
+		keep_looping=true
+		while keep_looping
+			puts "which file would you like to parse? (Default is test.txt, 'exit' to quit)"
+			files=Dir.glob(Rails.root+'legislation/*.txt').map { |f| File.basename(f, ".txt") }
+			puts "files is "+files.inspect
+			count = 0
+			files.each do |f|
+				puts "["+count.to_s+"] "+f
+				count+=1
+			end
+			
+			
+			filename = STDIN.gets.strip
+			
+			if ARABIC_REGEX.match filename and files[filename.to_i]
+				filename=files[filename.to_i]
+			elsif filename.length==0
+				filename="test"
+			elsif ["quit", "exit", "cancel"].include? filename
+				return
+			elsif !files.include? filename
+				puts "That was not in the list of filenames"
+				next
+			end
+			keep_looping=false
+			filename = Rails.root.join('legislation', filename+'.txt')
+			puts "trying to open "+filename.to_s
+			begin
+				@nlp_act = document filename
+				rescue Exception
+					puts "Failed to open file.  Exiting."
+					return
+			end
+		end
+				
 		@nlp_act.chunk(:legislation)
 		log "chunked"
 		
 		@open_containers  = []
+		@current_container = @update_act ? self.containers.roots.order("position ASC").first : nil
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
-		parse_tree :definitions
-		parse_tree :anchors
-		parse_tree :annotations
+		#parse_tree :definitions
+		#parse_tree :anchors
+		#parse_tree :annotations
+		self.save
 	end
 	
 	def relevant_metadata
