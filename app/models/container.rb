@@ -171,144 +171,6 @@ class Container < ActiveRecord::Base
 		return self.parent
 	end
 
-	def self.to_roman(str)
-		str = str.downcase
-		str.tr!("ivxlcdm", "0123456")  # translate into numbers
-		level, last, deviated, ret = 7, 0, false, 0
-		table = [1,5,10,50,100,500,1000]  # the translation table
-		str.each_char do |char|
-			num = char.to_i
-			if num > level  # means a deviation
-				ret -= table[last]*2 # remedy deviation
-				level = last-1 # don't allow IXI or IXV etc.
-				deviated = true
-			else
-				deviated = false
-				level = num  # don't allow MLM etc.
-			end
-			ret += table[num]
-			last = num
-		end
-		ret
-	end
-	
-	def self.compare_romans(first, second)
-		
-		puts "compare_romans comparing "+first.to_s+" and "+second.to_s
-		
-		return compare_arabic_numbers(to_roman(first), to_roman(second))
-	end
-	
-	def self.compare_alphabetical_numbers(first, second)
-		
-		puts "compare_alphabetical_numbers comparing "+first.to_s+" and "+second.to_s
-		
-		if first.length==1 and second.length==1
-			return first<=>second
-		elsif first.length == 0
-			return 1
-		elsif second.length == 0
-			return -1
-		elsif (first=="aa" and second=="a") or (first=="a" and second=="aa")
-			raise "a vs aa - need user input"
-			# see whether there's already an a or aa around
-			# otherwise, get user input
-		else
-			result = compare_alphabetical_numbers(first[0], second[0])
-			if result != 0
-				return result
-			else
-				return compare_alphabetical_numbers(first[1..-1], second[1..-1])
-			end
-		end	
-	end
-	
-	
-	def self.compare_paragraphs(first, second)
-		
-		puts "compare_paragraphs comparing "+first.inspect+" and "+second.inspect
-		
-		if first.content==second.content
-			return 0
-		elsif first.parent.is_definition_zone? and second.parent.is_definition_zone?
-			# if in definition section, compare alphabetically
-			return first.content.split(' ').first.downcase <=> second.content.split(' ').first.downcase
-		elsif first.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
-			return 0
-		else
-			# search following containers for a match until it's no longer a paragraph
-			# if there's a match, return -1 because the current container has been deleted and the program needs to skip ahead to the matched one
-			# otherwise, return 1, because it's a new paragraph that's been inserted
-			next_container = first.next_container
-			while next_container and next_container.level >= PARA_LIST_HEAD
-				if next_container.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
-					return -1
-				end
-			end
-			next_container = second.next_container
-			while next_container and next_container.level >= PARA_LIST_HEAD
-				if next_container.content.pair_distance_similar(first.content) > PARAGRAPH_SIMILARITY_THRESHOLD
-					return 1
-				end
-			end
-			puts "two dissimilar paragraphs being compared - what to do?"
-			return 1
-		end
-	end
-	
-	
-	def self.compare_arabic_numbers(first, second)
-		
-		puts "compare_arabic_numbers comparing "+first.to_s+" and "+second.to_s
-		
-		if ARABIC_REGEX.match first.to_s+second.to_s
-			puts "both are numbers"
-			return first.to_i <=> second.to_i
-		end
-		
-		first_remainder, second_remainder = "", ""
-		
-		match = ARABIC_START_REGEX.match first
-		first          = match[1].to_i
-		first_remainder= match[2].strip if match[2]
-		
-		match = ARABIC_START_REGEX.match second
-		second          = match[1].to_i
-		second_remainder= match[2].strip if match[2]
-		
-		if first != second
-			puts "first is not the same as second"
-			return first <=> second
-		end
-		
-		is_ITAA97 = false
-		match = ITAA97_REMAINDER_REGEX.match first_remainder
-		if match
-			first_remainder = match[1]
-			is_ITAA97 = true
-			puts "first remainder is ITAA97 - #{first_remainder}"
-			puts match.inspect
-		end
-		match = ITAA97_REMAINDER_REGEX.match second_remainder
-		if match
-			second_remainder = match[1] if match
-			is_ITAA97 = true
-			puts "second remainder is ITAA97 - #{second_remainder}"
-			puts match.inspect
-		end
-		
-		if first_remainder.length == 0
-			# something like s27 vs (s27-25 or s27A) - s27 wins
-			return 1
-		elsif second_remainder.length == 0
-			return -1
-		elsif is_ITAA97
-			return compare_arabic_numbers(first_remainder, second_remainder)
-		else
-			return compare_alphabetical_numbers(first_remainder, second_remainder)
-		end
-	end
-	
 	def <=>(other)
 		
 		# 0 means it's the same container
@@ -323,33 +185,28 @@ class Container < ActiveRecord::Base
 			raise "Containers belong to different Acts.  Cannot compare."
 		end
 		
-		self_path  =  self.ancestors
-		other_path = other.ancestors
-		
-		if self_path.where(level: SECTION).size > 0 and other_path.where(level: SECTION).size > 0
-			# if they both have an ancestor that is a section, that section should be unique in an act, and you can compare
-			# ancestries from there, saving a few queries
-			self_path.delete_if { |c| c.level < SECTION }
-			other_path.delete_if{ |c| c.level < SECTION }
+		if self.ancestry == other.ancestry
+			self_path, other_path = [], []
+		else
+			self_path  =  self.ancestors
+			other_path = other.ancestors
+			
+			if self_path.where(level: SECTION).size > 0 and other_path.where(level: SECTION).size > 0
+				# if they both have an ancestor that is a section, that section should be unique in an act, and you can compare
+				# ancestries from there, saving a few queries
+				self_path.delete_if { |c| c.level < SECTION }
+				other_path.delete_if{ |c| c.level < SECTION }
+			end
+			
+			while self_path.size>0 and other_path.size > 0
+				result = self_path.shift <=> other_path.shift
+				puts "point 1"
+				return result if result != 0
+			end
 		end
-		
-		while self_path.size>0 and other_path.size > 0
-			result = self_path.shift <=> other_path.shift
-			puts "point 1"
-			return result if result != 0
-		end
-		
-		if self.parent != other.parent
-			#raise "one of these doesn't have a parent:\nself: #{self.parent.inspect}\nother: #{other.parent.inspect}"
-		end
-		
-		puts "self_path is "+self_path.inspect
-		puts "other_path is "+other_path.inspect
-		
 		# either both paths are identical, or one of them has run out
 		if self_path.size == 0 and other_path.size == 0
 			# self and other have identical ancestries - just compare their positions
-			puts "point 4"
 			if self.position and other.position
 				return self.position <=> other.position
 			end
@@ -360,9 +217,7 @@ class Container < ActiveRecord::Base
 			else
 				result = Container.compare_without_position(self, other_path.first)
 			end
-			puts "point 2"
 			return result if result != 0
-			puts "point 2.1"
 			# if we're here, it means other is a child of self, so it must be later in the act
 			return -1
 		else
@@ -371,52 +226,12 @@ class Container < ActiveRecord::Base
 			else
 				result= Container.compare_without_position(self_path.first, other)
 			end
-			puts "point 3"
 			return result if result != 0
-			puts "point 5"
 			# if we're here, it means self is a child of other, so it must be later in the act
 			return 1
 		end
 	end
-	
-	def self.compare_without_position(first, second)
-		
-		puts "comparing without position "+first.inspect+"\n against "+second.inspect
-		
-		# if we're here, we've already determined that these two elements have the same ancestors, and one of them
-		# has no children.  That one also has no position, which means it hasn't been saved into the DB yet
-		
-		# so this is purely a comparison of their 'numbers', and if they don't have numbers, then their paragraph texts
-		
-		if first.level != second.level and (first.number or second.number)
-			# ie, if the two containers are different levels, and they're not both paragraphs
-			return first.level <=> second.level
-		end
-		
-		is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and ROMAN_REGEX.match first.number)
-		
-		if is_roman
-			result= compare_romans(first.number, second.number)
-		elsif [SECTION, SUBSECTION, CHAPTER, DIVISION, PART].include? first.level
-			result= compare_arabic_numbers(first.number, second.number)
-		elsif [PARAGRAPH, SUBSUBPARAGRAPH, SUBDIVISION].include? first.level
-			result= compare_alphabetical_numbers(first.number, second.number)
-		else
-			result= compare_paragraphs(first, second)
-		end
-		return result 
-=begin
-		if result!= 0
-		if !first.new_record? and first.children.size > 0
-			return 1
-		elsif !second.new_record? and second.children.size > 0
-			return -1
-		else
-			return 0
-		end
-=end
-	end
-	
+
 	# processing annotations and recalculating the annotated_content
 	
 	def recalculate_annotations
@@ -918,5 +733,173 @@ class Container < ActiveRecord::Base
 			result = current.number+result
 			return result
 		end
-	
+		
+		
+		def self.to_roman(str)
+			str = str.downcase
+			str.tr!("ivxlcdm", "0123456")  # translate into numbers
+			level, last, deviated, ret = 7, 0, false, 0
+			table = [1,5,10,50,100,500,1000]  # the translation table
+			str.each_char do |char|
+				num = char.to_i
+				if num > level  # means a deviation
+					ret -= table[last]*2 # remedy deviation
+					level = last-1 # don't allow IXI or IXV etc.
+					deviated = true
+				else
+					deviated = false
+					level = num  # don't allow MLM etc.
+				end
+				ret += table[num]
+				last = num
+			end
+			ret
+		end
+		
+		def self.compare_romans(first, second)
+			
+			puts "compare_romans comparing "+first.to_s+" and "+second.to_s
+			
+			return compare_arabic_numbers(to_roman(first), to_roman(second))
+		end
+		
+		def self.compare_alphabetical_numbers(first, second)
+			
+			puts "compare_alphabetical_numbers comparing "+first.to_s+" and "+second.to_s
+			
+			if first.length==1 and second.length==1
+				return first<=>second
+			elsif first.length == 0
+				return 1
+			elsif second.length == 0
+				return -1
+			elsif (first=="aa" and second=="a") or (first=="a" and second=="aa")
+				raise "a vs aa - need user input"
+				# see whether there's already an a or aa around
+				# otherwise, get user input
+			else
+				result = compare_alphabetical_numbers(first[0], second[0])
+				if result != 0
+					return result
+				else
+					return compare_alphabetical_numbers(first[1..-1], second[1..-1])
+				end
+			end	
+		end
+		
+		
+		def self.compare_paragraphs(first, second)
+			
+			puts "compare_paragraphs comparing "+first.inspect+" and "+second.inspect
+			
+			if first.content==second.content
+				return 0
+			elsif first.parent.is_definition_zone? and second.parent.is_definition_zone?
+				# if in definition section, compare alphabetically
+				return first.content.split(' ').first.downcase <=> second.content.split(' ').first.downcase
+			elsif first.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
+				return 0
+			else
+				# search following containers for a match until it's no longer a paragraph
+				# if there's a match, return -1 because the current container has been deleted and the program needs to skip ahead to the matched one
+				# otherwise, return 1, because it's a new paragraph that's been inserted
+				next_container = first.next_container
+				while next_container and next_container.level >= PARA_LIST_HEAD
+					if next_container.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
+						return -1
+					end
+				end
+				next_container = second.next_container
+				while next_container and next_container.level >= PARA_LIST_HEAD
+					if next_container.content.pair_distance_similar(first.content) > PARAGRAPH_SIMILARITY_THRESHOLD
+						return 1
+					end
+				end
+				puts "two dissimilar paragraphs being compared - what to do?"
+				return 1
+			end
+		end
+		
+		
+		def self.compare_arabic_numbers(first, second)
+			
+			puts "compare_arabic_numbers comparing "+first.to_s+" and "+second.to_s
+			
+			if ARABIC_REGEX.match first.to_s+second.to_s
+				puts "both are numbers"
+				return first.to_i <=> second.to_i
+			end
+			
+			first_remainder, second_remainder = "", ""
+			
+			match = ARABIC_START_REGEX.match first
+			first          = match[1].to_i
+			first_remainder= match[2].strip if match[2]
+			
+			match = ARABIC_START_REGEX.match second
+			second          = match[1].to_i
+			second_remainder= match[2].strip if match[2]
+			
+			if first != second
+				puts "first is not the same as second"
+				return first <=> second
+			end
+			
+			is_ITAA97 = false
+			match = ITAA97_REMAINDER_REGEX.match first_remainder
+			if match
+				first_remainder = match[1]
+				is_ITAA97 = true
+				puts "first remainder is ITAA97 - #{first_remainder}"
+				puts match.inspect
+			end
+			match = ITAA97_REMAINDER_REGEX.match second_remainder
+			if match
+				second_remainder = match[1] if match
+				is_ITAA97 = true
+				puts "second remainder is ITAA97 - #{second_remainder}"
+				puts match.inspect
+			end
+			
+			if first_remainder.length == 0
+				# something like s27 vs (s27-25 or s27A) - s27 wins
+				return 1
+			elsif second_remainder.length == 0
+				return -1
+			elsif is_ITAA97
+				return compare_arabic_numbers(first_remainder, second_remainder)
+			else
+				return compare_alphabetical_numbers(first_remainder, second_remainder)
+			end
+		end
+		
+		
+		def self.compare_without_position(first, second)
+			
+			puts "comparing without position "+first.inspect+"\n against "+second.inspect
+			
+			# if we're here, we've already determined that these two elements have the same ancestors, and one of them
+			# has no children.  That one also has no position, which means it hasn't been saved into the DB yet
+			
+			# so this is purely a comparison of their 'numbers', and if they don't have numbers, then their paragraph texts
+			
+			if first.level != second.level and (first.number or second.number)
+				# ie, if the two containers are different levels, and they're not both paragraphs
+				return first.level <=> second.level
+			end
+			
+			is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and ROMAN_REGEX.match first.number)
+			
+			if is_roman
+				result= compare_romans(first.number, second.number)
+			elsif [SECTION, SUBSECTION, CHAPTER, DIVISION, PART].include? first.level
+				result= compare_arabic_numbers(first.number, second.number)
+			elsif [PARAGRAPH, SUBSUBPARAGRAPH, SUBDIVISION].include? first.level
+				result= compare_alphabetical_numbers(first.number, second.number)
+			else
+				result= compare_paragraphs(first, second)
+			end
+			return result 
+		end
+		
 end
