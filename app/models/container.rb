@@ -47,7 +47,7 @@ REGEX_STRUCTURAL_NAME = 3
 ARABIC_REGEX = /\A[0-9]+\Z/
 ROMAN_REGEX  = /\A(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\Z/i
 ITAA97_REMAINDER_REGEX = /\A[-——]\s?([0-9]+)\Z/
-ARABIC_START_REGEX = /\A([0-9]+)(.+)/
+ARABIC_START_REGEX = /\A([0-9]+)(.+)?/
 
 PARAGRAPH_SIMILARITY_THRESHOLD = 0.9
 
@@ -152,7 +152,16 @@ class Container < ActiveRecord::Base
 		return nil if self.new_record?
 		result=self.children.order("position ASC").first
 		return result if result
-		return self.lower_item
+		
+		current = self
+		
+		while current
+			return current.lower_item if current.lower_item
+			current=current.parent
+		end
+		
+		return nil
+		
 	end
 	
 	def previous_container
@@ -242,8 +251,8 @@ class Container < ActiveRecord::Base
 					return 1
 				end
 			end
-			raise "two dissimilar paragraphs being compared - what to do?"
-			return 0
+			puts "two dissimilar paragraphs being compared - what to do?"
+			return 1
 		end
 	end
 	
@@ -252,7 +261,7 @@ class Container < ActiveRecord::Base
 		
 		puts "compare_arabic_numbers comparing "+first.to_s+" and "+second.to_s
 		
-		if ARABIC_REGEX.match first+second
+		if ARABIC_REGEX.match first.to_s+second.to_s
 			puts "both are numbers"
 			return first.to_i <=> second.to_i
 		end
@@ -260,18 +269,15 @@ class Container < ActiveRecord::Base
 		first_remainder, second_remainder = "", ""
 		
 		match = ARABIC_START_REGEX.match first
-		if match
-			first          = match[1].to_i
-			first_remainder= match[2].strip
-		end
+		first          = match[1].to_i
+		first_remainder= match[2].strip if match[2]
 		
 		match = ARABIC_START_REGEX.match second
-		if match
-			second          = match[1].to_i
-			second_remainder= match[2].strip
-		end
+		second          = match[1].to_i
+		second_remainder= match[2].strip if match[2]
 		
 		if first != second
+			puts "first is not the same as second"
 			return first <=> second
 		end
 		
@@ -356,8 +362,9 @@ class Container < ActiveRecord::Base
 			end
 			puts "point 2"
 			return result if result != 0
+			puts "point 2.1"
 			# if we're here, it means other is a child of self, so it must be later in the act
-			return 1
+			return -1
 		else
 			if self_path.first.position and other.position
 				result = self_path.first.position <=> other.position
@@ -367,7 +374,8 @@ class Container < ActiveRecord::Base
 			puts "point 3"
 			return result if result != 0
 			puts "point 5"
-			return -1
+			# if we're here, it means self is a child of other, so it must be later in the act
+			return 1
 		end
 	end
 	
@@ -388,7 +396,7 @@ class Container < ActiveRecord::Base
 		is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and ROMAN_REGEX.match first.number)
 		
 		if is_roman
-			result= compare_roman_numbers(first.number, second.number)
+			result= compare_romans(first.number, second.number)
 		elsif [SECTION, SUBSECTION, CHAPTER, DIVISION, PART].include? first.level
 			result= compare_arabic_numbers(first.number, second.number)
 		elsif [PARAGRAPH, SUBSUBPARAGRAPH, SUBDIVISION].include? first.level

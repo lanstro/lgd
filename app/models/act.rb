@@ -120,10 +120,11 @@ class Act < ActiveRecord::Base
 	validates :comlawID,     presence: true
 	
 	if Rails.env.development?
-		attr_accessor :nlp_act, :open_containers
+		attr_accessor :nlp_act
 	end
 
-	def stage_container(level, content, number, special_type)
+	# should be private
+	def stage_container(level, content, number, special_type, parent)
 		
 		result                     = Container.new
 		result.act                 = self
@@ -131,143 +132,129 @@ class Act < ActiveRecord::Base
 		result.content             = content
 		result.number              = number
 		result.special_paragraph   = special_type
-		result.parent              = @open_containers.last
 		
-		puts "--------"
-		puts "staged "+result.inspect
-		puts "@open_containers was "+@open_containers.inspect
+		result.parent              = parent
 		
 		return result
 		
 	end
 	
-	def update_open_containers(container)
-		
-		puts "*************"
-		puts "updating open_containers by adding "+container.inspect
-		
-		return if container.level >= TEXT
-		
-		if container.new_record?
-			# find the saved container that proxies this one
-			@open_containers.push Container.where(level: container.level, ancestry: container.ancestry, number: container.number, content: container.content).first
-		else
-			@open_containers.push container
-		end
-		puts "open_containers is now "+open_containers.inspect
-	end
-	
+	# should be private
 	def commit_container(container, skip_save=false)
-		if !skip_save
-			log "about to save "+container.inspect if DEBUG
-			if @current_container and container.level == @current_container.level and @current_container.parent_id == open_containers.last.id
-				container.insert_at @current_container.position
-			else
-				if !container.save
-					raise container.errors.messages.inspect
-				end
-			end
-		end
-		update_open_containers container
-		return container
-	end	
-	
-	def last_paragraph_list_head
-		return @open_containers.rindex { |container| container.level == PARA_LIST_HEAD }
-	end
-	
-	def close_previous_container?(level)
-		if @open_containers.size < 1
-			return false
-		end
-		
-		list = last_paragraph_list_head
-		
-		if DEBUG
-			log "should we close previous container?  New level is "+level.inspect+" open containers is:"
-			@open_containers.each { |c| log c.inspect }
-		end
-		
-		if !list
-			# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
-			if DEBUG
-				log "no list open; current level is "+level.to_s
-				log "last open container is level "+@open_containers.last.level.to_s+" with content "+@open_containers.last.content
-			end
-			return @open_containers.last.level >= level
-		end
-		
-		# there's a list - what do we do?
-		
-		if level < PARA_LIST_HEAD
-			# it's a structural element
-			# if the new item is superior or equal to the list head's parent, close off the list 
-			head_list = list
-			while @open_containers[head_list-1].level >= PARA_LIST_HEAD
-				head_list-=1
-			end
-			if level <= @open_containers[head_list-1].level
-				log "new section is superior to the open list's parent - close the open list, and then return true so that the open list's parent gets removed too"
-				@open_containers=@open_containers[0..head_list-1]
-				return true
-			end
-			# if it isn't, then it's either a child of the list head, or of the previous item
-			log "need to decide whether this structural entity is direct child of the list or not" if DEBUG
-			if @open_containers.last.level == PARA_LIST_HEAD
-				log "it's a direct child of the list - returning false" if DEBUG 
-				# this is the first child of a list head - it must belong to the list head
-				return false
-			else
-				# fall back to normal rules - see if last item is deeper than new item or not
-				if DEBUG
-					log "fallback - level is "+level.to_s+" and about to return "+ (@open_containers.last.level >= level).to_s
-					log "last container is "+@open_containers.last.inspect
-				end
-				return @open_containers.last.level >= level
-			end
-		elsif level == PARA_LIST_HEAD
-			# if it's a paragraph list heading, assume that it should start a new sub-list and close the existing list
-			# unless the PARA_LIST_HEAD is the first child of a structural element, and contains either the word 'outline' or
-			# is a definitional zone
-			# maybe better to get user input?
-			if @open_containers[list].previous_container == @open_containers[list-1]
-				if /[Oo]utline/.match @open_containers[list-1].content or @open_containers[list].is_definition_zone?
-					return false
-				end
-			end
-			return true
+		if skip_save
+			@current_container = @current_container.next_container
+			# we're leaving the old @current_container alone by not saving it
+			# so move it one container across
 		else
-			if @open_containers[list].children.size == 0
-				# this is the first child of the list - it must belong to the list head
-				return false
-			elsif @open_containers[list].children.first.level == level
-				# the list's children are also paragraphs, so this paragraph presumably belongs in the list
-				return false
+			log "about to save "+container.inspect if DEBUG
+			# how to tell whether to save the new container at the end of the current parent, or in front of the current_container?
+			if @current_container and @current_container.next_container and @current_container.next_container.level == @current_container.level
+				container.insert_at @current_container.position
+				# we're inserting in front of the current_container
+				# leave current_container where it is
+			else
+				container.save #saves to end of the current parent's children
+				@current_container = container
+				# we're inserting the new container at the end of the current parent, so make it the new current_container
 			end
-			# the paragraph heading has other children
-			# assume this breaks the list up
-			# maybe better to get user input?
-			return true
 		end
-=begin
-				
-				list_level = @open_containers[list+1].level
-				# the list children are structural elements, and now we have a paragraph
-				# should the paragraph be a child of the last structural element, or should it close off the list?
-				
-				# if the list header's parent is also a list, then assume we have to break off the inner list
-				if @open_containers[list-1].level == PARA_LIST_HEAD
-					@open_containers = @open_containers[0..list-1]
-					return false
-				else
-				# otherwise, assume it's a child of the final element
-					return false
-				end
-			end
-=end
+		return container
 	end
 	
+	# should be private
+	def find_parent(level)
+		
+		log "looking for parent for level "+level.to_s if DEBUG
+		
+		return nil if !@current_container
+		
+		result = @update_act? @current_container.previous_container : @current_container
+		
+		while result
+			
+			list = result.level == PARA_LIST_HEAD ? result : result.ancestors.where(level: PARA_LIST_HEAD).last
+			
+			log "should we close previous container?  New level is "+level.inspect+"\nCurrent container is #{@current_container.inspect}\nresult is #{result.inspect} and result's ancestors are #{result.ancestors.inspect}" if DEBUG
+			
+			if result.level == TEXT
+				result=result.parent
+				next
+			end
+			
+			if !list
+				# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
+				log "no list open; current level is "+level.to_s if DEBUG
+				
+				if level > result.level
+					break
+				else
+					result=result.parent
+					next
+				end
+			end
+			
+			# there's a list - what do we do?
+			
+			if level < PARA_LIST_HEAD
+				# it's a structural element
+				# if the new item is superior or equal to the list head's parent, close off the list 
+				highest_list=list
+				while highest_list.parent.level == PARA_LIST_HEAD
+					highest_list=list.parent
+				end
+				if level <= highest_list.parent.level
+					log "new section is superior to the open list's parent - close the open list, and then return true so that the open list's parent gets removed too"
+					result = list.parent
+					break
+				end
+				# if it isn't, then it's either a child of the list head, or of the previous item
+				log "need to decide whether this structural entity is direct child of the list or not" if DEBUG
+				if result == list
+					log "it's a direct child of the list - returning false" if DEBUG 
+					# this is the first child of a list head - it must belong to the list head
+					break
+				else
+					# fall back to normal rules - see if last item is deeper than new item or not
+					if DEBUG
+						log "fallback - level is "+level.to_s+" and about to return "+ (result.level >= level).to_s
+						log "current container is "+result.inspect
+					end
+					if level > result.level
+						break
+					else
+						result=result.parent
+						next
+					end
+				end
+			elsif level == PARA_LIST_HEAD
+				# if it's a paragraph list heading, assume that it should start a new sub-list and close the existing list
+				# unless the PARA_LIST_HEAD is the first child of a structural element, and contains either the word 'outline' or
+				# is a definitional zone, in which case we leave it alone
+				# maybe better to get user input?
+				if list.previous_container == list.parent
+					if /[Oo]utline/.match list.content or list.is_definition_zone?
+						break
+					end
+				end
+				result=result.parent
+				next
+			elsif level == TEXT
+				if list.children.size == 0 or # this is the first child of the list - it must belong to the list head
+					 list.children.first.level==level # the list's children are also paragraphs, so this paragraph presumably belongs in the list
+					break
+				else
+					result=result.parent
+					next
+				end
+			end
+		end
+		
+		return result
+	end
+	
+	# should be private
 	def process_entity(entity, skip_save=false)
+		
 		level        = nil
 		content      = nil
 		number       = nil           
@@ -290,81 +277,49 @@ class Act < ActiveRecord::Base
 		log "\n\n" if DEBUG
 		log "processing entity "+content+"\nlevel: "+level.inspect+"\nnumber: "+number.inspect if DEBUG
 		
-		puts "press enter to continue"
-		# STDIN.gets
+	
+		# find the right parent for the new container
+
+		parent = find_parent(level)
 		
-		# close off open containers that need to be closed
-		log " " if DEBUG
-		log "closing previous containers for "+content if DEBUG
-		while close_previous_container?(level)
-			@open_containers.pop
-		end
+		new_container = stage_container(level, content, number, special_type, parent)
 		
-		new_container = stage_container(level, content, number, special_type)
-		
-		puts "###########"
-		puts "###########"
-		puts "###########"
-		puts "considering @current_container of "+@current_container.inspect
-		puts "against #{new_container.inspect}"
-		
-		compare = @current_container <=> new_container
-		
-		while @current_container and compare < 0 
-			raise "deleted section found"
-			# the container currently being processed is higher precedence than what's in the database, so what's in the database has been deleted
-			flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
-			flag.save
-			@current_container = @current_container.next_container
+		if @update_act
+			#@current_container = @current_container.next_container
+			log "considering @current_container of "+@current_container.inspect if DEBUG
+			log "against #{new_container.inspect}" if DEBUG
 			compare = @current_container <=> new_container
-		end
 			
-		if @current_container and compare == 0  # ie it's the same container
-			puts "same section found"
-			if @current_container.content == content
-				log "Not adding this object as it is already in database:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
-			else
-				log "overwriting this object:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
-				@current_container.content           = content
-				@current_container.annotated_content = nil
-				@current_container.definition_parsed = nil
-				@current_container.references_parsed = nil
-				@current_container.annotation_parsed = nil
-				@current_container.save
-			end
-=begin
-			if entity.paragraphs.size > 0
-				# because we're about to return, we're skipping over comparing against all of this entity's normal paragraph children 
-				# if there is a list head in the children, skip to that
-				# otherwise, skip over to the next sibling, if it exists
-				# if it doesn't exist, skip to parent's next sibling
-				child_list = @current_container.children.where(level: PARA_LIST_HEAD).order("position ASC").first
-				if child_list
-					@current_container=child_list
-				else
-					current = @current_container
-					sibling = @current_container.lower_items.keep_if{ |i| i.level < TEXT }.first
-					while !sibling and current.parent
-						current = current.parent
-						sibling = current.lower_items.keep_if{ |i| i.level < TEXT }.first
-					end
-					@current_container = sibling
-				end
-			else
+			while @current_container and compare < 0 
+				raise "deleted section found"
+				# the container currently being processed is higher precedence than what's in the database, so what's in the database has been deleted
+				flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
+				flag.save
 				@current_container = @current_container.next_container
+				compare = @current_container <=> new_container
 			end
-=end
-			@current_container = @current_container.next_container
-			puts "about to return"
-			skip_save=true
+			
+			if @current_container and compare == 0  # ie it's the same container
+				if @current_container.content == content
+					log "Not adding this object as it is already in database:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+				else
+					log "overwriting this object:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+					@current_container.content           = content
+					@current_container.annotated_content = nil
+					@current_container.definition_parsed = nil
+					@current_container.references_parsed = nil
+					@current_container.annotation_parsed = nil
+					@current_container.save
+					raise "new content saved"
+				end
+				skip_save=true
+			end
+			
+			if !skip_save
+				raise "new section detected"
+			end
 		end
-		
-		if !skip_save
-			raise "new section found"
-		end
-		
-		# create a new container for this element
-		
+		# save the container
 		commit_container(new_container, skip_save)
 		# recursively call this again for each child paragraph
 		entity.paragraphs.each { |p| process_entity(p, skip_save) if p != entity}
@@ -372,6 +327,7 @@ class Act < ActiveRecord::Base
 	
 	# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
 	
+	# should be private
 	def recursive_tree_parse(node, task)
 		node.each do |child, grandchildren|
 			if task == :definitions
@@ -398,6 +354,8 @@ class Act < ActiveRecord::Base
 	def parse
 		
 		@update_act = false
+		
+		# TODO LOW - fix up the dialogue options for the start of this, consider making it web based
 		
 		if self.containers.size > 0
 			puts "This Act has already been parsed in the past, with comlawID "+self.comlawID.to_s+".  Do you want to continue? (Y)es, (N)o"
@@ -482,7 +440,6 @@ class Act < ActiveRecord::Base
 		@nlp_act.chunk(:legislation)
 		log "chunked"
 		
-		@open_containers  = []
 		@current_container = @update_act ? self.containers.roots.order("position ASC").first : nil
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
@@ -505,6 +462,7 @@ class Act < ActiveRecord::Base
 		
 	end
 
+	# should be private
 	def self.from_string_lgd(string)
 		Treat::Entities::Zone.check_encoding(string)
 		
