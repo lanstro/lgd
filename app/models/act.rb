@@ -132,24 +132,27 @@ class Act < ActiveRecord::Base
 			recursive_tree_parse(container.subtree.arrange, task)
 		end
 	end
-
-	def check_with_user(question)
-		puts question+" (Y)es, (N)o"
-		response = STDIN.gets
-		if response[0].downcase != "y"
-			return false
-		end
-		return true
+	
+	def find_containers(params)
+		return self.containers.where(level: params[:level], number: params[:number])
 	end
 	
-	def get_input_from_user(question)
-		puts question+" (Y)es, (N)o"
-		response = STDIN.gets
-		if response[0].downcase != "y"
-			return false
-		end
-		return true
+	
+	def first_container
+		return nil if self.containers.count == 0
+		
+		return self.containers.roots.first
 	end
+	
+	def last_container
+		return nil if self.containers.count == 0
+		result = self.containers.roots.last
+		while result.children.size > 0
+			result = result.children.last
+		end
+		return result
+	end
+	
 	
 	def parse
 		
@@ -162,87 +165,24 @@ class Act < ActiveRecord::Base
 			return if !check_with_user "This Act has already been parsed in the past, with comlawID "+self.comlawID.to_s+".  Do you want to continue?"
 				
 			if !check_with_user "Is the file you wish to process an additional part of the Act that has not been processed before?"
-				puts "I will process the file as an amended Act."
+				puts "I will process the file as an amended Act.  Please make sure that the first structural element in it exists in the database, otherwise check with Kai how to proceed."
 				@update_act=true
 			end
-				
-			keep_looping = true
-			while keep_looping
-				puts "What is the comlawID of the file you'd like to process?  (Type 'quit', 'exit' or 'cancel' to return).  Leave blank if it's the same as the current ComlawID."
-				response=STDIN.gets.strip
-				if ["quit", "exit", "cancel"].include? response.downcase
-					return
-				end
-				if response.downcase == self.comlawID.downcase
-					puts "That seems to be the same document as what is already in the database.  Are you sure you want to continue? (Y)es, (N)o"
-					confirmation = STDIN.gets
-					if confirmation[0].downcase != "y"
-						return
-					end
-				elsif response.length != 0
-					puts "Thank you, comlawID now set to "+response
-					puts "When did Comlaw publish "+response+"?  Format: dd/mm/yyyy"
-					begin
-						new_date = STDIN.gets.strip.to_date
-						rescue ArgumentError
-						puts "Invalid date."
-					end
-					if new_date < self.last_updated
-						puts "That is an older version of the Act than the one in the database.  Exiting."
-						return
-					end
-					self.last_updated = new_date
-					self.comlawID = response
-				end
-				if self.valid?
-					@update_act = true
-					keep_looping=false
-				else
-					puts "Sorry, your input for the invalid.  Please start again."
-					self.reload
-				end
-			end
 			
+			result = get_comlawID_and_date
+			while !result[:complete]
+				result = get_comlawID_and_date
+			end
+			return if !result[:continue]
 		end
-		keep_looping=true
-		while keep_looping
-			puts "which file would you like to parse? (Default is test.txt, 'exit' to quit)"
-			files=Dir.glob(Rails.root+'legislation/*.txt').map { |f| File.basename(f, ".txt") }
-			puts "files is "+files.inspect
-			count = 0
-			files.each do |f|
-				puts "["+count.to_s+"] "+f
-				count+=1
-			end
-			
-			
-			filename = STDIN.gets.strip
-			
-			if ARABIC_REGEX.match filename and files[filename.to_i]
-				filename=files[filename.to_i]
-			elsif filename.length==0
-				filename="test"
-			elsif ["quit", "exit", "cancel"].include? filename
-				return
-			elsif !files.include? filename
-				puts "That was not in the list of filenames"
-				next
-			end
-			keep_looping=false
-			filename = Rails.root.join('legislation', filename+'.txt')
-			puts "trying to open "+filename.to_s
-			begin
-				@nlp_act = document filename
-				rescue Exception
-					puts "Failed to open file.  Exiting."
-					return
-			end
+		
+		while get_filename
 		end
 				
 		@nlp_act.chunk(:legislation)
 		log "chunked"
 		
-		@current_container = @update_act ? self.containers.roots.order("position ASC").first : nil
+		@current_container = find_current_container
 		@nlp_act.sections.each { |section| process_entity(section) }
 		
 		#parse_tree :definitions
@@ -266,15 +206,15 @@ class Act < ActiveRecord::Base
 
 	private
 
-		def stage_container(level, content, number, special_type, parent)
+		def stage_container(params)
 
 			result                     = Container.new
 			result.act                 = self
-			result.level               = level
-			result.content             = content
-			result.number              = number
-			result.special_paragraph   = special_type
-			result.parent              = parent
+			result.level               = params[:level]
+			result.content             = params[:content]
+			result.number              = params[:number]
+			result.special_paragraph   = params[:special_type]
+			result.parent              = params[:parent]
 			return result
 			
 		end
@@ -303,6 +243,9 @@ class Act < ActiveRecord::Base
 		def find_parent(level)
 			
 			return nil if !@current_container
+			
+			
+			
 			result = @update_act? @current_container.previous_container : @current_container
 			
 			while result
@@ -407,42 +350,39 @@ class Act < ActiveRecord::Base
 			# find the right parent for the new container
 			
 			parent = find_parent(level)
-			new_container = stage_container(level, content, number, special_type, parent)
+			new_container = stage_container(level: level, content: content, number: number, special_type: special_type, parent: parent)
 			
-			if @update_act
-				#@current_container = @current_container.next_container
-				log "considering @current_container of "+@current_container.inspect if DEBUG
-				log "against #{new_container.inspect}" if DEBUG
+			@current_container=@current_container.next_container
+			
+			log "considering @current_container of "+@current_container.inspect if DEBUG
+			log "against #{new_container.inspect}" if DEBUG
+			compare = @current_container <=> new_container
+			
+			while @current_container and compare < 0 
+				# the container currently being processed is higher precedence than what's in the database, so what's in the database has been deleted
+				flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
+				flag.save
+				raise "flag created"
+				@current_container = @current_container.next_container
 				compare = @current_container <=> new_container
-				
-				while @current_container and compare < 0 
-					# the container currently being processed is higher precedence than what's in the database, so what's in the database has been deleted
-					flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
-					flag.save
-					@current_container = @current_container.next_container
-					compare = @current_container <=> new_container
-				end
-				
-				if @current_container and compare == 0  # ie it's the same container
-					if @current_container.content == content
-						log "Not adding this object as it is already in database:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
-					else
-						log "overwriting this object:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
-						@current_container.content           = content
-						@current_container.annotated_content = nil
-						@current_container.definition_parsed = nil
-						@current_container.references_parsed = nil
-						@current_container.annotation_parsed = nil
-						@current_container.save
-						raise "new content saved"
-					end
-					skip_save=true
-				end
-				
-				if !skip_save
-					raise "new section detected"
-				end
 			end
+			
+			if @current_container and compare == 0  # ie it's the same container
+				if @current_container.content == content
+					log "Not adding this object as it is already in database:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+				else
+					log "overwriting this object:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+					@current_container.content           = content
+					@current_container.annotated_content = nil
+					@current_container.definition_parsed = nil
+					@current_container.references_parsed = nil
+					@current_container.annotation_parsed = nil
+					@current_container.save
+					raise "new content saved"
+				end
+				skip_save=true
+			end
+				
 			# save the container
 			commit_container(new_container, skip_save)
 			# recursively call this again for each child paragraph
@@ -506,5 +446,171 @@ class Act < ActiveRecord::Base
 			end
 			return result
 		end
-	
+
+		
+		def check_with_user(question)
+			puts question+" (Y)es, (N)o"
+			response = STDIN.gets
+			if response[0].downcase != "y"
+				return false
+			end
+			return true
+		end
+		
+		def get_input_from_user(question)
+			puts question+" (Type 'quit', 'exit' or 'cancel' to return)"
+			response = STDIN.gets.strip
+			if ["quit", "exit", "cancel"].include? response.downcase
+				return "exit"
+			end
+			return response
+		end
+		
+		def get_comlawID_and_date
+			
+			response = get_input_from_user "What is the comlawID of the file you'd like to process?  Leave blank if it's the same as the current ComlawID."
+			
+			if response.downcase == self.comlawID.downcase
+				return {complete: true, continue: false} if !check_with_user "That seems to be the same document as what is already in the database.  Are you sure you want to continue? (Y)es, (N)o"
+			elsif response.length != 0
+				puts "Thank you, comlawID now set to "+response
+				response = get_input_from_user "When did Comlaw publish "+response+"?  Format: dd/mm/yyyy"
+				new_date = response.to_date
+				if new_date < self.last_updated
+					puts "That is an older version of the Act than the one in the database.  Exiting."
+					return {complete: true, continue: false}
+				end
+				self.last_updated = new_date
+				self.comlawID = response
+			end
+			if self.valid?
+				return {complete: true, continue: true}
+			else
+				puts "Sorry, your input for the invalid.  Please start again."
+				self.reload
+				return {complete: false}
+			end
+		end
+		
+		def get_filename
+			
+			puts "Which file would you like to parse? (Press enter for test.txt)"
+			files=Dir.glob(Rails.root+'legislation/*.txt').map { |f| File.basename(f, ".txt") }
+			count = 0
+			files.each do |f|
+				puts "["+count.to_s+"] "+f
+				count+=1
+			end
+			
+			filename = STDIN.gets.strip
+			
+			if ARABIC_REGEX.match filename and files[filename.to_i]
+				filename=files[filename.to_i]
+			elsif filename.length==0
+				filename="test"
+			elsif ["quit", "exit", "cancel"].include? filename
+				return false
+			elsif !files.include? filename
+				puts "That was not in the list of filenames"
+				return true
+			end
+			filename = Rails.root.join('legislation', filename+'.txt')
+			puts "trying to open "+filename.to_s
+			@nlp_act = document filename
+			return false
+		end
+		
+		def closest_container_to(params)
+			
+			same_level = self.containers.where(level: params[:level])
+			
+			last, first = nil, nil
+			#TODO low - when upgrading to ruby 2.0, can use Array#bsearch
+			same_level.each do |c|
+				compare = c.compare_without_position(params[:entity])
+				case c
+					when 0
+						raise "shouldn't need to use closest_container_to for this, as there is a container with the same level and number"
+					when -1
+						last=c
+						next
+					when 1
+						if params[:smaller]
+							return last
+						elsif first
+							return first
+						else
+							first = c
+							next
+						end
+				end
+			end
+		end
+		
+		def find_current_container
+			
+			# if the act hasn't been parsed before, then no need for a current_container
+			
+			return nil if self.containers.size == 0
+			
+			nlp_sections = @nlp_act.sections
+			
+			# grab the first section from @nlp_act, and find the matching container
+			first_entity = nlp_sections.first
+			level   = first_entity.get(:level)
+			number  = first_entity.get(:number)
+			
+			puts first_entity.inspect
+			puts "level is "+level.inspect
+			puts "number is "+number.inspect
+			
+			if !level or !number or level > SECTION
+				raise "File is incompatible.  Please make sure the file starts with a section or higher."
+			end
+			
+			result = find_containers(level: level, number: number).first
+			
+			# if there's an exact match, then make that the @next_container
+			return result if result
+			
+			# there's no exact match - see if we should just tack this whole thing onto the end
+			first_entity = stage_container(level: level, number: number)
+			if last_container.compare_without_position(first_entity) < 0
+				return nil
+			end
+			
+			# maybe the whole thing can fit before the front?
+			
+			index = nlp_sections.size-1
+			last_entity=nil
+			while sections.size > index * -1
+				if !nlp_sections[index].get('level') or nlp_sections[index].get('level') < SECTION
+					index-=1
+					next
+				end
+				last_entity = stage_container(level: nlp_sections[index].get('level'), number: nlp_sections[index].get('number'))
+				break
+			end
+			raise "Incompatible file: could not find any structural elements higher than section.  Please try a different file." if !last_entity
+			
+			if last_entity.compare_without_position(first_container) < 0
+				return nil
+			end
+			
+			# is there a gap big enough to fit the whole new file?
+			
+			# find the last container that's smaller than the first section
+			# find the first container that's bigger than the last section
+			
+			start_gap  = closest_container_to(smaller: true,  entity: first_entity)
+			finish_gap = closest_container_to(smaller: false, level: last_entity.level,  number: last_entity.number)
+			
+			# if first_container.next_container == second_container -> gap is big enough
+			
+			if start_gap.next_container == finish_gap
+				return nil
+			end
+			# there's partial overlap - abort!
+			raise "The file partially overlaps what's already in the database - aborting."
+		end
 end

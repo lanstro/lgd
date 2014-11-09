@@ -774,7 +774,13 @@ class Container < ActiveRecord::Base
 			elsif second.length == 0
 				return -1
 			elsif (first=="aa" and second=="a") or (first=="a" and second=="aa")
-				raise "a vs aa - need user input"
+				puts "comparing an aa against an a - which one is higher?"
+				result = STDIN.gets.strip
+				if result == "aa"
+					return first=="aa" ? -1 : 1
+				else
+					return first=="aa"? 1: -1
+				end
 				# see whether there's already an a or aa around
 				# otherwise, get user input
 			else
@@ -796,7 +802,20 @@ class Container < ActiveRecord::Base
 				return 0
 			elsif first.parent.is_definition_zone? and second.parent.is_definition_zone?
 				# if in definition section, compare alphabetically
-				return first.content.split(' ').first.downcase <=> second.content.split(' ').first.downcase
+				# compare word for word 3 times, then ask the user for input
+				
+				first_phrase  = first.content.split(' ')
+				second_phrase = second.content.split(' ')
+				index = 0
+				
+				while index < 3
+					result = first_phrase[index].downcase <=> second_phrase[index].downcase
+					return result if result != 0
+					index+=1
+				end
+				
+				raise "definition zone detected and user input required"
+				
 			elsif first.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
 				return 0
 			else
@@ -808,14 +827,18 @@ class Container < ActiveRecord::Base
 					if next_container.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
 						return -1
 					end
+					next_container = next_container.next_container
 				end
 				next_container = second.next_container
 				while next_container and next_container.level >= PARA_LIST_HEAD
 					if next_container.content.pair_distance_similar(first.content) > PARAGRAPH_SIMILARITY_THRESHOLD
 						return 1
 					end
+					next_container = next_container.next_container
 				end
 				puts "two dissimilar paragraphs being compared - what to do?"
+				# TODO MEDIUM: consider whether to ask for user input here - right now it just returns 1 to signify that
+				# 'first' is later in the act than 'second'
 				return 1
 			end
 		end
