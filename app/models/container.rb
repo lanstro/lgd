@@ -49,7 +49,7 @@ ROMAN_REGEX  = /\A(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\Z/i
 ITAA97_REMAINDER_REGEX = /\A[-——]\s?([0-9]+)\Z/
 ARABIC_START_REGEX = /\A([0-9]+)(.+)?/
 
-PARAGRAPH_SIMILARITY_THRESHOLD = 0.9
+PARAGRAPH_SIMILARITY_THRESHOLD = 0.8
 
 class Container < ActiveRecord::Base
 	
@@ -200,7 +200,6 @@ class Container < ActiveRecord::Base
 			
 			while self_path.size>0 and other_path.size > 0
 				result = self_path.shift <=> other_path.shift
-				puts "point 1"
 				return result if result != 0
 			end
 		end
@@ -716,6 +715,7 @@ class Container < ActiveRecord::Base
 			end
 		end   
 	end
+
 	
 	private
 		
@@ -757,6 +757,8 @@ class Container < ActiveRecord::Base
 		end
 		
 		def self.compare_romans(first, second)
+			
+			# TODO MEDIUM - need to handle shit like Pt IVA - slice it up into two, then feed the alphabetical bits off to the compare_alphabetical_numbers method, much like how compare_arabic currently does it
 			
 			puts "compare_romans comparing "+first.to_s+" and "+second.to_s
 			
@@ -813,8 +815,8 @@ class Container < ActiveRecord::Base
 					return result if result != 0
 					index+=1
 				end
-				
-				raise "definition zone detected and user input required"
+				return 0
+				# TODO MEDIUM: maybe should go to user input here
 				
 			elsif first.content.pair_distance_similar(second.content) > PARAGRAPH_SIMILARITY_THRESHOLD
 				return 0
@@ -843,13 +845,46 @@ class Container < ActiveRecord::Base
 			end
 		end
 		
+	
+		def self.compare_without_position(first, second)
+			
+			# this method assumes that one or both of first and second has no ancestry
+			
+			puts "comparing without position "+first.inspect+"\n against "+second.inspect
+			
+			# if we're here, we've already determined that these two elements have the same ancestors, and one of them
+			# has no children.  That one also has no position, which means it hasn't been saved into the DB yet
+			
+			# so this is purely a comparison of their 'numbers', and if they don't have numbers, then their paragraph texts
+			
+			if first.level != second.level and (first.number or second.number)
+				# ie, if the two containers are different levels, and they're not both paragraphs
+				# assume the one that's a higher structural element is higher up in the Act
+				return first.level <=> second.level
+			end
+			
+			is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and ROMAN_REGEX.match first.number[0])
+			
+			if is_roman
+				result= compare_romans(first.number, second.number)
+			elsif [SECTION, SUBSECTION, CHAPTER, DIVISION, PART].include? first.level
+				result= compare_arabic_numbers(first.number, second.number)
+			elsif [PARAGRAPH, SUBSUBPARAGRAPH, SUBDIVISION].include? first.level
+				result= compare_alphabetical_numbers(first.number, second.number)
+			else
+				result= compare_paragraphs(first, second)
+			end
+			puts "compare without position about to return "+result.to_s
+			return result 
+		end
+		
 		
 		def self.compare_arabic_numbers(first, second)
 			
 			puts "compare_arabic_numbers comparing "+first.to_s+" and "+second.to_s
 			
 			if ARABIC_REGEX.match first.to_s+second.to_s
-				puts "both are numbers"
+				puts "both are numbers and the compare is "+(first.to_i <=> second.to_i).to_s
 				return first.to_i <=> second.to_i
 			end
 			
@@ -897,32 +932,6 @@ class Container < ActiveRecord::Base
 		end
 		
 		
-		def self.compare_without_position(first, second)
-			
-			puts "comparing without position "+first.inspect+"\n against "+second.inspect
-			
-			# if we're here, we've already determined that these two elements have the same ancestors, and one of them
-			# has no children.  That one also has no position, which means it hasn't been saved into the DB yet
-			
-			# so this is purely a comparison of their 'numbers', and if they don't have numbers, then their paragraph texts
-			
-			if first.level != second.level and (first.number or second.number)
-				# ie, if the two containers are different levels, and they're not both paragraphs
-				return first.level <=> second.level
-			end
-			
-			is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and ROMAN_REGEX.match first.number)
-			
-			if is_roman
-				result= compare_romans(first.number, second.number)
-			elsif [SECTION, SUBSECTION, CHAPTER, DIVISION, PART].include? first.level
-				result= compare_arabic_numbers(first.number, second.number)
-			elsif [PARAGRAPH, SUBSUBPARAGRAPH, SUBDIVISION].include? first.level
-				result= compare_alphabetical_numbers(first.number, second.number)
-			else
-				result= compare_paragraphs(first, second)
-			end
-			return result 
-		end
+
 		
 end

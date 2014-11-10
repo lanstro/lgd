@@ -156,19 +156,12 @@ class Act < ActiveRecord::Base
 	
 	def parse
 		
-		@update_act = false
-		
 		# TODO LOW - fix up the dialogue options for the start of this, consider making it web based
 		
 		if self.containers.size > 0
 			
 			return if !check_with_user "This Act has already been parsed in the past, with comlawID "+self.comlawID.to_s+".  Do you want to continue?"
 				
-			if !check_with_user "Is the file you wish to process an additional part of the Act that has not been processed before?"
-				puts "I will process the file as an amended Act.  Please make sure that the first structural element in it exists in the database, otherwise check with Kai how to proceed."
-				@update_act=true
-			end
-			
 			result = get_comlawID_and_date
 			while !result[:complete]
 				result = get_comlawID_and_date
@@ -183,7 +176,9 @@ class Act < ActiveRecord::Base
 		log "chunked"
 		
 		@current_container = find_current_container
-		@nlp_act.sections.each { |section| process_entity(section) }
+		
+		process_entity(@nlp_act.sections[0], true)
+		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
 		
 		#parse_tree :definitions
 		#parse_tree :anchors
@@ -221,19 +216,18 @@ class Act < ActiveRecord::Base
 		
 		def commit_container(container, skip_save=false)
 			if skip_save
-				@current_container = @current_container.next_container
 				# we're leaving the old @current_container alone by not saving it
-				# so move it one container across
 			else
 				log "about to save "+container.inspect if DEBUG
 				# how to tell whether to save the new container at the end of the current parent, or in front of the current_container?
 				if @current_container and @current_container.next_container and @current_container.next_container.level == @current_container.level
 					container.insert_at @current_container.position
+					
 					# we're inserting in front of the current_container
 					# leave current_container where it is
 				else
 					container.save #saves to end of the current parent's children
-					@current_container = container
+					@current_container = container.reload
 					# we're inserting the new container at the end of the current parent, so make it the new current_container
 				end
 			end
@@ -244,9 +238,7 @@ class Act < ActiveRecord::Base
 			
 			return nil if !@current_container
 			
-			
-			
-			result = @update_act? @current_container.previous_container : @current_container
+			result = @current_container
 			
 			while result
 				if result.level == TEXT
@@ -323,7 +315,7 @@ class Act < ActiveRecord::Base
 			return result
 		end
 		
-		def process_entity(entity, skip_save=false)
+		def process_entity(entity, first=false)
 			
 			level        = nil
 			content      = nil
@@ -349,20 +341,21 @@ class Act < ActiveRecord::Base
 			
 			# find the right parent for the new container
 			
-			parent = find_parent(level)
+			parent = first ? nil : find_parent(level)
 			new_container = stage_container(level: level, content: content, number: number, special_type: special_type, parent: parent)
 			
-			@current_container=@current_container.next_container
+			if !first
+				@current_container=@current_container.next_container if @current_container
+			end
 			
 			log "considering @current_container of "+@current_container.inspect if DEBUG
 			log "against #{new_container.inspect}" if DEBUG
 			compare = @current_container <=> new_container
-			
+			puts "compare is "+compare.to_s
 			while @current_container and compare < 0 
-				# the container currently being processed is higher precedence than what's in the database, so what's in the database has been deleted
+				# the container currently being processed is higher precedence than what's in the database, so what's in the database has to be deleted
 				flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
 				flag.save
-				raise "flag created"
 				@current_container = @current_container.next_container
 				compare = @current_container <=> new_container
 			end
@@ -378,15 +371,14 @@ class Act < ActiveRecord::Base
 					@current_container.references_parsed = nil
 					@current_container.annotation_parsed = nil
 					@current_container.save
-					raise "new content saved"
 				end
 				skip_save=true
 			end
-				
+			
 			# save the container
 			commit_container(new_container, skip_save)
 			# recursively call this again for each child paragraph
-			entity.paragraphs.each { |p| process_entity(p, skip_save) if p != entity}
+			entity.paragraphs.each { |p| process_entity(p) if p != entity}
 		end
 		
 		# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
@@ -520,33 +512,6 @@ class Act < ActiveRecord::Base
 			return false
 		end
 		
-		def closest_container_to(params)
-			
-			same_level = self.containers.where(level: params[:level])
-			
-			last, first = nil, nil
-			#TODO low - when upgrading to ruby 2.0, can use Array#bsearch
-			same_level.each do |c|
-				compare = c.compare_without_position(params[:entity])
-				case c
-					when 0
-						raise "shouldn't need to use closest_container_to for this, as there is a container with the same level and number"
-					when -1
-						last=c
-						next
-					when 1
-						if params[:smaller]
-							return last
-						elsif first
-							return first
-						else
-							first = c
-							next
-						end
-				end
-			end
-		end
-		
 		def find_current_container
 			
 			# if the act hasn't been parsed before, then no need for a current_container
@@ -571,46 +536,17 @@ class Act < ActiveRecord::Base
 			result = find_containers(level: level, number: number).first
 			
 			# if there's an exact match, then make that the @next_container
+			puts "found a current_container "+result.inspect if result
 			return result if result
 			
 			# there's no exact match - see if we should just tack this whole thing onto the end
 			first_entity = stage_container(level: level, number: number)
-			if last_container.compare_without_position(first_entity) < 0
+			
+			if (last_container <=> first_entity) < 0
 				return nil
 			end
 			
-			# maybe the whole thing can fit before the front?
-			
-			index = nlp_sections.size-1
-			last_entity=nil
-			while sections.size > index * -1
-				if !nlp_sections[index].get('level') or nlp_sections[index].get('level') < SECTION
-					index-=1
-					next
-				end
-				last_entity = stage_container(level: nlp_sections[index].get('level'), number: nlp_sections[index].get('number'))
-				break
-			end
-			raise "Incompatible file: could not find any structural elements higher than section.  Please try a different file." if !last_entity
-			
-			if last_entity.compare_without_position(first_container) < 0
-				return nil
-			end
-			
-			# is there a gap big enough to fit the whole new file?
-			
-			# find the last container that's smaller than the first section
-			# find the first container that's bigger than the last section
-			
-			start_gap  = closest_container_to(smaller: true,  entity: first_entity)
-			finish_gap = closest_container_to(smaller: false, level: last_entity.level,  number: last_entity.number)
-			
-			# if first_container.next_container == second_container -> gap is big enough
-			
-			if start_gap.next_container == finish_gap
-				return nil
-			end
-			# there's partial overlap - abort!
-			raise "The file partially overlaps what's already in the database - aborting."
+			raise "Please submit a new file that either overlaps an existing section, or can all fit at the end of the currently processed Act."
+
 		end
 end
