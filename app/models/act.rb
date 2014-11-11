@@ -102,7 +102,8 @@ class Act < ActiveRecord::Base
 		
 	has_many :containers, dependent: :destroy
 	has_many :comments,   :through => :containers
-	has_many :flags, as: :flaggable, dependent: :destroy
+	
+	has_many :flags, through: :containers
 	
 	has_many :scopes,     as: :scope,   class_name: "Metadatum"
 	has_many :contents,   as: :content, class_name: "Metadatum", dependent: :destroy
@@ -180,10 +181,30 @@ class Act < ActiveRecord::Base
 		process_entity(@nlp_act.sections[0], true)
 		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
 		
-		#parse_tree :definitions
-		#parse_tree :anchors
-		#parse_tree :annotations
+		check_flags
+		
+		parse_tree :definitions    
+				# here, need to check whether there are any flags on metadata whose content includes this act
+				# here, need to check whether there are any flags on metadata whose scopes overlap this act
+		parse_tree :anchors
+		parse_tree :annotations
 		self.save
+	end
+	
+	def check_flags
+		
+		container_flags = self.flags
+		
+		# find those that are deletes
+		# ask user whether ok to destroy them
+		# 
+		
+		# need to check flags of:
+		# own containers
+		# own container's annotations
+		# metadata that has content containing one of this act's containers
+		# metadata that has coverage of this act's containers
+		
 	end
 	
 	def relevant_metadata
@@ -244,6 +265,16 @@ class Act < ActiveRecord::Base
 				if result.level == TEXT
 					result=result.parent
 					next
+				end
+				
+				# sections and higher structural elements are never children of lists - just a straight out level comparison
+				if level <= SECTION
+					if level > result.level
+						break
+					else
+						result=result.parent
+						next
+					end
 				end
 				
 				list = result.level == PARA_LIST_HEAD ? result : result.ancestors.where(level: PARA_LIST_HEAD).last
@@ -383,7 +414,6 @@ class Act < ActiveRecord::Base
 		
 		# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
 		
-		# should be private
 		def recursive_tree_parse(node, task)
 			node.each do |child, grandchildren|
 				if task == :definitions

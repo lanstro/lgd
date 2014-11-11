@@ -3,6 +3,8 @@ class ContainersController < ApplicationController
 	after_filter :verify_authorized, except: [:show, :show_json]
 	before_action :set_container, except: [:new, :create]
 		
+	# TODO HIGH - need to convert to JSON interface
+		
   def new
 		@container = Container.new
 		authorize @container
@@ -13,6 +15,9 @@ class ContainersController < ApplicationController
 		authorize @container
 		if @container.save
 			flash[:success] = "New container created!"
+			@container.parse_definitions
+			@container.parse_anchors
+			@container.recalculate_annotations
 			redirect_to @container
 		else
 			render 'new'

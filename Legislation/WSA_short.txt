@@ -1,0 +1,221 @@
+﻿
+Part 1-Preliminary
+Division 1-Introduction
+1  Short title
+		This Act may be cited as the Work Health and Safety Act 2011.
+2  Commencement
+		This Act commences on 1 January 2012.
+Division 2-Object
+3  Object
+	(1)	The main object of this Act is to provide for a balanced and nationally consistent framework to secure the health and safety of workers and workplaces by:
+	(a)	protecting workers and other persons against harm to their health, safety and welfare through the elimination or minimisation of risks arising from work; and
+	(b)	providing for fair and effective workplace representation, consultation, co-operation and issue resolution in relation to work health and safety; and
+	(c)	encouraging unions and employer organisations to take a constructive role in promoting improvements in work health and safety practices, and assisting persons conducting businesses or undertakings and workers to achieve a healthier and safer working environment; and
+	(d)	promoting the provision of advice, information, education and training in relation to work health and safety; and
+	(e)	securing compliance with this Act through effective and appropriate compliance and enforcement measures; and
+	(f)	ensuring appropriate scrutiny and review of actions taken by persons exercising powers and performing functions under this Act; and
+	(g)	providing a framework for continuous improvement and progressively higher standards of work health and safety; and
+	(h)	maintaining and strengthening the national harmonisation of laws relating to work health and safety and to facilitate a consistent national approach to work health and safety in this jurisdiction.
+	(2)	In furthering subsection (1)(a), regard must be had to the principle that workers and other persons should be given the highest level of protection against harm to their health, safety and welfare from hazards and risks arising from work as is reasonably practicable.
+Division 3-Interpretation
+Subdivision 1-Definitions
+4  Definitions
+		In this Act:
+approved code of practice means a code of practice approved under Part 14.
+Australia, when used in its geographical sense, includes the external Territories.
+authorised, in Part 4-see section 40.
+authorising authority means the Fair Work Commission.
+Category 1 offence-see section 31.
+Category 2 offence-see section 32.
+Category 3 offence-see section 33.
+Comcare means the body corporate established under section 68 of the Safety, Rehabilitation and Compensation Act 1988.
+Commonwealth includes any person or body, other than a public authority, that is a non-corporate Commonwealth entity (within the meaning of the Public Governance, Performance and Accountability Act 2013).
+compliance powers means the functions and powers conferred on an inspector under this Act.
+condition includes limitation and restriction.
+construct includes assemble, erect, reconstruct, reassemble and re-erect.
+corresponding regulator means a regulator under a corresponding WHS law.
+corresponding WHS law means each of the following:
+	(a)	the Work Health and Safety Act 2011 of New South Wales;
+	(b)	the Work Health and Safety Act 2011 of Victoria;
+	(c)	the Work Health and Safety Act 2011 of Queensland;
+	(d)	the Work Health and Safety Act 2011 of Western Australia;
+	(e)	the Work Health and Safety Act 2011 of South Australia;
+	(f)	the Work Health and Safety Act 2011 of Tasmania;
+	(g)	the Work Health and Safety Act 2011 of the Australian Capital Territory;
+	(h)	the Work Health and Safety Act 2011 of the Northern Territory;
+	(i)	any other law of a State or Territory prescribed by the regulations.
+court means:
+	(a)	the Federal Court of Australia; and
+	(b)	the Federal Circuit Court of Australia; and
+	(c)	the Supreme Court of a State or of the Australian Capital Territory or the Northern Territory; and
+	(d)	a court of a State or Territory prescribed by the regulations for the purposes of section 273A.
+dangerous incident, in Part 3-see section 37.
+demolition includes deconstruction.
+design, in relation to plant, a substance or a structure includes:
+	(a)	design of part of the plant, substance or structure; and
+	(b)	redesign or modify a design.
+disclose, in relation to information, includes divulge or communicate to any person or publish.
+discriminatory conduct, in Part 6-see section 105.
+document includes record.
+emergency services worker means:
+	(a)	a member of 1 of the following:
+	(i)	a police force or service;
+	(ii)	a fire service;
+	(iii)	an ambulance service;
+	(iv)	a coast guard service, rescue service or emergency service;
+	(v)	any other organisation prescribed by the regulations for the purposes of this subparagraph; or
+	(b)	a member of the Defence Force who is engaged in civil emergency or disaster relief operations; or
+	(c)	a person who is an emergency services worker under a corresponding WHS law.
+employee record, in relation to an employee, has the same meaning as it has in the Privacy Act 1988.
+employer organisation means an organisation of employers.
+engage in conduct means doing an act or omitting to do an act.
+Fair Work Act means the Fair Work Act 2009.
+Fair Work Commission means the body continued in existence under section 575 of the Fair Work Act 2009.
+handling includes transport.
+health means physical and psychological health.
+health and safety duty-see section 30.
+health and safety representative, in relation to a worker, means the health and safety representative elected under Part 5 for the work group of which the worker is a member.
+import means to bring into the jurisdiction from outside Australia.
+inspector means an inspector appointed under Part 9.
+internal reviewer means:
+	(a)	the regulator; or
+	(b)	a person appointed by the regulator under section 225.
+legal practitioner means a person who is admitted to the legal profession by a federal court or a Supreme Court of a State or Territory.
+local authority means a local authority under a corresponding WHS law.
+medical treatment means treatment by a medical practitioner registered or licensed under a State or Territory law that provides for the registration or licensing of medical practitioners.
+modifications include additions, omissions and substitutions.
+non-Commonwealth licensee means a body corporate that was a non-Commonwealth licensee for the purposes of the Occupational Health and Safety Act 1991 immediately before the commencement of this Act.
+notifiable incident-see section 35.
+officer means:
+	(a)	an officer within the meaning of section 9 of the Corporations Act 2001 other than a partner in a partnership; or
+	(b)	an officer of the Commonwealth within the meaning of section 247; or
+	(c)	an officer of a public authority within the meaning of section 252;
+other than an elected member of a local authority acting in that capacity.
+official of a union, in Part 7-see section 116.
+person conducting a business or undertaking-see section 5.
+personal information has the same meaning as it has in the Privacy Act 1988.
+plant includes:
+	(a)	any machinery, equipment, appliance, container, implement and tool; and
+	(b)	any component of any of those things; and
+	(c)	anything fitted or connected to any of those things.
+prohibited reason, in Part 6-see section 106.
+public authority means:
+	(a)	a body corporate established for a public purpose by or under a law of the Commonwealth or a law of a Territory (other than the Australian Capital Territory, the Northern Territory or Norfolk Island), but does not include a body corporate prescribed by the regulations to be a body corporate to which this Act does not apply; and
+	(b)	a Commonwealth company within the meaning of the Public Governance, Performance and Accountability Act 2013, other than a Commonwealth company prescribed by the regulations to be a Commonwealth company to which this Act does not apply; and
+	(c)	a body corporate prescribed by the regulations to be a public authority for the purposes of this Act.
+reasonably practicable, in relation to a duty to ensure health and safety-see section 18.
+regulator means Comcare.
+relevant person conducting a business or undertaking, in Part 7-see section 116.
+relevant State or Territory industrial law, in Part 7-see section 116.
+relevant union, in Part 7-see section 116.
+relevant worker, in Part 7-see section 116.
+representative, in relation to a worker, means:
+	(a)	the health and safety representative for the worker; or
+	(b)	a union representing the worker; or
+	(c)	any other person the worker authorises to represent him or her.
+serious injury or illness, in Part 3-see section 36.
+State includes the Australian Capital Territory and the Northern Territory.
+State or Territory industrial law has the same meaning as it has in the Fair Work Act.
+structure means anything that is constructed, whether fixed or moveable, temporary or permanent, and includes:
+	(a)	buildings, masts, towers, framework, pipelines, transport infrastructure and underground works (shafts or tunnels); and
+	(b)	any component of a structure; and
+	(c)	part of a structure.
+substance means any natural or artificial substance, whether in the form of a solid, liquid, gas or vapour.
+supply-see section 6.
+this Act includes the regulations.
+union means:
+	(a)	an employee organisation that is registered, or taken to be registered, under the Fair Work (Registered Organisations) Act 2009 of the Commonwealth; or
+	(b)	an association of employees or independent contractors, or both, that is registered or recognised as such an association (however described) under a State or Territory industrial law.
+volunteer means a person who is acting on a voluntary basis (irrespective of whether the person receives out-of-pocket expenses).
+WHS entry permit means a WHS entry permit issued under Part 7 or the equivalent Part of a corresponding WHS law.
+WHS entry permit holder means a person who holds a WHS entry permit.
+WHS undertaking means an undertaking given under section 216(1).
+work group means a work group determined under Part 5.
+worker-see section 7.
+workplace-see section 8.
+Subdivision 2-Other important terms
+5  Meaning of person conducting a business or undertaking
+	(1)	For the purposes of this Act, a person conducts a business or undertaking:
+	(a)	whether the person conducts the business or undertaking alone or with others; and
+	(b)	whether or not the business or undertaking is conducted for profit or gain.
+	(2)	A business or undertaking conducted by a person includes a business or undertaking conducted by a partnership or an unincorporated association.
+	(3)	If a business or undertaking is conducted by a partnership (other than an incorporated partnership), a reference in this Act to a person conducting the business or undertaking is to be read as a reference to each partner in the partnership.
+	(4)	A person does not conduct a business or undertaking to the extent that the person is engaged solely as a worker in, or as an officer of, that business or undertaking.
+	(5)	An elected member of a local authority does not in that capacity conduct a business or undertaking.
+	(6)	The regulations may specify the circumstances in which a person may be taken not to be a person who conducts a business or undertaking for the purposes of this Act or any provision of this Act.
+	(7)	A volunteer association does not conduct a business or undertaking for the purposes of this Act.
+	(8)	In this section, volunteer association means a group of volunteers working together for 1 or more community purposes where none of the volunteers, whether alone or jointly with any other volunteers, employs any person to carry out work for the volunteer association.
+6  Meaning of supply
+	(1)	A supply of a thing includes a supply and a resupply of the thing by way of sale, exchange, lease, hire or hire-purchase, whether as principal or agent.
+	(2)	A supply of a thing occurs on the passing of possession of the thing to the person or an agent of the person to be supplied.
+	(3)	A supply of a thing does not include:
+	(a)	the return of possession of a thing to the owner of the thing at the end of a lease or other agreement; or
+	(b)	a prescribed supply.
+	(4)	A financier is taken not to supply plant, a substance or a structure for the purposes of this Act if:
+	(a)	the financier has, in the course of the financier's business as a financier, acquired ownership of, or another right in, the plant, substance or structure on behalf of a customer of the financier; and
+	(b)	the action by the financier, that would be a supply but for this subsection, is taken by the financier for, or on behalf of, that customer.
+	(5)	If subsection (4) applies, the person (other than the financier) who had possession of the plant, substance or structure immediately before the financier's customer obtained possession of the plant, substance or structure is taken for the purposes of this Act to have supplied the plant, substance or structure to the financier's customer.
+7  Meaning of worker
+	(1)	A person is a worker if the person carries out work in any capacity for a person conducting a business or undertaking, including work as:
+	(a)	an employee; or
+	(b)	a contractor or subcontractor; or
+	(c)	an employee of a contractor or subcontractor; or
+	(d)	an employee of a labour hire company who has been assigned to work in the person's business or undertaking; or
+	(e)	an outworker; or
+	(f)	an apprentice or trainee; or
+	(g)	a student gaining work experience; or
+	(h)	a volunteer; or
+	(i)	a person of a prescribed class.
+	(2)	For the purposes of this Act, the Commissioner of the Australian Federal Police, a Deputy Commissioner of the Australian Federal Police or an AFP employee (all within the meaning of the Australian Federal Police Act 1979) is:
+	(a)	a worker; and
+	(b)	at work throughout the time when the person is on duty or lawfully performing the functions of the Commissioner of the Australian Federal Police, a Deputy Commissioner of the Australian Federal Police or an AFP employee, but not otherwise; and
+	(c)	carrying out work for a business or undertaking conducted by the Commonwealth when the person is on duty or lawfully performing the functions of the Commissioner of the Australian Federal Police, a Deputy Commissioner of the Australian Federal Police or an AFP employee, but not otherwise; and
+	(d)	an employee of the Commonwealth.
+	(2A)	For the purposes of this Act, a member of the Defence Force is:
+	(a)	a worker; and
+	(b)	at work throughout the time when the person is lawfully performing the functions of a member of the Defence Force, but not otherwise; and
+	(c)	carrying out work for a business or undertaking conducted by the Commonwealth when the person is lawfully performing those functions, but not otherwise; and
+	(d)	an employee of the Commonwealth.
+	(2B)	For the purposes of this Act, a person who is the holder of, or acting in, an office established by a law of the Commonwealth or a law of a Territory (other than the Australian Capital Territory, the Northern Territory or Norfolk Island) is:
+	(a)	a worker; and
+	(b)	at work throughout the time when the person is lawfully performing the functions of that office, but not otherwise; and
+	(c)	carrying out work for a business or undertaking conducted by the Commonwealth when the person is lawfully performing those functions, but not otherwise; and
+	(d)	an employee of the Commonwealth.
+	(2C)	For the purposes of this Act, a person who constitutes, or is acting as the person constituting, a public authority is:
+	(a)	a worker; and
+	(b)	at work throughout the time when the person is lawfully performing the functions of that authority, but not otherwise; and
+	(c)	carrying out work for a business or undertaking conducted by the public authority when the person is lawfully performing those functions, but not otherwise; and
+	(d)	an employee of the public authority.
+	(2D)	For the purposes of this Act, a person who is, or is acting as, a member or a deputy member of a public authority is:
+	(a)	a worker; and
+	(b)	at work throughout the time when the person is lawfully performing the functions of the public authority, but not otherwise; and
+	(c)	carrying out work for a business or undertaking conducted by the public authority when the person is lawfully performing those functions, but not otherwise; and
+	(d)	an employee of the public authority.
+	(2E)	For the purposes of this Act, a person who is, or is acting as, a member or a deputy member of a body established by or under an Act establishing a public authority for a purpose associated with the performance of the functions of the public authority is:
+	(a)	a worker; and
+	(b)	at work throughout the time when the person is lawfully performing the functions of the body, but not otherwise; and
+	(c)	carrying out work for a business or undertaking conducted by the public authority when the person is lawfully performing those functions, but not otherwise; and
+	(d)	an employee of the public authority.
+	(2F)	The Minister may, by instrument in writing, declare that a person of a class specified in the declaration is, for the purposes of this Act:
+	(a)	a worker; and
+	(b)	at work throughout the time specified in the declaration; and
+	(c)	carrying out work for a business or undertaking conducted by the Commonwealth, or a public authority specified in the declaration, when the person is performing functions of the kind specified in the declaration; and
+	(d)	an employee of the Commonwealth, or a public authority specified in the declaration.
+	(2G)	A declaration under subsection (2F) may only be made in relation to a class of persons if persons of that class engage in activities or perform acts:
+	(a)	where the declaration specifies that persons of that class are carrying out work for a business or undertaking conducted by the Commonwealth, or are employees of the Commonwealth:
+	(i)	at the request or direction of the Commonwealth; or
+	(ii)	for the benefit of the Commonwealth; or
+	(iii)	by or under a law of the Commonwealth or of a Territory (other than the Australian Capital Territory, the Northern Territory or Norfolk Island); or
+	(b)	where the declaration specifies that persons of that class are carrying out work for a business or undertaking conducted by a public authority specified in the declaration, or are employees of a public authority specified in the declaration:
+	(i)	at the request or direction of the public authority; or
+	(ii)	for the benefit of the public authority.
+	(2H)	A declaration under subsection (2F) has effect according to its terms.
+	(3)	The person conducting the business or undertaking is also a worker if the person is an individual who carries out work in that business or undertaking.
+8  Meaning of workplace
+	(1)	A workplace is a place where work is carried out for a business or undertaking and includes any place where a worker goes, or is likely to be, while at work.
+	(2)	In this section, place includes:
+	(a)	a vehicle, vessel, aircraft or other mobile structure; and
+	(b)	any waters and any installation on land, on the bed of any waters or floating on any waters.
+9  Examples and notes
+	(1)	An example at the foot of a provision forms part of this Act.
+	(2)	A note at the foot of a provision forms part of this Act.

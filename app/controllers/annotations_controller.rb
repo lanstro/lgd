@@ -22,6 +22,7 @@ class AnnotationsController < ApplicationController
 		authorize @annotation
 		respond_to do |format|
 			if @annotation.save
+				@annotation.container.recalculate_annotations
 				format.json { render :json => { success: true, message: "Annotation saved"} }
 			else
 				format.json { render :json => { success: false, errors: @annotation.errors.messages.to_json} }

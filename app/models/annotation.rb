@@ -25,15 +25,32 @@ class Annotation < ActiveRecord::Base
 	validates :anchor,   presence: true
 	validates :position, presence: true, numericality: {only_integer: true, greater_than: -1}
 	
-	# TODO medium: validate the container itself and see whether the anchor actually exists in that position
-	
 	validates :category, presence: true, inclusion:    { in: ["Metadatum", "Defined_term", "Hyperlink", "Placeholder"] }
 	
-	# TODO medium: see which of these should be implemented
-	# callback - whenever the anchor changes, test container again
-	# callback - whenever container content changes, see if position/anchor still valid.  If not, self-delete and log it
-	# callback - whenever metadata anchor changes, test container again
-	# callback - when this is destroyed, re-evaluate container
+	validate :anchor_exists_at_position
+	
+	after_destroy :rerun_annotated_content
+	
+	def rerun_annotated_content
+		# when this is destroyed, re-evaluate container's annotated_content
+		self.container.recalculate_annotations if self.container
+	end
+	
+	
+	def anchor_exists_at_position
+		if meta_link?
+			puts "validating annotation: checking whether the anchor "+anchor+" exists in metadatum "+metadatum.inspect
+			if !metadatum or !metadatum.anchor.include?(anchor)
+				errors.add(:anchor, "The anchor does not match up with the metadatum object's anchors")
+			end
+			if !metadatum.within_scope?(container)
+				errors.add(:metadatum, "The metadatum's scope does not extend to the container.")
+			end
+		end
+		if !container or !position or !anchor or container.content[(position)..(position+anchor.length-1)] != anchor
+			errors.add(:position, "The anchor does not exist at that position in the container.")
+		end
+	end
 	
 	def open_tag
 		if self.category=="Defined_term"

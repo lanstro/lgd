@@ -17,7 +17,7 @@ class MetadatumController < ApplicationController
 		if @metadatum
 			authorize @metadatum
 			respond_to do |format|
-				if @metadatum.update_attributes(user_params)
+				if @metadatum.save_and_check_dependencies(user_params)
 					format.json { render :json => {success: true } }
 				else
 					format.json { render :json => {success: false, errors: @metadatum.errors.messages } }
@@ -34,6 +34,10 @@ class MetadatumController < ApplicationController
 		authorize @metadatum
 		respond_to do |format|
 			if @metadatum.save
+				@metadatum.scope.subtree.each do | c|
+					c.parse_anchors
+					c.recalculate_annotations
+				end
 				format.json { render :json => { success: true, message: "Metadatum created"} }
 			else
 				format.json { render :json => { success: false, errors: @metadatum.errors.messages.to_json} }

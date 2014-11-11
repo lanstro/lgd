@@ -32,4 +32,7 @@ class Comment < ActiveRecord::Base
 	
 	has_ancestry orphan_strategy: :adopt, cache_depth: true
 	default_scope -> {order('created_at ASC')} 
+	
+	# TODO MEDIUM: admin deletion/hiding of comments
+	
 end

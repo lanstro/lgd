@@ -12,9 +12,12 @@
 #  updated_at     :datetime
 #
 
+# things that can be flagged - containers, annotations, metadata and comments
+
 class Flag < ActiveRecord::Base
 	
 	belongs_to :flaggable, polymorphic: true
+	delegate :act, :to => :flaggable, :allow_nil => true
 	
 	validates :flaggable, presence: true
 	validates :user_id, numericality: {only_integer: true, greater_than: 0}, allow_blank: true
@@ -27,6 +30,5 @@ class Flag < ActiveRecord::Base
 	#			- if any metadata point at it, removal of all the metadata
 	#				- removal of any annotations pointing at that metadata
 	#				- recalculating annotated text for any annotations that are removed
-	
 	
 end

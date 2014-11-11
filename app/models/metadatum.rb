@@ -41,8 +41,50 @@ class Metadatum < ActiveRecord::Base
 	scope :internal_references,  -> { where(category: 'Internal_reference') } 
 
 	serialize :anchor
-		
+			
 	# TODO MEDIUM: ensure uniqueness of content, scope, anchor
+	
+	after_destroy :check_content_container
+	
+	def save_and_check_dependencies(params)
+		self.assign_attributes(params)
+		changes = self.changes
+		if self.save
+			if changes[:scope_id]
+				#- treat as if old one deleted
+				#- then new scope added
+			end
+			if changes[:content_id]
+				# check whether old annotations should be deleted
+				# check new content_id for anchors and redo annotations
+			end
+			if changes [:anchor]
+				#- if any anchors deleted, find all annotations with anchor == the deleted anchor, delete those
+				#- if any anchors added, look for it over all the scope
+				#- if any anchors amended, treat as deletion of old anchor and addition of new anchor
+			end
+			return true
+		else
+			return false
+		end
+	end
+	
+	def check_content_container
+		# rerun annotations of the content container (to remove the bold/italics definitions)
+		return if self.category != "Definition"
+		relevant_annotations = []
+		self.anchors.each do |anchor|
+			relevant_annotations += Annotation.where(container_id: self.content_id, anchor: anchor, category: "Defined_term")
+		end
+		relevant_annotations(&:destroy) 
+		# no need to force recalculation of annotations ourselves - should be done by the annotation's callback
+	end
+		
+	def within_scope?(container)
+		return false if !container
+		return true if universal_scope
+		return (container==scope or container.ancestors.include?(scope))
+	end
 		
 	private
 		

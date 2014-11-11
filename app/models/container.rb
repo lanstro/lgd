@@ -55,7 +55,7 @@ class Container < ActiveRecord::Base
 	
 	include LgdLog
 	
-	has_ancestry orphan_strategy: :adopt, cache_depth: true
+	has_ancestry orphan_strategy: :destroy, cache_depth: true
 	acts_as_list scope: [:ancestry]
 	default_scope -> {order('position ASC')} 
 	
@@ -74,8 +74,24 @@ class Container < ActiveRecord::Base
 	
 	@definition_zone = nil
 	
-	# todo medium
-	# callback - whenever content changes, reassess whether there are definitions anchored here, and redo the annotated_content
+	before_destroy :check_descendants_also_being_destroyed
+	after_destroy :flag_metadata_with_no_scope
+	
+	def check_descendants_also_being_destroyed
+		# if children are not all getting destroyed, then return false
+		survivors = self.descendants.delete_if { |d| d.flags.where(category: "Delete").size > 0 }
+		raise "Cannot delete "+self.inspect+"\nas not all of its descendants are flagged for deletion:\n"+survivors.inspect
+		# TODO MEDIUM - instead of raising an error, maybe just run through them 1 by 1 and ask user to confirm they're to be deleted?
+	end
+	
+	def flag_metadata_with_no_scope
+		# if any metadata has this container as its scope, give it a human check flag with comment "seems to be no scope left"
+		Metadatum.where(scope_type: "Container", scope_id: self.id).each do |m|
+			flag = m.flags.create(category: "Review", comment: "The scope of this metadatum has been deleted, perhaps it should also be delted?")
+			flag.save
+		end
+	end
+	
 	
 	if Rails.env.development?
 		attr_accessor :nlp_handle, :mp, :ip, :sp
@@ -272,11 +288,11 @@ class Container < ActiveRecord::Base
 			else
 				log "processing annotations: no match" if DEBUG
 				log "anchor text is "+annotation.anchor+" and found text is "+self.content[start..finish] if DEBUG
-				# probably also flag the annotation and remove it from this array
+				flag = annotation.flags.create(category: "Relete", comment: "failed to find the anchor when processing this flag.  Container content was "+self.content)
+				flag.save
 				warn "failed to find anchor position while recalculating annotation for "+self.content+":\nstart position is "+start.to_s+" and end position is "+finish.to_s+"\nannotation details wrong - annotation is "+annotation.inspect+" and container is id: "+self.id.to_s+" with text: "+self.content
 				next true
 			end
-			
 		end
 		
 		log "half prepared annotation looks like "+text if DEBUG
@@ -288,6 +304,7 @@ class Container < ActiveRecord::Base
 			text.sub!(finish_marker, annotation.close_tag)
 		end
 		self.annotated_content = text
+		self.annotation_parsed = Time.now
 		if !self.save
 			warn "container failed to save after recalculating annotated content.  "+container.inspect+"\nErrors were: "+self.errors.inspect
 		end
@@ -322,6 +339,7 @@ class Container < ActiveRecord::Base
 		
 		@nlp_handle.apply(:parse)
 		
+		#     TODO HIGH
 		#			- parse_definitions needs to take into account existing definitions:
 		#			- if different outcome from what was already there, flag the ones that might need to be removed
 		#			- flag all the annotations linked to the flagged metadata
@@ -452,12 +470,6 @@ class Container < ActiveRecord::Base
 		end
 		return result
 	end
-		
-	def wrap_words_with_tags(words, open_tag, close_tag)
-		words.first.value = open_tag  + words.first.value
-		words.last.value  = words.last.value + close_tag
-	end
-	
 	
 	def create_definition(params)
 		
@@ -517,12 +529,12 @@ class Container < ActiveRecord::Base
 	#####################
 	
 	def parse_anchors
-		start_time = Time.now
 		process_anchors
-		log "parsing anchors took "+(Time.now-start_time).to_s if DEBUG
 	end
 	
 	def process_anchors
+		
+		# TODO HIGH: need to do something about existing anchors
 		
 		if self.level <= SECTION
 			return
@@ -580,7 +592,7 @@ class Container < ActiveRecord::Base
 			create_annotation anchor: act_words, position: self.content.index(act_words), category: "Placeholder"
 		end
 		
-		# TODO MEDIUM: find all 'acts', 'Chapters', 'Parts', etc and metadata them
+		# TODO HIGH: find all 'acts', 'Chapters', 'Parts', etc and metadata them
 	end
 		
 	def translate_scope(scope_string)
@@ -644,8 +656,9 @@ class Container < ActiveRecord::Base
 			a.category=params[:category]
 		end
 		if !a.save
-			# TODO Medium: flag the metadata for review?
-			warn "error in saving "+a.inspect+"\n.  Errors were: "+a.errors.messages.inspect
+			# flag the metadata for review
+			flag = self.flags.create(category: "Review", comment: "anchor based on this failed "+a.inspect)
+			flag.save
 		end
 	end
 	
