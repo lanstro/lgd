@@ -34,9 +34,16 @@ class MetadatumController < ApplicationController
 		authorize @metadatum
 		respond_to do |format|
 			if @metadatum.save
-				@metadatum.scope.subtree.each do | c|
-					c.parse_anchors
-					c.recalculate_annotations
+				if @metadatum.universal_scope
+					Container.find_each do |c|
+						c.recalculate_annotations if c.process_metadata_anchors(false, [@metadatum])
+					end
+				else
+					# run through the scope, and add any new hyperlinks/annotations
+					@metadatum.scope.subtree.find_each do | c|
+						c.process_metadata_anchors(false, [@metadatum])
+						c.recalculate_annotations
+					end
 				end
 				format.json { render :json => { success: true, message: "Metadatum created"} }
 			else

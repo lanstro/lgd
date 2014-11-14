@@ -23,6 +23,7 @@
 #
 # Indexes
 #
+#  container_uniqueness                   (content,act_id,ancestry,number,position) UNIQUE
 #  index_containers_on_act_id_and_number  (act_id,number)
 #  index_containers_on_ancestry           (ancestry)
 #

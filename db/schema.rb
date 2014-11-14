@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141031023713) do
+ActiveRecord::Schema.define(version: 20141113223602) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -40,6 +40,8 @@ ActiveRecord::Schema.define(version: 20141031023713) do
     t.datetime "updated_at"
     t.string   "category"
   end
+
+  add_index "annotations", ["anchor", "container_id", "metadatum_id", "position"], name: "annotation_uniqueness", unique: true
 
   create_table "comments", force: true do |t|
     t.string   "content"
@@ -77,6 +79,7 @@ ActiveRecord::Schema.define(version: 20141031023713) do
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
   add_index "containers", ["ancestry"], name: "index_containers_on_ancestry"
+  add_index "containers", ["content", "act_id", "ancestry", "number", "position"], name: "container_uniqueness", unique: true
 
   create_table "flags", force: true do |t|
     t.string   "category"
@@ -110,6 +113,7 @@ ActiveRecord::Schema.define(version: 20141031023713) do
     t.boolean  "universal_scope"
   end
 
+  add_index "metadata", ["anchor", "scope_id", "scope_type", "content_id", "content_type", "universal_scope", "category"], name: "metadata_uniqueness", unique: true
   add_index "metadata", ["content_id", "content_type"], name: "index_metadata_on_content_id_and_content_type"
   add_index "metadata", ["scope_id", "scope_type"], name: "index_metadata_on_scope_id_and_scope_type"
 

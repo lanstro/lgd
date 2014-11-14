@@ -24,6 +24,7 @@
 #
 # Indexes
 #
+#  container_uniqueness                   (content,act_id,ancestry,number,position) UNIQUE
 #  index_containers_on_act_id_and_number  (act_id,number)
 #  index_containers_on_ancestry           (ancestry)
 #
@@ -72,10 +73,26 @@ class Container < ActiveRecord::Base
 	validates :level, presence: true, numericality: {only_integer: true, greater_than: 0}
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - regulations needs to be a formal relation
 	
+	validates :content, uniqueness: { scope: [:act_id, :ancestry, :number, :position], message: "A container with the same ancestry, number and content already exists." }
+	
 	@definition_zone = nil
 	
 	before_destroy :check_descendants_also_being_destroyed
 	after_destroy :flag_metadata_with_no_scope
+	
+	def save_and_check_dependencies(params)
+		self.assign_attributes(params)
+		changes = self.changes
+		if self.save
+			if changes[:content]
+				parse_definitions
+				recalculate_annotations
+			end
+			return true
+		else
+			return false
+		end
+	end
 	
 	def check_descendants_also_being_destroyed
 		# if children are not all getting destroyed, then return false
@@ -306,7 +323,7 @@ class Container < ActiveRecord::Base
 		self.annotated_content = text
 		self.annotation_parsed = Time.now
 		if !self.save
-			warn "container failed to save after recalculating annotated content.  "+container.inspect+"\nErrors were: "+self.errors.inspect
+			warn "container failed to save after recalculating annotated content.  "+self.inspect+"\nErrors were: "+self.errors.inspect
 		end
 	end
 	
@@ -331,20 +348,20 @@ class Container < ActiveRecord::Base
 	def parse_definitions
 		initialize_nlp
 		if is_definition_zone? or (self.parent and self.parent.is_definition_zone?)
-			process_definitions
+			existing = Metadatum.where(category: "Definition", content_id: self.id)
+			result= process_definitions
+			deleted = Metadatum.where(category: "Definition", content_id: self.id) - existing
+			deleted.each do |d|
+				flag = d.flags.build(category: "Delete", comment: "A second parse through the container suggests this should be deleted.");
+				flag.save
+			end
 		end
+		return false
 	end
 	
 	def process_definitions
 		
 		@nlp_handle.apply(:parse)
-		
-		#     TODO HIGH
-		#			- parse_definitions needs to take into account existing definitions:
-		#			- if different outcome from what was already there, flag the ones that might need to be removed
-		#			- flag all the annotations linked to the flagged metadata
-		#			- if not:
-		#       - insert it into the right bit of the structure
 		
 		@mp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "mean", true)
 		
@@ -358,16 +375,14 @@ class Container < ActiveRecord::Base
 		end
 		if @mp.size>0
 			log "wrapping @mp phrases "+@mp.inspect+" " if DEBUG
-			wrap_defined_terms(@mp)
-			return
+			return wrap_defined_terms(@mp)
 		end
 		
 		@ip = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "includ", true)
 		
 		if @ip.size>0
 			log "wrapping @ip phrases "+@ip.inspect+" " if DEBUG
-			wrap_defined_terms(@ip)
-			return
+			return wrap_defined_terms(@ip)
 		end
 		
 		@sp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "see", false)
@@ -382,8 +397,9 @@ class Container < ActiveRecord::Base
 		end
 		if @sp.size > 0
 			log "wrapping @sp phrases "+@sp.inspect+" " if DEBUG
-			wrap_defined_terms(@sp)
+			return wrap_defined_terms(@sp)
 		end
+		return false
 	end
 	
 	def definition_section_heading?
@@ -484,11 +500,13 @@ class Container < ActiveRecord::Base
 		end
 		if !d.save
 			warn "definition failed to save "+d.inspect+"\nErrors were "+d.errors.inspect
+			return nil
 		end
 		return d
 	end
 	
 	def wrap_defined_terms(definition_phrases)
+		result=[]
 		definition_phrases.each do |p| 
 			log "wrapping "+p.to_s+" " if DEBUG
 			index = p.position-1
@@ -520,52 +538,78 @@ class Container < ActiveRecord::Base
 			end
 			
 			subject_words = siblings[index].to_s
-			metadatum = create_definition anchor: subject_words
-			create_annotation category: "Defined_term", anchor: subject_words, position: self.content.index(subject_words)
+			if Metadatum.where(content_id: self.id, anchor: [subject_words], category: "Definition").count == 0
+				metadatum = create_definition anchor: subject_words
+			end
+			if self.annotations.where(anchor: subject_words, category: "Defined_term", position: self.content.index(subject_words)).count == 0
+				create_annotation category: "Defined_term", anchor: subject_words, position: self.content.index(subject_words)
+			end
+			result.push metadatum
 		end
+		self.definition_parsed = Time.now
+		self.save
+		return result
 	end
 	
 	# finding anchors
 	#####################
 	
 	def parse_anchors
-		process_anchors
+		process_metadata_anchors
+		process_internal_reference_anchors
 	end
 	
-	def process_anchors
+	def process_metadata_anchors(all=true, specific_metadata=nil)
 		
 		# TODO HIGH: need to do something about existing anchors
 		
 		if self.level <= SECTION
-			return
+			return false
 		end
 		
 		# find definitional anchors
-		
-		relevant_metadata = self.act.relevant_metadata
-		# then add anything with scope == this item or its parents
-		current = self
-		
-		while current != nil
-			current.scopes.each do |meta|
-				relevant_metadata.push meta
+		if all
+			relevant_metadata = self.act.relevant_metadata
+			# then add anything with scope == this item or its parents
+			current = self
+			
+			while current != nil
+				current.scopes.each do |meta|
+					relevant_metadata.push meta
+				end
+				current=current.parent
 			end
-			current=current.parent
+		elsif specific_metadata
+			relevant_metadata = specific_metadata
+		else
+			return false
 		end
+		
+		any = false
 		
 		relevant_metadata.each do |meta|
 			next if meta.content == self
 			meta.anchor.each do |anchor|
-				if /\b#{anchor}\b/.match self.content
-					# exclude any anchors that are a subset of an existing metadatum anchor
-					if self.contents.any? { |content | content.anchor.any? { |a| /\b#{anchor}\b/.match a } }
-						next
-					end
-					log "trying to make a new annotation with anchor "+anchor+", index of "+self.content.index(anchor).to_s if DEBUG
-					create_annotation anchor: anchor, position: self.content.index(/\b#{anchor}\b/), metadatum: meta
+				# exclude any anchors that are a subset of an existing metadatum anchor
+				next if self.contents.any? { |content | content.anchor.any? { |a| /\b#{anchor}\b/.match a } }
+				self.content.scan(/\b#{anchor}\b/) do |match|
+					position = Regexp.last_match.offset(0).first
+					# exclude any annotations that already exist
+					next if self.annotations.where(anchor: anchor, metadatum_id: meta.id, position: position).size > 0
+					log "trying to make a new annotation for container id "+self.id.to_s+" with anchor "+anchor+", "+
+							"position of "+position.to_s+" and "+
+							"metadatum of "+meta.inspect if DEBUG
+					create_annotation anchor: anchor, position: position, metadatum: meta
+					any = true
 				end
 			end
 		end
+		
+		return any
+		
+	end
+		
+	def process_internal_reference_anchors
 		
 		# find Act reference anchors
 		
@@ -593,6 +637,7 @@ class Container < ActiveRecord::Base
 		end
 		
 		# TODO HIGH: find all 'acts', 'Chapters', 'Parts', etc and metadata them
+		
 	end
 		
 	def translate_scope(scope_string)

@@ -17,11 +17,14 @@
 #
 #  index_metadata_on_content_id_and_content_type  (content_id,content_type)
 #  index_metadata_on_scope_id_and_scope_type      (scope_id,scope_type)
+#  metadata_uniqueness                            (anchor,scope_id,scope_type,content_id,content_type,universal_scope,category) UNIQUE
 #
 
 class Metadatum < ActiveRecord::Base
 	belongs_to :scope,    polymorphic: true
 	belongs_to :content,  polymorphic: true
+	
+	serialize :anchor, Array
 	
 	has_many :annotations, dependent: :destroy
 	has_many :flags, as: :flaggable, dependent: :destroy
@@ -35,12 +38,15 @@ class Metadatum < ActiveRecord::Base
 	validates :content, presence: { :message => "does not exist." }
 	validates :content_type, presence: true, inclusion:    { in: ["Act", "Container"] }
 		
+	before_validation :arrange_anchors_alphabetically
+		
 	before_save :erase_scope_if_universal
 	
 	scope :definitions,          -> { where(category: 'Definition') } 
 	scope :internal_references,  -> { where(category: 'Internal_reference') } 
 
-	serialize :anchor
+	validates :anchor, uniqueness: { scope: [:scope_id, :scope_type, :content_id, :content_type, :universal_scope, :category],
+																	 message: "The metadata already exists in the database." }
 			
 	# TODO MEDIUM: ensure uniqueness of content, scope, anchor
 	
@@ -50,18 +56,38 @@ class Metadatum < ActiveRecord::Base
 		self.assign_attributes(params)
 		changes = self.changes
 		if self.save
-			if changes[:scope_id]
-				#- treat as if old one deleted
-				#- then new scope added
-			end
 			if changes[:content_id]
 				# check whether old annotations should be deleted
-				# check new content_id for anchors and redo annotations
+				check_content_container(old = changes[:content_id][0])
+				# add italics/bold to the defined term
+				# TODO LOW: consider whether more elegant way of doing this
+				anchors.each do |anchor|
+					position = self.content.content.index(subject_words)
+					if position
+						self.content.create_annotation(category: "Defined_term", anchor: anchor, position: position)
+						break
+					end
+				end
 			end
 			if changes [:anchor]
+				additions = changes[:anchor][1] - changes[:anchor][0]
+				removals  = changes[:anchor][0] - changes[:anchor][1]
 				#- if any anchors deleted, find all annotations with anchor == the deleted anchor, delete those
+				removals.each do |anchor|
+					self.anchors.where(anchor: anchor).each(&:destroy)
+				end
 				#- if any anchors added, look for it over all the scope
-				#- if any anchors amended, treat as deletion of old anchor and addition of new anchor
+				self.scope.subtree.each do |container|
+					container.recalculate_annotations if container.process_metadata_anchors(false, [self])
+				end
+			end
+			if changes[:scope_id]
+				#- treat as if old one deleted
+				self.annotations.each(&:destroy)
+				#- then new scope added
+				self.scope.subtree.each do |container|
+					container.recalculate_annotations if container.process_metadata_anchors(false, [self])
+				end
 			end
 			return true
 		else
@@ -69,14 +95,19 @@ class Metadatum < ActiveRecord::Base
 		end
 	end
 	
-	def check_content_container
+	def arrange_anchors_alphabetically
+		anchor.sort!
+	end
+	
+	def check_content_container(old_id=nil)
 		# rerun annotations of the content container (to remove the bold/italics definitions)
 		return if self.category != "Definition"
 		relevant_annotations = []
-		self.anchors.each do |anchor|
-			relevant_annotations += Annotation.where(container_id: self.content_id, anchor: anchor, category: "Defined_term")
+		old_id ||= self.content_id
+		self.anchor.each do |anchor|
+			relevant_annotations += Annotation.where(container_id: old_id, anchor: anchor, category: "Defined_term")
 		end
-		relevant_annotations(&:destroy) 
+		relevant_annotations.each { |a| a.destroy }
 		# no need to force recalculation of annotations ourselves - should be done by the annotation's callback
 	end
 		

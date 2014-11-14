@@ -11,6 +11,10 @@
 #  updated_at   :datetime
 #  category     :string(255)
 #
+# Indexes
+#
+#  annotation_uniqueness  (anchor,container_id,metadatum_id,position) UNIQUE
+#
 
 require 'spec_helper'
 

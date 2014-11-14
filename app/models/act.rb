@@ -243,7 +243,6 @@ class Act < ActiveRecord::Base
 				# how to tell whether to save the new container at the end of the current parent, or in front of the current_container?
 				if @current_container and @current_container.next_container and @current_container.next_container.level == @current_container.level
 					container.insert_at @current_container.position
-					
 					# we're inserting in front of the current_container
 					# leave current_container where it is
 				else

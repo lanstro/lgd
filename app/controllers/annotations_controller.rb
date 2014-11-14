@@ -37,6 +37,7 @@ class AnnotationsController < ApplicationController
 			authorize @annotation
 			respond_to do |format|
 				if @annotation.update_attributes(user_params)
+					@annotation.container.recalculate_annotations
 					format.json { render :json => {success: true} }
 				else
 					format.json { render :json => {success: false, errors: @annotation.errors.messages } }

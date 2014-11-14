@@ -31,8 +31,8 @@ class ContainersController < ApplicationController
 	
 	def update
 		authorize @container
-		if @container.update_attributes(user_params)
-			flash[:success] = "Section updated"
+		if @container.save_and_check_dependencies(user_params)
+			flash[:success] = "Container updated"
 			redirect_to @container
 		else
 			render 'edit'

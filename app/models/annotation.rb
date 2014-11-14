@@ -11,6 +11,10 @@
 #  updated_at   :datetime
 #  category     :string(255)
 #
+# Indexes
+#
+#  annotation_uniqueness  (anchor,container_id,metadatum_id,position) UNIQUE
+#
 
 class Annotation < ActiveRecord::Base
 	
@@ -30,6 +34,8 @@ class Annotation < ActiveRecord::Base
 	validate :anchor_exists_at_position
 	
 	after_destroy :rerun_annotated_content
+	
+	validates :anchor, uniqueness: { scope: [:container_id, :metadatum_id, :position] }
 	
 	def rerun_annotated_content
 		# when this is destroyed, re-evaluate container's annotated_content
