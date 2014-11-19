@@ -46,14 +46,17 @@ REGEX_WHOLE_SCOPE     = 1
 REGEX_STRUCTURAL_NAME = 3
 
 ARABIC_REGEX = /\A[0-9]+\Z/
-ROMAN_REGEX  = /\A(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\Z/i
+ROMAN_REGEX = /\A(?:X{0,3})(?:IX|IV|V?I{0,3})\Z/i
 ITAA97_REMAINDER_REGEX = /\A[-——]\s?([0-9]+)\Z/
 ARABIC_START_REGEX = /\A([0-9]+)(.+)?/
 
 PARAGRAPH_SIMILARITY_THRESHOLD = 0.8
 
+ANNOTATION_START_MARKER = "{*}"
+ANNOTATION_FINISH_MARKER = "{-}"
+
 class Container < ActiveRecord::Base
-	
+
 	include LgdLog
 	
 	has_ancestry orphan_strategy: :destroy, cache_depth: true
@@ -210,8 +213,6 @@ class Container < ActiveRecord::Base
 		# -1 means self comes earlier in an Act than other
 		# +1 means self comes later in the Act than other
 		
-		puts "<=> is comparing "+self.inspect+"\nagainst "+other.inspect
-		
 		return 0 if self==other
 		
 		if self.act_id != other.act_id
@@ -273,8 +274,7 @@ class Container < ActiveRecord::Base
 		
 		# check that the positions given by the annotation and the words there are all correct
 		# if they are, put down a 3 character marker "{*}"
-		start_marker = "{*}"
-		finish_marker = "{-}"
+
 		marker_positions=[]
 		
 		annotations.delete_if do |annotation|
@@ -297,8 +297,8 @@ class Container < ActiveRecord::Base
 			log "finish is "+finish.to_s+" and finish_modified is "+finish_modified.to_s
 			if self.content[start..finish] == annotation.anchor
 				log "processing annotations: matched anchor and text: #{annotation.anchor}" if DEBUG
-				text.insert(finish_modified+1, finish_marker)
-				text.insert(start_modified,    start_marker)
+				text.insert(finish_modified+1, ANNOTATION_FINISH_MARKER)
+				text.insert(start_modified,    ANNOTATION_START_MARKER)
 				marker_positions.push start_modified, finish_modified+1
 				log "partially prepared annotation looks like "+text if DEBUG
 				next false
@@ -307,6 +307,7 @@ class Container < ActiveRecord::Base
 				log "anchor text is "+annotation.anchor+" and found text is "+self.content[start..finish] if DEBUG
 				flag = annotation.flags.create(category: "Relete", comment: "failed to find the anchor when processing this flag.  Container content was "+self.content)
 				flag.save
+				
 				warn "failed to find anchor position while recalculating annotation for "+self.content+":\nstart position is "+start.to_s+" and end position is "+finish.to_s+"\nannotation details wrong - annotation is "+annotation.inspect+" and container is id: "+self.id.to_s+" with text: "+self.content
 				next true
 			end
@@ -317,13 +318,14 @@ class Container < ActiveRecord::Base
 		# annotate the content
 		
 		annotations.each do |annotation|
-			text.sub!(start_marker,  annotation.open_tag)
-			text.sub!(finish_marker, annotation.close_tag)
+			text.sub!(ANNOTATION_START_MARKER,  annotation.open_tag)
+			text.sub!(ANNOTATION_FINISH_MARKER, annotation.close_tag)
 		end
 		self.annotated_content = text
 		self.annotation_parsed = Time.now
 		if !self.save
-			warn "container failed to save after recalculating annotated content.  "+self.inspect+"\nErrors were: "+self.errors.inspect
+			warn "container failed to save after recalculating annotated content.  "+self.inspect+"\nErrors were: "+self.errors.inspect+
+			"\nAnnotations were: "+self.annotations.inspect
 		end
 	end
 	
@@ -335,8 +337,12 @@ class Container < ActiveRecord::Base
 	################################################################
 	
 	
-	def initialize_nlp
-		if !@nlp_handle
+	def initialize_nlp(naive=false)
+		if naive
+			@nlp_handle = paragraph self.content
+			@nlp_handle.segment
+			@nlp_handle.apply(tokenize: :naive)
+		elsif !@nlp_handle
 			@nlp_handle = paragraph self.content
 			@nlp_handle.apply(:segment, :tokenize, :stem)
 		end
@@ -352,7 +358,7 @@ class Container < ActiveRecord::Base
 			result= process_definitions
 			deleted = Metadatum.where(category: "Definition", content_id: self.id) - existing
 			deleted.each do |d|
-				flag = d.flags.build(category: "Delete", comment: "A second parse through the container suggests this should be deleted.");
+				flag = d.flags.build(category: "Delete", comment: "A second parse through the container suggests this should be deleted.")
 				flag.save
 			end
 		end
@@ -459,7 +465,6 @@ class Container < ActiveRecord::Base
 		return @definition_zone[:scope]
 	end
 	
-	
 	def entity_includes_stem_or_word?(e, s, stem=true, downcase=true)
 		if stem
 			if downcase
@@ -503,6 +508,10 @@ class Container < ActiveRecord::Base
 			return nil
 		end
 		return d
+	end
+	
+	def create_internal_reference(params)
+		ir = Metadatum.new(category: "Internal_reference")
 	end
 	
 	def wrap_defined_terms(definition_phrases)
@@ -563,10 +572,8 @@ class Container < ActiveRecord::Base
 		
 		# TODO HIGH: need to do something about existing anchors
 		
-		if self.level <= SECTION
-			return false
-		end
-		
+		return false if self.level <= SECTION
+			
 		# find definitional anchors
 		if all
 			relevant_metadata = self.act.relevant_metadata
@@ -608,12 +615,214 @@ class Container < ActiveRecord::Base
 		return any
 		
 	end
+	
+	def number_to_level(num)
+		if num[0].between?('0', '9')
+			return SUBSECTION
+		elsif num[0].between?('A', 'Z')
+			return SUBSUBPARAGRAPH
+		elsif num[0].between?('a', 'z')
+			return PARAGRAPH
+			# potentially wrong as i, v and x could be romans, but highly unlikely in this context
+		else
+			raise "don't know what this num is "+num.inspect
+		end
+	end
+	
+	def translate_reference(params)
 		
+		return nil if !params[:level] or !params[:number] or !params[:act]
+
+		if params[:level] <= SECTION
+			# if the level is higher than SECTION, then just look in the Act for that level with that number
+			log "relevant reference is to a container higher than section" if DEBUG
+			log "params are "+params.inspect if DEBUG
+			return params[:act].containers.where(level: params[:level], number: params[:number].to_s).first
+		end
+		numbers = params[:number].to_s.split(/[(),]/).delete_if(&:blank?)
+		first_number=numbers.shift
+		level = number_to_level first_number
+		if params[:number][0] == '('
+			# it's a relative reference
+			# if the number's level is above this one, look in ancestors for it
+			if level < self.level
+				parent = self.ancestors.where(number: first_number.to_s).first
+			elsif level == self.level
+				parent=self.siblings.where(number: first_number.to_s).first
+			else
+				parent=self.descendants.where(number: first_number.to_s).first
+			end
+			# see if there are any parents with the same number
+			
+			if parent
+				log "found a parent: "+parent.inspect if DEBUG
+				starting_subtree = parent.subtree
+			else
+				# if not, find the ancestor that has a level immediately above this number
+				# what level is the number?
+				log "no parent found, need to go to ancestors' siblings" if DEBUG
+				best_ancestor = self.ancestors.where("level < ?", level).order('level DESC').first
+				return nil if !best_ancestor
+				starting_subtree = best_ancestor.subtree
+			end
+		else
+			# it's an absolute reference, and the first number is the section number
+			starting_subtree = params[:act].containers.where(level: SECTION, number: first_number.to_s).first
+			return nil if !starting_subtree
+			starting_subtree = starting_subtree.subtree
+		end
+		while numbers.size>0
+			new_number = numbers.pop
+			new_root = starting_subtree.where(number: new_number).first
+			if !new_root
+				raise "could not find a child in subtree headed by "+starting_subtree.first.inspect+
+					"that had number of "+new_number
+			end
+			starting_subtree = new_root.subtree
+		end
+		return starting_subtree.first
+	end
+	
+	def find_internal_reference(params)
+		
+		log "trying to find internal reference for "+params.inspect if DEBUG
+		
+	  container = translate_reference(params)
+		return nil if !container
+
+		if params[:index] == 0
+			anchor = params[:structural_word]+" "+params[:number].to_s
+		else
+			anchor = params[:number].to_s
+		end
+		
+		log "container for internal reference found:\n"+params.inspect+
+				 "\nanchor is "+anchor+
+				 "\ncontainer is "+container.inspect
+		
+		result = Metadatum.find_by           category: 		 "Internal_reference", 
+																				 content_id:   container.id, 
+																				 content_type: "Container",
+																				 scope_id:     self.id,
+																				 scope_type:   "Container",
+																				 anchor:       [anchor].to_yaml
+		
+		if !result
+			result = Metadatum.new
+			result.category="Internal_reference"
+			result.content = container
+			result.scope = self
+			result.anchor = [anchor]
+		end
+		
+		if result.new_record?
+			if !result.save 
+				warn "tried to save a new internal reference but it errored:\n"+result.inspect+
+				     "\nerrors: "+result.errors.inspect
+			end
+		end
+		return result
+	end
+	
+	# should be private
+	def create_internal_reference(params)
+		level = Container.alias_to_level(params[:structural_word])
+		log "trying to create internal reference.\nstructural level is: "+level.to_s+
+		  "\nand act is "+params[:act].id.to_s+
+			"\nand references are: " if DEBUG
+		params[:references].each { |r| log r.inspect } if DEBUG
+		
+		index = 0
+		
+		params[:references].each do |r| 
+			
+			r=r.to_s
+			r=r[0..-2] if [",",";",".",":"].include? r[-1]
+			
+			if /and|or|to/.match r
+				next
+			end
+			
+			reference = find_internal_reference level:           level, 
+																					structural_word: params[:structural_word], 
+																					act:             params[:act], 
+																					number:          r, 
+																					index:           index
+			
+			if !reference
+				warn "failed to find internal reference."
+				warn "was trying to create internal reference.\nstructural level is: "+level.to_s+
+				"\nand act is "+params[:act].id.to_s+
+				"\nand references was "+params[:references].inspect+
+				"\nand trying to find a reference for reference "+r.inspect
+				next
+			end
+						
+			create_annotation anchor:    reference.anchor.first, 
+												position:  self.content.index(/\b#{reference.anchor.first}\b/), 
+												metadatum: reference
+			index+=1
+		end
+	end
+	
+	# should be private
+	def add_to_references?(token, so_far)
+		return false if !token
+		# if so_far > 0, then token could also be 'and', 'or' or 'to'
+		return true  if so_far.size > 0 and ["and", "or", "to"].include? token.to_s
+		# if the first character is an opening brace, and this follows a structural word, surely it's a reference to a container
+		return true if token.to_s[0] == "(" and token.include? ")"
+		reference = sentence token.to_s
+		reference.tokenize
+		# if the first character is a number, then surely also a container reference
+		return true if reference.children.first.type == :number
+		first=reference.children.first.to_s.downcase
+		return true if ARABIC_REGEX.match first[0]
+		# see if it's a roman numeral
+		# to see if it's a stupid roman number like ivb, remove the last character, and see if what's left is 
+		roman_test = first[-1] == ',' ? first[0..-1] : first
+		roman_test = roman_test[-1].between?('a', 'e') ? roman_test[0..-1] : roman_test
+		return true if ROMAN_REGEX.match roman_test
+		# if it's a subdivision, the number might be a capitalized alphabetical
+		return true if first.length == 1 and first.between?('A', 'Z')
+	end
+	
+	# should be private
+	def collect_references(tokens)
+		so_far=[]
+		while(add_to_references?(tokens.first, so_far))
+			so_far.push tokens.shift
+		end
+		# if last token is a conjunction, delete it
+		so_far.pop if ["and", "or", "to"].include? so_far.last.to_s
+		log "collect_references result is " if DEBUG
+		so_far.each { |s| log s.inspect } if DEBUG
+		return so_far
+	end
+		
+	# should be private
+	def which_act?(tokens)
+		log "finding which_act? for "+tokens.join(' ') if DEBUG
+		return self.act if tokens.size < 4 # shortest it can be to be valid - 'of the x Act'
+		return self.act if (tokens[0].to_s != "of" or tokens[1].to_s != "the")
+		index = tokens.index { |x| x.to_s == "Act" }
+		return self.act if !index
+		if tokens[index+1] and tokens[index+1].type == :number
+			return Act.find_act(tokens[2..index+1].join(' '))
+		else
+			return Act.find_act(tokens[2..index].join(' '))
+		end
+		return self.act
+	end
+	
+	# should be private	
 	def process_internal_reference_anchors
 		
-		# find Act reference anchors
+		# find Act reference anchors - regex doesn't work well as it catches too much, and NLP won't work well 
+		# because it can't recognise 'the xxxx Act' properly as a whole phrase
 		
-		words=self.content.split(" ")
+		initialize_nlp(true)
+		
 		indices = words.each_index.select{ |i| words[i] == 'Act' }
 		
 		indices.each do |i|
@@ -633,13 +842,24 @@ class Container < ActiveRecord::Base
 			end
 			next if !first_word_index
 			act_words=words[first_word_index..last_word_index].join(" ")
-			create_annotation anchor: act_words, position: self.content.index(act_words), category: "Placeholder"
+			create_annotation anchor: act_words, position: self.content.index(/\b#{act_words}\b/), category: "Placeholder"
 		end
 		
-		# TODO HIGH: find all 'acts', 'Chapters', 'Parts', etc and metadata them
 		
+		@nlp_handle.children.each do |s|
+			s.words.find_all{ |w| STRUCTURAL_FEATURE_WORDS[1..-1].include? w.to_s.downcase }.each do |structural_word|
+				log "process_internal_reference_anchors looking at word "+structural_word.to_s if DEBUG
+				references=collect_references(structural_word.parent.children[structural_word.position+1..-1])
+				next if (!references or references.size == 0)
+				which_act = which_act?(references.last.parent.children[references.last.position+1..-1])
+				log "which_act is "+which_act.inspect if DEBUG
+				create_internal_reference(structural_word: structural_word.to_s, references: references, act: which_act)
+			end
+		end
+		self.recalculate_annotations
 	end
 		
+	# should be private
 	def translate_scope(scope_string)
 		log "translating "+scope_string.inspect+" into a scope" if DEBUG
 		scope_string.strip!.downcase!
@@ -671,16 +891,6 @@ class Container < ActiveRecord::Base
 				if !p[1]
 					info "trying to translate scope, weird structural term without a number reference: "+scope_string
 				end
-				# TODO High: write the following code
-				# if the level is higher than SECTION, then just look in the Act for that level with that number
-				# else
-				# if no braces or just one set of braces, then look for that number
-				# if multiple braces, break then up into an array
-				# if there's a number in front of the first brace, then that's the section number in the current Act
-				# go down the chain of braces and pull out the relevant subtrees at each point
-				# if no number, scope it to the current section
-				# do the same thing
-				
 				# TODO HIGH - following line is a placeholder to be rewritten
 			  info "trying to translate scope, got to unstructured reference \nContainer is "+self.inspect+"\n and content is "+self.content+"\n and scope string is "+scope_string
 				result[:scope] = self
@@ -689,8 +899,15 @@ class Container < ActiveRecord::Base
 		return result
 	end
 	
-	
+	# should be private
 	def create_annotation(params)
+		log "Create_annotation called with params "+params.inspect
+		metadatum_id = params[:metadatum] ? params[:metadatum].id : nil
+		if self.annotations.where(position:      params[:position],
+															anchor:        params[:anchor],
+															metadatum_id:  metadatum_id        ).size > 0 
+			return
+		end
 		a=self.annotations.build
 		a.position  = params[:position]
 		a.anchor    = params[:anchor]
@@ -701,8 +918,9 @@ class Container < ActiveRecord::Base
 			a.category=params[:category]
 		end
 		if !a.save
-			# flag the metadata for review
-			flag = self.flags.create(category: "Review", comment: "anchor based on this failed "+a.inspect)
+			warn "flag failed to save - "+a.inspect+"\nErrors were: "+a.errors.inspect
+			# flag the container for review
+			flag = self.flags.create(category: "Review", comment: "anchor based on this failed "+a.inspect+"\nMessages were "+a.errors.inspect)
 			flag.save
 		end
 	end
@@ -717,6 +935,7 @@ class Container < ActiveRecord::Base
 	
 	def self.alias_to_level(word)
 		log "converting "+word.inspect+" to a level" if DEBUG
+		word=word.singularize
 		word_capitalized = word
 		word_capitalized[0] = word_capitalized[0].capitalize
 		level = nil
@@ -818,14 +1037,10 @@ class Container < ActiveRecord::Base
 			
 			# TODO MEDIUM - need to handle shit like Pt IVA - slice it up into two, then feed the alphabetical bits off to the compare_alphabetical_numbers method, much like how compare_arabic currently does it
 			
-			puts "compare_romans comparing "+first.to_s+" and "+second.to_s
-			
 			return compare_arabic_numbers(to_roman(first), to_roman(second))
 		end
 		
 		def self.compare_alphabetical_numbers(first, second)
-			
-			puts "compare_alphabetical_numbers comparing "+first.to_s+" and "+second.to_s
 			
 			if first.length==1 and second.length==1
 				return first<=>second
@@ -852,11 +1067,9 @@ class Container < ActiveRecord::Base
 				end
 			end	
 		end
-		
+
 		
 		def self.compare_paragraphs(first, second)
-			
-			puts "compare_paragraphs comparing "+first.inspect+" and "+second.inspect
 			
 			if first.content==second.content
 				return 0
@@ -902,13 +1115,11 @@ class Container < ActiveRecord::Base
 				return 1
 			end
 		end
-		
-	
+
+
 		def self.compare_without_position(first, second)
 			
 			# this method assumes that one or both of first and second has no ancestry
-			
-			puts "comparing without position "+first.inspect+"\n against "+second.inspect
 			
 			# if we're here, we've already determined that these two elements have the same ancestors, and one of them
 			# has no children.  That one also has no position, which means it hasn't been saved into the DB yet
@@ -921,7 +1132,7 @@ class Container < ActiveRecord::Base
 				return first.level <=> second.level
 			end
 			
-			is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and ROMAN_REGEX.match first.number[0])
+			is_roman = (first.level == SUBPARAGRAPH) or (first.level == PART and (['i', 'v', 'x'].include? first.number[0].downcase))
 			
 			if is_roman
 				result= compare_romans(first.number, second.number)
@@ -932,17 +1143,13 @@ class Container < ActiveRecord::Base
 			else
 				result= compare_paragraphs(first, second)
 			end
-			puts "compare without position about to return "+result.to_s
 			return result 
 		end
-		
+
 		
 		def self.compare_arabic_numbers(first, second)
 			
-			puts "compare_arabic_numbers comparing "+first.to_s+" and "+second.to_s
-			
 			if ARABIC_REGEX.match first.to_s+second.to_s
-				puts "both are numbers and the compare is "+(first.to_i <=> second.to_i).to_s
 				return first.to_i <=> second.to_i
 			end
 			
@@ -957,7 +1164,6 @@ class Container < ActiveRecord::Base
 			second_remainder= match[2].strip if match[2]
 			
 			if first != second
-				puts "first is not the same as second"
 				return first <=> second
 			end
 			
@@ -966,15 +1172,11 @@ class Container < ActiveRecord::Base
 			if match
 				first_remainder = match[1]
 				is_ITAA97 = true
-				puts "first remainder is ITAA97 - #{first_remainder}"
-				puts match.inspect
 			end
 			match = ITAA97_REMAINDER_REGEX.match second_remainder
 			if match
 				second_remainder = match[1] if match
 				is_ITAA97 = true
-				puts "second remainder is ITAA97 - #{second_remainder}"
-				puts match.inspect
 			end
 			
 			if first_remainder.length == 0

@@ -23,3 +23,9 @@ Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}|
 		current << c
 	end
 end
+
+Treat::Workers::Processors::Tokenizers.add(:naive) do |sentence, options={}| 
+  sentence.to_s.split(' ').each do |token|
+    sentence << Treat::Entities::Token.from_string(token)
+  end
+end

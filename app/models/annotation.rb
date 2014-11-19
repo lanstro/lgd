@@ -65,7 +65,8 @@ class Annotation < ActiveRecord::Base
 			return "<a href='"+self.hyperlink+"'"  # Todo medium: finish this off, and consider removing hyperlink class
 		elsif self.category=="Placeholder"
 			return "<span class='reference'>"
-		elsif self.category=="Metadatum"
+		elsif meta_link?
+			puts "self is "+self.inspect
 			data = "data-metadata_link='"+self.metadatum.content.id.to_s+"'"
 			case self.metadatum.category
 				when "Definition"

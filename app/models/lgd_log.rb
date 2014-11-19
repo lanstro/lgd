@@ -2,6 +2,7 @@ module LgdLog
   def warn(message=nil)
     high_log ||= Logger.new("#{Rails.root}/log/lgd_high.log")
     high_log.warn(message) unless message.nil?
+		log message
   end
 	
 	def info(message=nil)

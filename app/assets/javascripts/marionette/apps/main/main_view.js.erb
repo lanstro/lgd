@@ -51,12 +51,43 @@ Lgd.module('MainView', function(Mainview, Lgd, Backbone, Marionette, $, _){
 		onShow: function(){
 			console.log("Doing onShow for "+this.id());
 			var anchors = this.$el.children('p').children('span.definition_anchor');
+			var internal_anchors = this.$el.children('p').children('span.reference');
 			if(anchors.length == 0)
 				anchors = $('span.definition_anchor', this.$el.children('table'));
+			if(internal_anchors.length == 0)
+				internal_anchors = $('span.reference', this.$el.children('table'));
 			if(anchors.length > 0){
 				var that=this;
 				console.log(anchors);
 				anchors.each(function(index, element){
+					$(element).popover({ 
+						html:      true,
+						placement: "bottom",
+						content:   function(){
+							var metadata_link = $(element).data("metadata_link");
+							var cont = Lgd.request("ContainerViews").findByCustom(metadata_link);
+							if (cont != undefined)
+								return cont.model.get("annotated_content");
+							var div_id =  "tmp-id-" + $.now();
+							return popup_text(div_id, metadata_link);
+						}
+					});
+				});
+				var popup_text = function(div_id, metadata_link){
+					$.ajax({
+						url: '/show_json/'+metadata_link+'.json',
+						success: function(response){
+							console.log("successful response: "+response);
+							$('#'+div_id).html(response.annotated_content);
+						}
+					});
+					return '<div id="'+ div_id +'">Loading...</div>';
+				}
+			}
+			if(internal_anchors.length > 0){
+				var that=this;
+				console.log(internal_anchors);
+				internal_anchors.each(function(index, element){
 					$(element).popover({ 
 						html:      true,
 						placement: "bottom",

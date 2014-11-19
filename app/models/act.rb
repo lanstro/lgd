@@ -44,13 +44,16 @@ include LgdLog
 	# Subsubparagraph matches upper case alphabeticals
 # PARA_LIST_HEAD matches semicolons at the end of lines (so paragraphs that are headers for lists)
 
+ROMAN_CATCH_ALL = SUBPARAGRAPH
+
 STRUCTURAL_REGEXES = {
 	SECTION          => [ /\A(\d+\w*)\s+(.+)\Z/,                                      "Section"     ],
 	SUBSECTION       => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,                         "Subs_1"      ],
 	# VERY IMPORTANT that SUBPARAGRAPH remains above PARAGRAPH, as it loops through this in order, and several roman numeral sequences register under both regexes
-	SUBPARAGRAPH 	   => [ /\A\t*\(((?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3" ],  # catches empty braces too - may need to account for that case in future
+	SUBPARAGRAPH 	   => [ /\A\t*\(((?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3"      ], # catches empty braces too - may need to account for that case in future
 	PARAGRAPH        => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                               "Subs_2"      ],
 	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                               "Subs_4"      ],
+	ROMAN_CATCH_ALL  => [ /\A\t*\((.+)\)\s+(.+)\Z/,                                      "Subs_3"      ], # if it has braces and can't match any of the proper regexes, it's probably one of those stupid amended romans like ivb
 	PARA_LIST_HEAD   => [ /:\s*\z/,                                                   "p"           ],  # this one has to come after all the subsection ones
 	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——](.+)\Z/,              "Subdivision" ],
 	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——](.+)\Z/,                 "Division"    ],
@@ -133,11 +136,7 @@ class Act < ActiveRecord::Base
 			recursive_tree_parse(container.subtree.arrange, task)
 		end
 	end
-	
-	def find_containers(params)
-		return self.containers.where(level: params[:level], number: params[:number])
-	end
-	
+		
 	
 	def first_container
 		return nil if self.containers.count == 0
@@ -154,6 +153,16 @@ class Act < ActiveRecord::Base
 		return result
 	end
 	
+	def self.find_act(string)
+		# TODO MEDIUM: make this more sophisticated
+		
+		return Act.first #placeholder
+		return Act.where(name: string)
+	end
+	
+	def find_container(string)
+		
+	end
 	
 	def parse
 		
@@ -181,30 +190,10 @@ class Act < ActiveRecord::Base
 		process_entity(@nlp_act.sections[0], true)
 		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
 		
-		check_flags
-		
 		parse_tree :definitions    
-				# here, need to check whether there are any flags on metadata whose content includes this act
-				# here, need to check whether there are any flags on metadata whose scopes overlap this act
 		parse_tree :anchors
 		parse_tree :annotations
 		self.save
-	end
-	
-	def check_flags
-		
-		container_flags = self.flags
-		
-		# find those that are deletes
-		# ask user whether ok to destroy them
-		# 
-		
-		# need to check flags of:
-		# own containers
-		# own container's annotations
-		# metadata that has content containing one of this act's containers
-		# metadata that has coverage of this act's containers
-		
 	end
 	
 	def relevant_metadata
@@ -215,9 +204,7 @@ class Act < ActiveRecord::Base
 		if self.scopes.size > 0
 			relevant_metadata.push self.scopes
 		end
-		
 		return relevant_metadata
-		
 	end
 
 	private
@@ -562,7 +549,7 @@ class Act < ActiveRecord::Base
 				raise "File is incompatible.  Please make sure the file starts with a section or higher."
 			end
 			
-			result = find_containers(level: level, number: number).first
+			result = self.containers.where(level: level, number: number).first
 			
 			# if there's an exact match, then make that the @next_container
 			puts "found a current_container "+result.inspect if result
