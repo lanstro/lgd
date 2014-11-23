@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141113223602) do
+ActiveRecord::Schema.define(version: 20141120063623) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -75,6 +75,7 @@ ActiveRecord::Schema.define(version: 20141113223602) do
     t.datetime "definition_parsed"
     t.datetime "references_parsed"
     t.datetime "annotation_parsed"
+    t.boolean  "definition_zone"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"

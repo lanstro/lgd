@@ -21,6 +21,7 @@
 #  definition_parsed :datetime
 #  references_parsed :datetime
 #  annotation_parsed :datetime
+#  definition_zone   :boolean
 #
 # Indexes
 #
@@ -45,16 +46,26 @@ PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\)
 REGEX_WHOLE_SCOPE     = 1
 REGEX_STRUCTURAL_NAME = 3
 
-ARABIC_REGEX = /\A[0-9]+\Z/
-ROMAN_REGEX = /\A(?:X{0,3})(?:IX|IV|V?I{0,3})\Z/i
-ITAA97_REMAINDER_REGEX = /\A[-——]\s?([0-9]+)\Z/
-ARABIC_START_REGEX = /\A([0-9]+)(.+)?/
+ARABIC_REGEX 						= /\A[0-9]+\Z/
+ROMAN_REGEX 						= /\A(?:X{0,3})(?:IX|IV|V?I{0,3})\Z/i
+ITAA97_REMAINDER_REGEX  = /\A[-——]\s?([0-9]+)\Z/
+ARABIC_START_REGEX 			= /\A([0-9]+)(.+)?/
+
+PUNCTUATION 			= [",",";",".",":"]
+LIST_CONJUNCTIONS = ["and", "or", "to"]
 
 PARAGRAPH_SIMILARITY_THRESHOLD = 0.8
 
-ANNOTATION_START_MARKER = "{*}"
-ANNOTATION_FINISH_MARKER = "{-}"
+ANNOTATION_START_MARKER 	= "{*}"
+ANNOTATION_FINISH_MARKER  = "{-}"
 
+DEFINITION_PARSING_STRATEGIES = { "mean" =>   { stem: true,  filter_method: :reject_mean_phrase? },
+																	"includ" => { stem: true,  filter_method: nil },
+																	"see" =>    { stem: false, filter_method: :reject_see_phrase? } }
+
+WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:])'
+WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:])'
+																	
 class Container < ActiveRecord::Base
 
 	include LgdLog
@@ -78,12 +89,22 @@ class Container < ActiveRecord::Base
 	
 	validates :content, uniqueness: { scope: [:act_id, :ancestry, :number, :position], message: "A container with the same ancestry, number and content already exists." }
 	
-	@definition_zone = nil
-	
 	before_destroy :check_descendants_also_being_destroyed
 	after_destroy :flag_metadata_with_no_scope
 	
+	if Rails.env.development?
+		attr_accessor :nlp_handle, :mp, :ip, :sp
+	end
+	
+	
+	################################################################
+	#																															 #
+	#   Activerecord callbacks                                     #
+	#																															 #
+	################################################################
+	
 	def save_and_check_dependencies(params)
+		# params are passed straight from controller, in turn from an admin submitting an update
 		self.assign_attributes(params)
 		changes = self.changes
 		if self.save
@@ -112,13 +133,6 @@ class Container < ActiveRecord::Base
 		end
 	end
 	
-	
-	if Rails.env.development?
-		attr_accessor :nlp_handle, :mp, :ip, :sp
-	end
-	
-	attr_accessor :definition_zone
-
 	################################################################
 	#																															 #
 	#   Helpers, for everyday querying                             #
@@ -130,7 +144,7 @@ class Container < ActiveRecord::Base
 		return self.level < SECTION ? result : result.downcase
 	end
 	
-	def names
+	def aliases
 		if self.level >= PARA_LIST_HEAD
 			return nil
 		end
@@ -148,8 +162,7 @@ class Container < ActiveRecord::Base
 		return result
 	end
 	
-	def citation
-		
+	def long_citation
 		if self.level == CHAPTER
 			return self.type+" "+self.number
 		elsif self.level < SECTION
@@ -188,16 +201,12 @@ class Container < ActiveRecord::Base
 		return nil if self.new_record?
 		result=self.children.order("position ASC").first
 		return result if result
-		
 		current = self
-		
 		while current
 			return current.lower_item if current.lower_item
 			current=current.parent
 		end
-		
 		return nil
-		
 	end
 	
 	def previous_container
@@ -206,6 +215,12 @@ class Container < ActiveRecord::Base
 		return result if result
 		return self.parent
 	end
+	
+	################################################################
+	#																															 #
+	#   Comparison with other containers in the same Act           #
+	#																															 #
+	################################################################
 
 	def <=>(other)
 		
@@ -215,9 +230,7 @@ class Container < ActiveRecord::Base
 		
 		return 0 if self==other
 		
-		if self.act_id != other.act_id
-			raise "Containers belong to different Acts.  Cannot compare."
-		end
+		return nil if self.act_id != other.act_id
 		
 		if self.ancestry == other.ancestry
 			self_path, other_path = [], []
@@ -264,7 +277,7 @@ class Container < ActiveRecord::Base
 			return 1
 		end
 	end
-
+	
 	# processing annotations and recalculating the annotated_content
 	
 	def recalculate_annotations
@@ -321,6 +334,12 @@ class Container < ActiveRecord::Base
 			text.sub!(ANNOTATION_START_MARKER,  annotation.open_tag)
 			text.sub!(ANNOTATION_FINISH_MARKER, annotation.close_tag)
 		end
+		if text.include? ANNOTATION_START_MARKER or text.include? ANNOTATION_FINISH_MARKER
+			f = self.flags.build(category: "Review", comment: "the calculated annotation has leftover annotation markers: "+text)
+			f.save
+			warn "the calculated annotation for container "+self.inspect+" has leftover annotation markers: "+text
+			return
+		end
 		self.annotated_content = text
 		self.annotation_parsed = Time.now
 		if !self.save
@@ -336,15 +355,19 @@ class Container < ActiveRecord::Base
 	#																															 #
 	################################################################
 	
-	
 	def initialize_nlp(naive=false)
+		# naive parsing breaks up tokens by spaces, normal parsing uses normal stanford rules to tokenize
 		if naive
+			return if @nlp_handle and @nlp_handle.get('naive')
 			@nlp_handle = paragraph self.content
 			@nlp_handle.segment
 			@nlp_handle.apply(tokenize: :naive)
-		elsif !@nlp_handle
+			@nlp_handle.set('naive', true)
+		else
+			return if @nlp_handle and !@nlp_handle.get('naive')
 			@nlp_handle = paragraph self.content
 			@nlp_handle.apply(:segment, :tokenize, :stem)
+			@nlp_handle.set('naive', false)
 		end
 	end
 	
@@ -353,212 +376,63 @@ class Container < ActiveRecord::Base
 	
 	def parse_definitions
 		initialize_nlp
+		calculate_definition_zone
+		return if is_definition_zone? == false
 		if is_definition_zone? or (self.parent and self.parent.is_definition_zone?)
 			existing = Metadatum.where(category: "Definition", content_id: self.id)
-			result= process_definitions
+			process_definitions
 			deleted = Metadatum.where(category: "Definition", content_id: self.id) - existing
 			deleted.each do |d|
 				flag = d.flags.build(category: "Delete", comment: "A second parse through the container suggests this should be deleted.")
 				flag.save
 			end
+			return
 		end
-		return false
 	end
-	
-	def process_definitions
-		
-		@nlp_handle.apply(:parse)
-		
-		@mp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "mean", true)
-		
-		# exclude where 'means' is used as a noun
-		@mp.delete_if do |p|
-			means = p.words.find{ |w| w.to_s.downcase=="means"}
-			if means 
-				means.category
-				next means.get(:category) == "noun"  # effectively means 'return means.get(:category) == "noun"'
-			end
-		end
-		if @mp.size>0
-			log "wrapping @mp phrases "+@mp.inspect+" " if DEBUG
-			return wrap_defined_terms(@mp)
-		end
-		
-		@ip = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "includ", true)
-		
-		if @ip.size>0
-			log "wrapping @ip phrases "+@ip.inspect+" " if DEBUG
-			return wrap_defined_terms(@ip)
-		end
-		
-		@sp = highest_phrases_with_word_or_stem(@nlp_handle.phrases, "see", false)
-		# exclude 'Note: see'
-		@sp.delete_if do |p|
-			para = p.ancestor_with_type(:zone)
-			index = para.words.index { |w| w.to_s.downcase == "see" }
-			if !index or index==0 or para.words[index-1].to_s.downcase == 'note'
-				next true
-			end
-			next false
-		end
-		if @sp.size > 0
-			log "wrapping @sp phrases "+@sp.inspect+" " if DEBUG
-			return wrap_defined_terms(@sp)
-		end
-		return false
-	end
-	
-	def definition_section_heading?
-		initialize_nlp
-		words = @nlp_handle.words
-		if words.size > 3       # TODO LOW - make more sophisticated
-			return false
-		end
-		return words.any?  { |w| w.stem.downcase == "definit" or w.to_s.downcase == "dictionary" }
-	end
-	
+
 	def is_definition_zone?
-		if @definition_zone != nil
-			return @definition_zone[:is_definition] 
-		end
-		initialize_nlp
-		if self.level <= SECTION
-			@definition_zone = {is_definition: definition_section_heading? }
-			return @definition_zone[:is_definition]
-		end
+		return definition_zone if definition_zone != nil
+		self.definition_zone = calculate_definition_zone
+		self.save
+		return definition_zone
+	end
+	
+	
+	def definition_zone_scope
 		match_scope    =    SCOPE_REGEX.match self.content.to_s
 		match_purposes = PURPOSES_REGEX.match self.content.to_s
 		if match_scope and STRUCTURAL_FEATURE_WORDS.include? match_scope[REGEX_STRUCTURAL_NAME].downcase
-			@definition_zone = {is_definition: true,
-			scope:         match_scope[REGEX_WHOLE_SCOPE]}
-			return true
+			return match_scope[REGEX_WHOLE_SCOPE]
 		elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[REGEX_STRUCTURAL_NAME].downcase
-			@definition_zone = {is_definition: true,
-			scope:         match_purposes[REGEX_WHOLE_SCOPE]}
-			return true
+			return match_purposes[REGEX_WHOLE_SCOPE]
 			# if the heading or title of this section is dictionary or definit*
-		elsif definition_section_heading?
-			@definition_zone = {is_definition: true }
-			return true
 		else
 			parent=self.parent
 			if parent and parent.is_definition_zone?
-				@definition_zone = {is_definition: true,
-				scope: 			   parent.definition_scope}
-				return true
+				return parent.definition_zone_scope
 			end
 		end
-		# treat same as previous sibling
-		previous = self.higher_item
-		if previous
-			@definition_zone = {is_definition: previous.is_definition_zone? ,
-			scope:         previous.definition_scope}
-		end
-		@definition_zone = { is_definition: false }
 		return false
 	end
 	
-	def definition_scope
-		if !@definition_zone
-			is_definition_zone?
-		end
-		return @definition_zone[:scope]
-	end
 	
-	def entity_includes_stem_or_word?(e, s, stem=true, downcase=true)
-		if stem
-			if downcase
-				e.words.any? { |w| w.stem.downcase==s }
-			else
-				e.words.any? { |w| w.stem==s }
-			end
+	def calculate_definition_zone
+		return if definition_zone!=nil
+		initialize_nlp
+		if self.level <= SECTION
+			self.definition_zone=definition_section_heading?
+		elsif definition_zone_scope or definition_section_heading?
+			self.definition_zone=true
 		else
-			if downcase
-				e.words.any?{ |w| w.to_s.downcase == s }
-			else
-				e.words.any?{ |w| w.to_s == s }
-			end
+			# treat same as previous sibling
+			previous = self.higher_item
+			self.definition_zone = previous.definition_zone if previous
 		end
-	end
-	
-	def highest_phrases_with_word_or_stem(phrases, pattern, stem=true)
-		result = phrases.find_all do |p| 
-			if !entity_includes_stem_or_word?(p, pattern, stem) or
-				(p.parent.type == :phrase and entity_includes_stem_or_word?(p.parent, pattern, stem))
-				next false
-			end
-			next true
-		end
-		return result
-	end
-	
-	def create_definition(params)
-		
-		d = Metadatum.new(category: "Definition")
-		d.anchor = [params[:anchor]]
-		d.content=self
-		scope = translate_scope @definition_zone[:scope]
-		if scope[:universal_scope]
-			d.universal_scope = true
-		else
-			d.scope = scope[:scope]
-		end
-		if !d.save
-			warn "definition failed to save "+d.inspect+"\nErrors were "+d.errors.inspect
-			return nil
-		end
-		return d
-	end
-	
-	def create_internal_reference(params)
-		ir = Metadatum.new(category: "Internal_reference")
-	end
-	
-	def wrap_defined_terms(definition_phrases)
-		result=[]
-		definition_phrases.each do |p| 
-			log "wrapping "+p.to_s+" " if DEBUG
-			index = p.position-1
-			log "index is "+index.to_s
-			if index==-1
-				# maybe that means we should be finding one more level up?
-				if p.parent and p.parent.parent
-					p=p.parent
-				else
-					# weird - give up
-					# TODO low - should probably log to see what kind of phrases cause this
-					next
-				end
-			end
-			# look for the previous phrase, and assume that is the defined term
-			siblings=p.parent.children
-			
-			while index > 0 and siblings[index].type != :phrase
-				index-=1
-			end
-			log "siblings[index] is "+siblings[index].to_s+" and index is "+index.to_s+" and inspect is "+siblings[index].inspect+" and its children are "+siblings[index].children.inspect if DEBUG
-			
-			if siblings[index].words.size == 1
-				word = siblings[index].words.first
-				# reject if coordinating conjunction (eg 'and'), determiner (eg 'the') 
-				if word.tag== "CC" or word.tag=="DT"
-					next
-				end
-			end
-			
-			subject_words = siblings[index].to_s
-			if Metadatum.where(content_id: self.id, anchor: [subject_words], category: "Definition").count == 0
-				metadatum = create_definition anchor: subject_words
-			end
-			if self.annotations.where(anchor: subject_words, category: "Defined_term", position: self.content.index(subject_words)).count == 0
-				create_annotation category: "Defined_term", anchor: subject_words, position: self.content.index(subject_words)
-			end
-			result.push metadatum
-		end
-		self.definition_parsed = Time.now
+		self.definition_zone = false if !self.definition_zone
 		self.save
-		return result
-	end
+		return
+	end	
+	
 	
 	# finding anchors
 	#####################
@@ -567,364 +441,6 @@ class Container < ActiveRecord::Base
 		process_metadata_anchors
 		process_internal_reference_anchors
 	end
-	
-	def process_metadata_anchors(all=true, specific_metadata=nil)
-		
-		# TODO HIGH: need to do something about existing anchors
-		
-		return false if self.level <= SECTION
-			
-		# find definitional anchors
-		if all
-			relevant_metadata = self.act.relevant_metadata
-			# then add anything with scope == this item or its parents
-			current = self
-			
-			while current != nil
-				current.scopes.each do |meta|
-					relevant_metadata.push meta
-				end
-				current=current.parent
-			end
-		elsif specific_metadata
-			relevant_metadata = specific_metadata
-		else
-			return false
-		end
-		
-		any = false
-		
-		relevant_metadata.each do |meta|
-			next if meta.content == self
-			meta.anchor.each do |anchor|
-				# exclude any anchors that are a subset of an existing metadatum anchor
-				next if self.contents.any? { |content | content.anchor.any? { |a| /\b#{anchor}\b/.match a } }
-				self.content.scan(/\b#{anchor}\b/) do |match|
-					position = Regexp.last_match.offset(0).first
-					# exclude any annotations that already exist
-					next if self.annotations.where(anchor: anchor, metadatum_id: meta.id, position: position).size > 0
-					log "trying to make a new annotation for container id "+self.id.to_s+" with anchor "+anchor+", "+
-							"position of "+position.to_s+" and "+
-							"metadatum of "+meta.inspect if DEBUG
-					create_annotation anchor: anchor, position: position, metadatum: meta
-					any = true
-				end
-			end
-		end
-		
-		return any
-		
-	end
-	
-	def number_to_level(num)
-		if num[0].between?('0', '9')
-			return SUBSECTION
-		elsif num[0].between?('A', 'Z')
-			return SUBSUBPARAGRAPH
-		elsif num[0].between?('a', 'z')
-			return PARAGRAPH
-			# potentially wrong as i, v and x could be romans, but highly unlikely in this context
-		else
-			raise "don't know what this num is "+num.inspect
-		end
-	end
-	
-	def translate_reference(params)
-		
-		return nil if !params[:level] or !params[:number] or !params[:act]
-
-		if params[:level] <= SECTION
-			# if the level is higher than SECTION, then just look in the Act for that level with that number
-			log "relevant reference is to a container higher than section" if DEBUG
-			log "params are "+params.inspect if DEBUG
-			return params[:act].containers.where(level: params[:level], number: params[:number].to_s).first
-		end
-		numbers = params[:number].to_s.split(/[(),]/).delete_if(&:blank?)
-		first_number=numbers.shift
-		level = number_to_level first_number
-		if params[:number][0] == '('
-			# it's a relative reference
-			# if the number's level is above this one, look in ancestors for it
-			if level < self.level
-				parent = self.ancestors.where(number: first_number.to_s).first
-			elsif level == self.level
-				parent=self.siblings.where(number: first_number.to_s).first
-			else
-				parent=self.descendants.where(number: first_number.to_s).first
-			end
-			# see if there are any parents with the same number
-			
-			if parent
-				log "found a parent: "+parent.inspect if DEBUG
-				starting_subtree = parent.subtree
-			else
-				# if not, find the ancestor that has a level immediately above this number
-				# what level is the number?
-				log "no parent found, need to go to ancestors' siblings" if DEBUG
-				best_ancestor = self.ancestors.where("level < ?", level).order('level DESC').first
-				return nil if !best_ancestor
-				starting_subtree = best_ancestor.subtree
-			end
-		else
-			# it's an absolute reference, and the first number is the section number
-			starting_subtree = params[:act].containers.where(level: SECTION, number: first_number.to_s).first
-			return nil if !starting_subtree
-			starting_subtree = starting_subtree.subtree
-		end
-		while numbers.size>0
-			new_number = numbers.pop
-			new_root = starting_subtree.where(number: new_number).first
-			if !new_root
-				raise "could not find a child in subtree headed by "+starting_subtree.first.inspect+
-					"that had number of "+new_number
-			end
-			starting_subtree = new_root.subtree
-		end
-		return starting_subtree.first
-	end
-	
-	def find_internal_reference(params)
-		
-		log "trying to find internal reference for "+params.inspect if DEBUG
-		
-	  container = translate_reference(params)
-		return nil if !container
-
-		if params[:index] == 0
-			anchor = params[:structural_word]+" "+params[:number].to_s
-		else
-			anchor = params[:number].to_s
-		end
-		
-		log "container for internal reference found:\n"+params.inspect+
-				 "\nanchor is "+anchor+
-				 "\ncontainer is "+container.inspect
-		
-		result = Metadatum.find_by           category: 		 "Internal_reference", 
-																				 content_id:   container.id, 
-																				 content_type: "Container",
-																				 scope_id:     self.id,
-																				 scope_type:   "Container",
-																				 anchor:       [anchor].to_yaml
-		
-		if !result
-			result = Metadatum.new
-			result.category="Internal_reference"
-			result.content = container
-			result.scope = self
-			result.anchor = [anchor]
-		end
-		
-		if result.new_record?
-			if !result.save 
-				warn "tried to save a new internal reference but it errored:\n"+result.inspect+
-				     "\nerrors: "+result.errors.inspect
-			end
-		end
-		return result
-	end
-	
-	# should be private
-	def create_internal_reference(params)
-		level = Container.alias_to_level(params[:structural_word])
-		log "trying to create internal reference.\nstructural level is: "+level.to_s+
-		  "\nand act is "+params[:act].id.to_s+
-			"\nand references are: " if DEBUG
-		params[:references].each { |r| log r.inspect } if DEBUG
-		
-		index = 0
-		
-		params[:references].each do |r| 
-			
-			r=r.to_s
-			r=r[0..-2] if [",",";",".",":"].include? r[-1]
-			
-			if /and|or|to/.match r
-				next
-			end
-			
-			reference = find_internal_reference level:           level, 
-																					structural_word: params[:structural_word], 
-																					act:             params[:act], 
-																					number:          r, 
-																					index:           index
-			
-			if !reference
-				warn "failed to find internal reference."
-				warn "was trying to create internal reference.\nstructural level is: "+level.to_s+
-				"\nand act is "+params[:act].id.to_s+
-				"\nand references was "+params[:references].inspect+
-				"\nand trying to find a reference for reference "+r.inspect
-				next
-			end
-						
-			create_annotation anchor:    reference.anchor.first, 
-												position:  self.content.index(/\b#{reference.anchor.first}\b/), 
-												metadatum: reference
-			index+=1
-		end
-	end
-	
-	# should be private
-	def add_to_references?(token, so_far)
-		return false if !token
-		# if so_far > 0, then token could also be 'and', 'or' or 'to'
-		return true  if so_far.size > 0 and ["and", "or", "to"].include? token.to_s
-		# if the first character is an opening brace, and this follows a structural word, surely it's a reference to a container
-		return true if token.to_s[0] == "(" and token.include? ")"
-		reference = sentence token.to_s
-		reference.tokenize
-		# if the first character is a number, then surely also a container reference
-		return true if reference.children.first.type == :number
-		first=reference.children.first.to_s.downcase
-		return true if ARABIC_REGEX.match first[0]
-		# see if it's a roman numeral
-		# to see if it's a stupid roman number like ivb, remove the last character, and see if what's left is 
-		roman_test = first[-1] == ',' ? first[0..-1] : first
-		roman_test = roman_test[-1].between?('a', 'e') ? roman_test[0..-1] : roman_test
-		return true if ROMAN_REGEX.match roman_test
-		# if it's a subdivision, the number might be a capitalized alphabetical
-		return true if first.length == 1 and first.between?('A', 'Z')
-	end
-	
-	# should be private
-	def collect_references(tokens)
-		so_far=[]
-		while(add_to_references?(tokens.first, so_far))
-			so_far.push tokens.shift
-		end
-		# if last token is a conjunction, delete it
-		so_far.pop if ["and", "or", "to"].include? so_far.last.to_s
-		log "collect_references result is " if DEBUG
-		so_far.each { |s| log s.inspect } if DEBUG
-		return so_far
-	end
-		
-	# should be private
-	def which_act?(tokens)
-		log "finding which_act? for "+tokens.join(' ') if DEBUG
-		return self.act if tokens.size < 4 # shortest it can be to be valid - 'of the x Act'
-		return self.act if (tokens[0].to_s != "of" or tokens[1].to_s != "the")
-		index = tokens.index { |x| x.to_s == "Act" }
-		return self.act if !index
-		if tokens[index+1] and tokens[index+1].type == :number
-			return Act.find_act(tokens[2..index+1].join(' '))
-		else
-			return Act.find_act(tokens[2..index].join(' '))
-		end
-		return self.act
-	end
-	
-	# should be private	
-	def process_internal_reference_anchors
-		
-		# find Act reference anchors - regex doesn't work well as it catches too much, and NLP won't work well 
-		# because it can't recognise 'the xxxx Act' properly as a whole phrase
-		
-		initialize_nlp(true)
-		
-		indices = words.each_index.select{ |i| words[i] == 'Act' }
-		
-		indices.each do |i|
-			if words[i+1] and words[i+1].to_i > 0
-				last_word_index = i+1
-			else
-				next
-			end
-			first_word_index = nil
-			current=i-2
-			while current > 0 
-				if words[current].downcase == 'the'
-					first_word_index=current+1
-					break
-				end
-				current-=1
-			end
-			next if !first_word_index
-			act_words=words[first_word_index..last_word_index].join(" ")
-			create_annotation anchor: act_words, position: self.content.index(/\b#{act_words}\b/), category: "Placeholder"
-		end
-		
-		
-		@nlp_handle.children.each do |s|
-			s.words.find_all{ |w| STRUCTURAL_FEATURE_WORDS[1..-1].include? w.to_s.downcase }.each do |structural_word|
-				log "process_internal_reference_anchors looking at word "+structural_word.to_s if DEBUG
-				references=collect_references(structural_word.parent.children[structural_word.position+1..-1])
-				next if (!references or references.size == 0)
-				which_act = which_act?(references.last.parent.children[references.last.position+1..-1])
-				log "which_act is "+which_act.inspect if DEBUG
-				create_internal_reference(structural_word: structural_word.to_s, references: references, act: which_act)
-			end
-		end
-		self.recalculate_annotations
-	end
-		
-	# should be private
-	def translate_scope(scope_string)
-		log "translating "+scope_string.inspect+" into a scope" if DEBUG
-		scope_string.strip!.downcase!
-		result = {}
-		if scope_string == "any act"
-			result[:universal_scope] = true
-		else
-			result[:universal_scope] = false
-			p = scope_string.gsub("/[.,]/", "").split(" ")
-			if p[0] == "this"
-				if !STRUCTURAL_FEATURE_WORDS.include?(p[1])
-					info "trying to translate scope, found the word 'this', but don't know what type of structural term this is "+scope_string
-				end
-				if p[1] == "act"
-					result[:scope] = this.act
-				else
-					parent = self.ancestors.find_by(level: Container.alias_to_level(p[1]))
-					if !parent
-						warn "trying to translate scope, couldn't find parent for "+self.inspect+".  Was looking for a level "+level.to_s
-					end
-					result[:scope] = parent
-				end
-			else
-				# deal with when it's something like "section xxx"
-				if !STRUCTURAL_FEATURE_WORDS.include?(p[0])
-					info "trying to translate scope but don't know what type of reference this is: "+p.words.join(" ")
-				end
-				level = Container.alias_to_level(p[0])
-				if !p[1]
-					info "trying to translate scope, weird structural term without a number reference: "+scope_string
-				end
-				# TODO HIGH - following line is a placeholder to be rewritten
-			  info "trying to translate scope, got to unstructured reference \nContainer is "+self.inspect+"\n and content is "+self.content+"\n and scope string is "+scope_string
-				result[:scope] = self
-			end
-		end
-		return result
-	end
-	
-	# should be private
-	def create_annotation(params)
-		log "Create_annotation called with params "+params.inspect
-		metadatum_id = params[:metadatum] ? params[:metadatum].id : nil
-		if self.annotations.where(position:      params[:position],
-															anchor:        params[:anchor],
-															metadatum_id:  metadatum_id        ).size > 0 
-			return
-		end
-		a=self.annotations.build
-		a.position  = params[:position]
-		a.anchor    = params[:anchor]
-		if params[:metadatum]
-			a.metadatum=params[:metadatum]
-			a.category="Metadatum"
-		else
-			a.category=params[:category]
-		end
-		if !a.save
-			warn "flag failed to save - "+a.inspect+"\nErrors were: "+a.errors.inspect
-			# flag the container for review
-			flag = self.flags.create(category: "Review", comment: "anchor based on this failed "+a.inspect+"\nMessages were "+a.errors.inspect)
-			flag.save
-		end
-	end
-	
 	
 	
 	################################################################
@@ -935,20 +451,13 @@ class Container < ActiveRecord::Base
 	
 	def self.alias_to_level(word)
 		log "converting "+word.inspect+" to a level" if DEBUG
-		word=word.singularize
-		word_capitalized = word
+		word=word.singularize unless word=="s"
+		word_capitalized = word.clone
 		word_capitalized[0] = word_capitalized[0].capitalize
-		level = nil
 		STRUCTURAL_ALIASES.each do | key, aliases|
-			if aliases.include? word or aliases.include? word_capitalized
-				level = key
-				break
-			end
+			return key if (aliases & [word, word_capitalized]).size > 0
 		end
-		if !level
-			return "couldn't find structural term for "+word
-		end
-		return level
+		return nil
 	end
 	
 	#######################################################################
@@ -995,22 +504,473 @@ class Container < ActiveRecord::Base
 
 	
 	private
+
+	#######################################################################
+	#																															        #
+	#   Private methods for parsing definitions                           #
+	#																															        #
+	#######################################################################
+	
 		
-		def subsection_citation(current=self)
-			if current.level >= PARA_LIST_HEAD or current.level < SECTION
-				return nil
-			end
-			result = ""
-			while current.level > SECTION
-				if current.number
-					result = "("+current.number+")" + result
+		def process_definitions
+			
+			@nlp_handle.apply(:parse)
+			
+			DEFINITION_PARSING_STRATEGIES.each do | word, params |
+				phrases = highest_phrases_with_word_or_stem(@nlp_handle.phrases, word, params[:stem])
+				if params[:filter_method]
+					phrases.delete_if do |p|
+						self.send(params[:filter_method], p)
+					end
+					if phrases.size > 0
+						if DEBUG
+							log "wrapping "+word+" phrases: " 
+							phrases.each { |p| log p.inspect }
+						end
+						wrap_defined_terms(phrases)
+						return
+					end
 				end
-				current=current.parent
 			end
-			result = current.number+result
+		end
+		
+		def reject_mean_phrase?(p)
+			means = p.words.find{ |w| w.to_s.downcase=="means"}
+			if means 
+				means.category
+				return means.get(:category) == "noun"
+			end
+		end
+		
+		def reject_see_phrase?(p)
+			para = p.ancestor_with_type(:zone)
+			index = para.words.index { |w| w.to_s.downcase == "see" }
+			if !index or index==0 or para.words[index-1].to_s.downcase == 'note'
+				return true
+			end
+			return false
+		end
+			
+		def translate_scope(scope_string)
+			return nil if !scope_string
+			# expects a string like 'any Act', 'this Act', 'this [structural term]'
+			log "translating "+scope_string.inspect+" into a scope" if DEBUG
+			scope_string.strip!.downcase!
+			result = {}
+			if scope_string == "any act"
+				result[:universal_scope] = true
+			else
+				result[:universal_scope] = false
+				p = scope_string.gsub(/[#{PUNCTUATION.join}]/, "").split(" ")
+				if p[0] == "this"
+					if !STRUCTURAL_FEATURE_WORDS.include?(p[1])
+						info "trying to translate scope, found the word 'this', but don't know what type of structural term this is "+scope_string
+					end
+					if p[1] == "act"
+						result[:scope] = self.act
+					else
+						parent = self.ancestors.find_by(level: Container.alias_to_level(p[1]))
+						if !parent
+							warn "trying to translate scope, couldn't find parent for "+self.inspect+".  Was looking for a level "+level.to_s
+						end
+						result[:scope] = parent
+					end
+				else
+					result[:scope] = self.act.find_container(scope_string, self)
+				end
+			end
 			return result
 		end
 		
+		def definition_section_heading?
+			initialize_nlp
+			words = @nlp_handle.words
+			if words.size > 3       # TODO LOW - make more sophisticated
+				return false
+			end
+			return words.any?  { |w| w.stem.downcase == "definit" or w.to_s.downcase == "dictionary" }
+		end
+		
+		def entity_includes_stem_or_word?(e, s, stem=true)
+			if stem
+				e.words.any? { |w| w.stem.downcase==s }
+			else
+				e.words.any?{ |w| w.to_s.downcase == s }
+			end
+		end
+		
+		def highest_phrases_with_word_or_stem(phrases, pattern, stem=true)
+			return phrases.find_all do |p| 
+				if !entity_includes_stem_or_word?(p, pattern, stem) or
+					(p.parent.type == :phrase and entity_includes_stem_or_word?(p.parent, pattern, stem))
+					next false
+				end
+				next true
+			end
+		end
+		
+		def create_definition(params)
+			
+			d = Metadatum.new(category: "Definition")
+			d.anchor = [params[:anchor]]
+			d.content=self
+			if params[:universal_scope]
+				d.universal_scope = true
+			else
+				d.scope = params[:scope]
+			end
+			if !d.save
+				warn "definition failed to save "+d.inspect+"\nErrors were "+d.errors.inspect
+				return nil
+			end
+			return d
+		end
+
+		def wrap_defined_terms(definition_phrases)
+			definition_phrases.each do |p| 
+				log "creating definition metadatum and annotation for "+p.to_s+" " if DEBUG
+				index = p.position-1
+				if index==-1
+					# maybe that means we should be finding one more level up?
+					if p.parent and p.parent.parent
+						p=p.parent
+					else
+						# weird - give up
+						# TODO low - should probably log to see what kind of phrases cause this
+						next
+					end
+				end
+				# look for the previous phrase, and assume that is the defined term
+				siblings=p.parent.children
+				
+				while index > 0 and siblings[index].type != :phrase
+					index-=1
+				end
+				log "siblings[index] is "+siblings[index].to_s+" and index is "+index.to_s+" and inspect is "+siblings[index].inspect+" and its children are "+siblings[index].children.inspect if DEBUG
+				
+				if siblings[index].words.size == 1
+					word = siblings[index].words.first
+					# reject if coordinating conjunction (eg 'and'), determiner (eg 'the') 
+					if word.tag== "CC" or word.tag=="DT"
+						next
+					end
+				end
+				
+				subject_words   = siblings[index].to_s
+				scope           = translate_scope definition_zone_scope
+				if !scope
+					warn "translate_scope failed to get a definition_zone_scope from: "+definition_zone_scope
+					next
+				end
+				universal_scope = scope[:universal_scope]
+				scope_id        = scope[:scope] ? scope[:scope].id : nil
+				scope_type      = scope[:scope] ? scope[:scope].class.to_s : nil
+				if Metadatum.where(  content_id:   		self.id, 
+														 anchor: 					[subject_words].to_yaml, 
+														 category: 				"Definition", 
+														 scope_id:      	scope_id,
+														 scope_type:      scope_type,
+														 universal_scope: universal_scope).count == 0
+					create_definition anchor: 				 subject_words,
+														scope:  				 scope[:scope],
+														universal_scope: scope[:universal_scope]
+				end
+				position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(subject_words)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
+				if self.annotations.where(	anchor:   subject_words, 
+																		category: "Defined_term", 
+																		position: position ).count == 0
+					create_annotation category: "Defined_term", anchor: subject_words, position: position
+				end
+			end
+			self.definition_parsed = Time.now
+			self.save
+		end
+	
+	#######################################################################
+	#																															        #
+	#   Private methods for parsing internal and act references           #
+	#																															        #
+	#######################################################################
+		
+		
+		def process_metadata_anchors(specific_metadata=nil)
+			
+			log "processing metadata for container "+self.id.to_s if DEBUG
+			
+			return false if self.level <= SECTION or self.special_paragraph == "Subheading"
+			
+			# find definitional anchors
+			if specific_metadata
+				relevant_metadata = specific_metadata
+			else
+				relevant_metadata = self.act.relevant_metadata
+				# then add anything with scope == this item or its parents
+				current = self
+				while current != nil
+					# TODO low: should be able to memoize this and make it more efficient
+					current.scopes.each do |meta|
+						relevant_metadata.push meta
+					end
+					current=current.parent
+				end
+			end
+			
+			puts "relevant_metadata is "+relevant_metadata.inspect
+			
+			relevant_metadata.each do |meta|
+				log "processing metadatum "+meta.id.to_s if DEBUG
+				next if meta.content == self
+				meta.anchor.each do |anchor|
+					log "processing anchor "+anchor if DEBUG
+					# exclude any anchors that are a subset of an existing metadatum anchor
+					regex = /#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor)+WORD_BOUNDARY_REPLACEMENT_BACK}/
+					next if self.contents.any? { |content | content.anchor.any? { |a| regex.match a } }
+					self.content.scan(regex) do |match|
+						position = Regexp.last_match.offset(0).first
+						# exclude any annotations that already exist
+						next if self.annotations.where(anchor: anchor, metadatum_id: meta.id, position: position).size > 0
+						log "trying to make a new annotation for container id "+self.id.to_s+" with anchor "+anchor+", "+
+						"position of "+position.to_s+" and "+
+						"metadatum of "+meta.inspect if DEBUG
+						create_annotation anchor: anchor, position: position, metadatum: meta
+					end
+				end
+			end
+			self.recalculate_annotations if specific_metadata
+		end
+		
+		
+		def process_internal_reference_anchors
+			return if self.level <= SECTION
+			initialize_nlp(true)
+			process_act_references
+			process_container_references
+			self.recalculate_annotations
+		end
+		
+	
+		def process_act_references
+			
+			return if @nlp_handle.children.size < 4 # has to be at least as long as 'the xxxx Act yyyy'
+			
+			tokens = @nlp_handle.children[2..-2]
+			index  = 0
+			
+			tokens.each do |token|
+				if token.to_s == 'Act' and tokens[index+1].type == :number
+					last_word_index = index+1
+				end
+				
+				first_word_index=nil
+				current = index - 2 # start looking for the word 'the' - start 2 spots ahead of the word 'Act'
+				
+				while current > 0
+					if tokens[current].to_s.downcase == 'the'
+						first_word_index=current+1
+						break
+					end
+					current-=1
+				end
+				next if !first_word_index
+				act_words=tokens[first_word_index..last_word_index].join(" ")
+				create_annotation anchor: act_words, position: self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(act_words)+WORD_BOUNDARY_REPLACEMENT_BACK}/), category: "Placeholder"
+				index+=1
+			end
+		end
+		
+		def process_container_references
+			
+			@nlp_handle.children.each do |s| # children are the sentences/phrases - loop through them separately
+				s.words.find_all{ |w| STRUCTURAL_FEATURE_WORDS[1..-1].include? w.to_s.downcase }.each do |structural_word|
+					log "process_internal_reference_anchors looking at word "+structural_word.to_s if DEBUG
+					if structural_word.to_s[-1] == 's' # ie plural
+						tokens = structural_word.parent.children[structural_word.position+1..-1]
+					else
+						tokens = [structural_word.parent.children[structural_word.position+1]]
+					end
+					references=collect_references(tokens)
+					next if (!references or references.size == 0)
+					which_act = which_act?(references.last.parent.children[references.last.position+1..-1])
+					log "which_act is "+which_act.inspect if DEBUG
+					create_internal_reference(structural_word: structural_word.to_s, references: references, act: which_act)
+				end
+			end
+		end
+		
+		def collect_references(tokens)
+			so_far=[]
+			while(add_to_references?(tokens.first, so_far))
+				so_far.push tokens.shift
+			end
+			# if last token is a conjunction, delete it
+			so_far.pop if LIST_CONJUNCTIONS.include? so_far.last.to_s
+			log "collect_references result is " if DEBUG
+			so_far.each { |s| log s.inspect } if DEBUG
+			return so_far
+		end
+		
+		def add_to_references?(token, so_far)
+			return false if !token
+			# if so_far > 0, then token could also be 'and', 'or' or 'to'
+			return true  if so_far.size > 0 and ["and", "or", "to"].include? token.to_s
+			# if the first character is an opening brace, and this follows a structural word, surely it's a reference to a container
+			return true if token.to_s[0] == "(" and token.to_s.include? ")"
+			reference = sentence token.to_s
+			reference.tokenize
+			# if the first character is a number, then surely also a container reference
+			return true if reference.children.first.type == :number
+			first=reference.children.first.to_s.downcase
+			return true if ARABIC_REGEX.match first[0]
+			# see if it's a roman numeral
+			# to see if it's a stupid roman number like ivb, remove the last character, and see if what's left is 
+			first = (PUNCTUATION.include? first[-1]) ? first[0..-1] : first
+			roman_test = first[-1].between?('a', 'e') ? first[0..-1] : first
+			return true if roman_test.length > 0 and ROMAN_REGEX.match roman_test
+			# if it's a subdivision, the number might be a capitalized alphabetical
+			return true if first.length == 1 and first.between?('A', 'Z')
+		end
+		
+		def which_act?(tokens)
+			log "finding which_act? for "+tokens.join(' ') if DEBUG
+			return self.act if tokens.size < 4 # shortest it can be to be valid - 'of the x Act'
+			return self.act if (tokens[0].to_s != "of" or tokens[1].to_s != "the")
+			index = tokens.index { |x| /\bAct\b/.match x.to_s }
+			return self.act if !index
+			if tokens[index+1] 
+				if tokens[index+1].type == :number
+					return Act.find_act(tokens[2..index+1].join(' ')) # only need token index 2 onwards because index 0 is 'of' and 1 is 'the'
+				elsif (PUNCTUATION.include? tokens[index+1].to_s[-1]) and ARABIC_REGEX.match tokens[index+1].to_s[0..-2]
+					return Act.find_act(tokens[2..index+1].join(' ')[0..-2])
+				end
+			end
+			return Act.find_act(tokens[2..index].join(' '))
+		end
+			
+		
+		def find_or_create_internal_reference(params)
+			
+			# API:
+			# container:       container
+			# anchor:          string
+			# can't just use find_or_create_by because it doesn't deal with with serialized fields
+			# TODO LOW - consider making the anchors a separate object so we can avoid serialization
+			
+			log "trying to find internal reference for "+params[:anchor].inspect+" which points to "+params[:container].inspect if DEBUG
+			
+			result = Metadatum.find_by           category: 		 "Internal_reference", 
+																					 content_id:   params[:container].id, 
+																					 content_type: "Container",
+																					 scope_id:     self.id,
+																					 scope_type:   "Container",
+																					 anchor:       [params[:anchor]].to_yaml
+			
+			if !result
+				result = Metadatum.new
+				result.category="Internal_reference"
+				result.content = params[:container]
+				result.scope = self
+				result.anchor = [params[:anchor]]
+				if !result.save 
+					warn "tried to save a new internal reference but it errored:\n"+result.inspect+
+					"\nerrors: "+result.errors.inspect
+					return nil
+				end
+			end
+			return result
+		end
+		
+		def create_internal_reference(params)
+			
+			# API: 
+			# structural_word: string    - like 'section', 'subsection' etc
+			# references:      [tokens]  
+			# act:             act
+			
+			return if !params[:act] or !params[:references] or !params[:structural_word] or params[:references].length == 0
+			
+			if DEBUG
+				log "trying to create internal reference.\nstructural level is: "+level.to_s+
+				"\nand act is "+params[:act].id.to_s+
+				"\nand references are: "
+				params[:references].each { |r| log r.inspect }
+			end
+			
+			params[:references].each do |r| 
+				first = params[:references].first==r
+				r=r.to_s
+				next if LIST_CONJUNCTIONS.include? r
+				r=r[0..-2] if PUNCTUATION.include? r[-1]
+				
+				anchor = first ? params[:structural_word]+" "+r.to_s : r.to_s
+				
+				container = params[:act].find_container(params[:structural_word]+" "+r.to_s, self)
+				
+				if !container
+					warn "could not find a container for "+anchor+".  Self has id "+self.id.to_s
+					next
+				end
+				
+				reference = find_or_create_internal_reference container: container, anchor: anchor
+				
+				if !reference
+					warn "failed to find internal reference."
+					warn "was trying to create internal reference for "+anchor.inspect+
+					"\nand trying to find a reference for container "+container.inspect
+					next
+				end
+				
+				create_annotation anchor:    reference.anchor.first, 
+																		 position:  self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(reference.anchor.first)+WORD_BOUNDARY_REPLACEMENT_BACK}/), 
+																		 metadatum: reference
+			end
+		end
+			
+		
+		def self.number_to_level(num)
+			return nil if !num or num.length == 0
+			if num[0].between?('0', '9')
+				return SUBSECTION
+			elsif num[0].between?('A', 'Z')
+				return SUBSUBPARAGRAPH
+			elsif num[0].between?('a', 'z')
+				return PARAGRAPH
+				# potentially wrong as i, v and x could be romans
+			else
+				raise "don't know what this num is "+num.inspect
+			end
+		end
+		
+		def create_annotation(params)
+			log "Create_annotation called with params "+params.inspect
+			metadatum_id = params[:metadatum] ? params[:metadatum].id : nil
+			if self.annotations.where(position:      params[:position],
+				anchor:        params[:anchor],
+				metadatum_id:  metadatum_id        ).size > 0 
+				return
+			end
+			a=self.annotations.build
+			a.position  = params[:position]
+			a.anchor    = params[:anchor]
+			if params[:metadatum]
+				a.metadatum=params[:metadatum]
+				a.category="Metadatum"
+			else
+				a.category=params[:category]
+			end
+			if !a.save
+				warn "annotation failed to save - "+a.inspect+"\nErrors were: "+a.errors.inspect+"\nanchor was "+a.anchor
+				# flag the container for review
+				flag = self.flags.create(category: "Review", comment: "anchor based on this failed "+a.inspect+"\nMessages were "+a.errors.inspect)
+				flag.save
+			end
+		end
+	
+		
+	#######################################################################
+	#																															        #
+	#   Private methods for supporting the comparison rules               #
+	#																															        #
+	#######################################################################
 		
 		def self.to_roman(str)
 			str = str.downcase
@@ -1190,8 +1150,28 @@ class Container < ActiveRecord::Base
 				return compare_alphabetical_numbers(first_remainder, second_remainder)
 			end
 		end
-		
-		
 
+	
+	#######################################################################
+	#																															        #
+	#   Other                                                             #
+	#																															        #
+	#######################################################################
+		
+		def subsection_citation(current=self)
+			if current.level >= PARA_LIST_HEAD or current.level < SECTION
+				return nil
+			end
+			result = ""
+			while current.level > SECTION
+				if current.number
+					result = "("+current.number+")" + result
+				end
+				current=current.parent
+			end
+			result = current.number+result
+			return result
+		end
+	
 		
 end

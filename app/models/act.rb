@@ -44,7 +44,7 @@ include LgdLog
 	# Subsubparagraph matches upper case alphabeticals
 # PARA_LIST_HEAD matches semicolons at the end of lines (so paragraphs that are headers for lists)
 
-ROMAN_CATCH_ALL = SUBPARAGRAPH
+ROMAN_CATCH_ALL = 1000
 
 STRUCTURAL_REGEXES = {
 	SECTION          => [ /\A(\d+\w*)\s+(.+)\Z/,                                      "Section"     ],
@@ -53,7 +53,7 @@ STRUCTURAL_REGEXES = {
 	SUBPARAGRAPH 	   => [ /\A\t*\(((?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3"      ], # catches empty braces too - may need to account for that case in future
 	PARAGRAPH        => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                               "Subs_2"      ],
 	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                               "Subs_4"      ],
-	ROMAN_CATCH_ALL  => [ /\A\t*\((.+)\)\s+(.+)\Z/,                                      "Subs_3"      ], # if it has braces and can't match any of the proper regexes, it's probably one of those stupid amended romans like ivb
+	ROMAN_CATCH_ALL  => [ /\A\t*\((.+?)\)\s+(.+)\Z/,                                  "Subs_3"      ], # if it has braces and can't match any of the proper regexes, it's probably one of those stupid amended romans like ivb
 	PARA_LIST_HEAD   => [ /:\s*\z/,                                                   "p"           ],  # this one has to come after all the subsection ones
 	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——](.+)\Z/,              "Subdivision" ],
 	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——](.+)\Z/,                 "Division"    ],
@@ -155,13 +155,94 @@ class Act < ActiveRecord::Base
 	
 	def self.find_act(string)
 		# TODO MEDIUM: make this more sophisticated
-		
-		return Act.first #placeholder
-		return Act.where(name: string)
+		return Act.find_by(title: string)
 	end
 	
-	def find_container(string)
+	def find_container(str, reference_container=nil)
 		
+		# can handle 3 types of formats for string:
+		# 1. structural_word number (eg: section 3, subsection 35(3), paragraph (v))
+		# 2. structural_wordNumber (eg s3, ss33, Pt1, etc)
+		# 3. just straight out number (eg 33, 34(a), etc)
+		
+		# reference_container required if it's a relative reference
+		
+		return nil if str.count('(') > str.count(')')
+		str = str.split(' ')
+		return nil if str.size > 2 or str.size==0
+		
+		if str.size == 2
+			level = Container.alias_to_level(str.first)
+			return nil if !level or level >= PARA_LIST_HEAD # can't find just general paragraphs
+			str=str[1]
+		else
+			str=str[0]
+			if str[0]!="("
+				# delete up to two leading s's
+				str = str[1..-1] if str[0].downcase == 's'
+				str = str[1..-1] if str[0].downcase == 's'
+				return nil if !str[0].between?('0', '9')
+			end
+		end
+		
+		# where we've been explicitly told what level the target is, maybe we can
+		# find it quickly via absolute reference
+		
+		# section and chapter numbers are unique - can just look straight for them 
+		if level and level <= SECTION
+			results = self.containers.where(level: level, number: str)
+			return results.first if results.size == 1
+		end
+		
+		# split the number up into an array, where each element of the array is the content of a set of parentheses
+		
+		numbers = str.split(/[()]/).delete_if(&:blank?)
+		first_number = numbers.shift
+		
+		if numbers.size == 0 and level
+			first_level = level
+		else
+			first_level  = Container.number_to_level first_number
+		end
+		
+		# we need to find the subtree that contains the entire reference, then
+		# recursively go down the subtree and narrow it down using each reference along the way
+		# amongst the parent's children by using its number
+		
+		if str[0] != '('
+			# it's an absolute reference starting with the section number - fairly easy job to find the right subtrees
+			root = self.containers.where(level: SECTION, number: first_number).first
+			return nil if !root
+		# otherwise, need a reference point to work out which of the multiple containers with this number it's
+		# talking about
+		elsif !reference_container
+			return nil
+		else
+			# it's a relative reference
+			# first, see if it's in the reference container's exact ancestry line
+			if first_level < reference_container.level
+				root = reference_container.ancestors.where(number: first_number).first
+			elsif first_level == reference_container.level
+				root=reference_container.siblings.where(number: first_number).first
+			else
+				root=reference_container.subtree.where(number: first_number).first
+			end
+			if !root
+				# if not, find the ancestor that has a level immediately above this number
+				puts "no parent found, need to go to ancestors' siblings" if DEBUG
+				best_ancestor = reference_container.ancestors.where("level < ?", first_level).order('level DESC').first
+				return nil if !best_ancestor # weird
+				root = best_ancestor.subtree.where(number: first_number).first
+			end
+		end
+		
+		while numbers.size>0
+			puts "root is "+root.inspect
+			new_number = numbers.shift
+			root = root.subtree.where(number: new_number).first
+			return nil if !root
+		end
+		return root
 	end
 	
 	def parse
@@ -190,7 +271,7 @@ class Act < ActiveRecord::Base
 		process_entity(@nlp_act.sections[0], true)
 		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
 		
-		parse_tree :definitions    
+		parse_tree :definitions
 		parse_tree :anchors
 		parse_tree :annotations
 		self.save
@@ -202,7 +283,7 @@ class Act < ActiveRecord::Base
 		relevant_metadata = Metadatum.where(universal_scope:true)
 		# add to it the metadata with scope being the entire Act
 		if self.scopes.size > 0
-			relevant_metadata.push self.scopes
+			relevant_metadata += self.scopes
 		end
 		return relevant_metadata
 	end
@@ -226,6 +307,7 @@ class Act < ActiveRecord::Base
 			if skip_save
 				# we're leaving the old @current_container alone by not saving it
 			else
+				container.calculate_definition_zone
 				log "about to save "+container.inspect if DEBUG
 				# how to tell whether to save the new container at the end of the current parent, or in front of the current_container?
 				if @current_container and @current_container.next_container and @current_container.next_container.level == @current_container.level
@@ -425,17 +507,19 @@ class Act < ActiveRecord::Base
 			STRUCTURAL_REGEXES.each do |array|
 				matches = array[VALUE][REGEX].match string
 				if matches
+					log "structural regex match for string "+string+" of level "+array[KEY].to_s
 					level = array[KEY]
+					level = SUBPARAGRAPH if level == ROMAN_CATCH_ALL
 					break
 				end
 			end
 			
 			if matches
-				log "structural regex matched" if DEBUG
 				result = Treat::Entities::Title.new(string)
 				result.set :level, level
 				result.set :number, matches[1]
 				result.set :strip_number, matches[2]
+				log "structural regex matched: "+result.inspect if DEBUG
 				return result
 			else
 				log "no structural regex " if DEBUG

@@ -78,7 +78,7 @@ class Metadatum < ActiveRecord::Base
 				end
 				#- if any anchors added, look for it over all the scope
 				self.scope.subtree.each do |container|
-					container.recalculate_annotations if container.process_metadata_anchors(false, [self])
+					container.process_metadata_anchors([self])
 				end
 			end
 			if changes[:scope_id]
@@ -86,7 +86,7 @@ class Metadatum < ActiveRecord::Base
 				self.annotations.each(&:destroy)
 				#- then new scope added
 				self.scope.subtree.each do |container|
-					container.recalculate_annotations if container.process_metadata_anchors(false, [self])
+					container.process_metadata_anchors([self])
 				end
 			end
 			return true
@@ -114,7 +114,7 @@ class Metadatum < ActiveRecord::Base
 	def within_scope?(container)
 		return false if !container
 		return true if universal_scope
-		return (container==scope or container.ancestors.include?(scope))
+		return (container==scope or container.ancestors.include?(scope) or container.act == scope)
 	end
 		
 	private

@@ -20,6 +20,7 @@
 #  definition_parsed :datetime
 #  references_parsed :datetime
 #  annotation_parsed :datetime
+#  definition_zone   :boolean
 #
 # Indexes
 #
