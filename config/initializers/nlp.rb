@@ -1,3 +1,5 @@
+# encoding UTF-8
+
 Treat::Workers::Processors::Chunkers.add(:legislation) do |entity, options={}| 
 	entity.check_hasnt_children
 	zones = entity.to_s.split("\n")
@@ -26,6 +28,13 @@ end
 
 Treat::Workers::Processors::Tokenizers.add(:naive) do |sentence, options={}| 
   sentence.to_s.split(' ').each do |token|
-    sentence << Treat::Entities::Token.from_string(token)
+		match = /\A(\d+.?)(-)(\d.+)/.match token
+		if match
+			sentence << Treat::Entities::Token.from_string(match[1])
+			sentence << Treat::Entities::Token.from_string(match[2])
+			sentence << Treat::Entities::Token.from_string(match[3])
+		else
+			sentence << Treat::Entities::Token.from_string(token)
+		end
   end
 end

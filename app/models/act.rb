@@ -197,6 +197,7 @@ class Act < ActiveRecord::Base
 		# split the number up into an array, where each element of the array is the content of a set of parentheses
 		
 		numbers = str.split(/[()]/).delete_if(&:blank?)
+		log "numbers is "+numbers.inspect if DEBUG
 		first_number = numbers.shift
 		
 		if numbers.size == 0 and level
@@ -204,6 +205,8 @@ class Act < ActiveRecord::Base
 		else
 			first_level  = Container.number_to_level first_number
 		end
+		
+		log "first_level is "+first_level.to_s
 		
 		# we need to find the subtree that contains the entire reference, then
 		# recursively go down the subtree and narrow it down using each reference along the way
@@ -227,10 +230,12 @@ class Act < ActiveRecord::Base
 			else
 				root=reference_container.subtree.where(number: first_number).first
 			end
+			log "root is "+root.inspect if DEBUG
 			if !root
 				# if not, find the ancestor that has a level immediately above this number
 				puts "no parent found, need to go to ancestors' siblings" if DEBUG
-				best_ancestor = reference_container.ancestors.where("level < ?", first_level).order('level DESC').first
+				best_ancestor = reference_container.ancestors.where("level < ?", first_level).max_by(&:level)
+				log "best_ancestor is "+best_ancestor.inspect if DEBUG
 				return nil if !best_ancestor # weird
 				root = best_ancestor.subtree.where(number: first_number).first
 			end
@@ -596,7 +601,7 @@ class Act < ActiveRecord::Base
 			
 			filename = STDIN.gets.strip
 			
-			if ARABIC_REGEX.match filename and files[filename.to_i]
+			if DECIMAL_REGEX.match filename and files[filename.to_i]
 				filename=files[filename.to_i]
 			elsif filename.length==0
 				filename="test"

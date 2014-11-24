@@ -46,10 +46,10 @@ PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\)
 REGEX_WHOLE_SCOPE     = 1
 REGEX_STRUCTURAL_NAME = 3
 
-ARABIC_REGEX 						= /\A[0-9]+\Z/
 ROMAN_REGEX 						= /\A(?:X{0,3})(?:IX|IV|V?I{0,3})\Z/i
 ITAA97_REMAINDER_REGEX  = /\A[-——]\s?([0-9]+)\Z/
-ARABIC_START_REGEX 			= /\A([0-9]+)(.+)?/
+ARABIC_START_REGEX 			= /\A([0-9]+(?:\.[0-9]+)?)(.+)?/
+DECIMAL_REGEX           = /\A[0-9]+(?:\.[0-9]+)?\Z/
 
 PUNCTUATION 			= [",",";",".",":"]
 LIST_CONJUNCTIONS = ["and", "or", "to"]
@@ -89,7 +89,7 @@ class Container < ActiveRecord::Base
 	
 	validates :content, uniqueness: { scope: [:act_id, :ancestry, :number, :position], message: "A container with the same ancestry, number and content already exists." }
 	
-	before_destroy :check_descendants_also_being_destroyed
+	# before_destroy :check_descendants_also_being_destroyed
 	after_destroy :flag_metadata_with_no_scope
 	
 	if Rails.env.development?
@@ -820,7 +820,7 @@ class Container < ActiveRecord::Base
 			# if the first character is a number, then surely also a container reference
 			return true if reference.children.first.type == :number
 			first=reference.children.first.to_s.downcase
-			return true if ARABIC_REGEX.match first[0]
+			return true if DECIMAL_REGEX.match first[0]
 			# see if it's a roman numeral
 			# to see if it's a stupid roman number like ivb, remove the last character, and see if what's left is 
 			first = (PUNCTUATION.include? first[-1]) ? first[0..-1] : first
@@ -839,7 +839,7 @@ class Container < ActiveRecord::Base
 			if tokens[index+1] 
 				if tokens[index+1].type == :number
 					return Act.find_act(tokens[2..index+1].join(' ')) # only need token index 2 onwards because index 0 is 'of' and 1 is 'the'
-				elsif (PUNCTUATION.include? tokens[index+1].to_s[-1]) and ARABIC_REGEX.match tokens[index+1].to_s[0..-2]
+				elsif (PUNCTUATION.include? tokens[index+1].to_s[-1]) and DECIMAL_REGEX.match tokens[index+1].to_s[0..-2]
 					return Act.find_act(tokens[2..index+1].join(' ')[0..-2])
 				end
 			end
@@ -1109,8 +1109,8 @@ class Container < ActiveRecord::Base
 		
 		def self.compare_arabic_numbers(first, second)
 			
-			if ARABIC_REGEX.match first.to_s+second.to_s
-				return first.to_i <=> second.to_i
+			if DECIMAL_REGEX.match first.to_s and DECIMAL_REGEX.match second.to_s
+				return first.to_f <=> second.to_f
 			end
 			
 			first_remainder, second_remainder = "", ""
