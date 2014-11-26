@@ -63,8 +63,10 @@ DEFINITION_PARSING_STRATEGIES = { "mean" =>   { stem: true,  filter_method: :rej
 																	"includ" => { stem: true,  filter_method: nil },
 																	"see" =>    { stem: false, filter_method: :reject_see_phrase? } }
 
-WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:])'
-WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:])'
+WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:-——-])'
+WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:-——-])'
+
+OTHER_DEFINITIONAL_INTRODUCTION = "Unless the contrary intention appears:"
 																	
 class Container < ActiveRecord::Base
 
@@ -216,6 +218,15 @@ class Container < ActiveRecord::Base
 		return self.parent
 	end
 	
+	def content_with_number
+		return content if !self.number
+		if self.level <= SECTION
+			return self.number+" "+self.content
+		else
+			return "("+self.number+") "+self.content
+		end
+	end
+	
 	################################################################
 	#																															 #
 	#   Comparison with other containers in the same Act           #
@@ -227,6 +238,8 @@ class Container < ActiveRecord::Base
 		# 0 means it's the same container
 		# -1 means self comes earlier in an Act than other
 		# +1 means self comes later in the Act than other
+		
+		puts "<=> comparing "+self.inspect+"\n against "+other.inspect if DEBUG
 		
 		return 0 if self==other
 		
@@ -247,7 +260,7 @@ class Container < ActiveRecord::Base
 			
 			while self_path.size>0 and other_path.size > 0
 				result = self_path.shift <=> other_path.shift
-				return result if result != 0
+				return result if result != 0 and result != nil
 			end
 		end
 		# either both paths are identical, or one of them has run out
@@ -377,58 +390,38 @@ class Container < ActiveRecord::Base
 	def parse_definitions
 		initialize_nlp
 		calculate_definition_zone
-		return if is_definition_zone? == false
-		if is_definition_zone? or (self.parent and self.parent.is_definition_zone?)
-			existing = Metadatum.where(category: "Definition", content_id: self.id)
-			process_definitions
-			deleted = Metadatum.where(category: "Definition", content_id: self.id) - existing
-			deleted.each do |d|
-				flag = d.flags.build(category: "Delete", comment: "A second parse through the container suggests this should be deleted.")
-				flag.save
-			end
-			return
+		return if is_definition_zone? == false or definition_zone_scope.blank?
+		existing = Metadatum.where(category: "Definition", content_id: self.id)
+		process_definitions
+		deleted = Metadatum.where(category: "Definition", content_id: self.id) - existing
+		deleted.each do |d|
+			flag = d.flags.build(category: "Delete", comment: "A second definition parse through the container suggests this should be deleted.")
+			flag.save
 		end
+		return
 	end
 
 	def is_definition_zone?
-		return definition_zone if definition_zone != nil
-		self.definition_zone = calculate_definition_zone
-		self.save
-		return definition_zone
+		calculate_definition_zone if self.definition_zone == nil
+		return self.definition_zone if self.definition_zone
+		return self.ancestors.where(definition_zone: true).size > 0
 	end
-	
-	
+
 	def definition_zone_scope
-		match_scope    =    SCOPE_REGEX.match self.content.to_s
-		match_purposes = PURPOSES_REGEX.match self.content.to_s
-		if match_scope and STRUCTURAL_FEATURE_WORDS.include? match_scope[REGEX_STRUCTURAL_NAME].downcase
-			return match_scope[REGEX_WHOLE_SCOPE]
-		elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[REGEX_STRUCTURAL_NAME].downcase
-			return match_purposes[REGEX_WHOLE_SCOPE]
-			# if the heading or title of this section is dictionary or definit*
-		else
-			parent=self.parent
-			if parent and parent.is_definition_zone?
-				return parent.definition_zone_scope
-			end
-		end
+		return self_definition_zone_scope if definition_zone
+		parent=self.ancestors.where(definition_zone: true).order('level ASC').last
+		return parent.definition_zone_scope if parent
 		return false
 	end
 	
-	
 	def calculate_definition_zone
-		return if definition_zone!=nil
+		return if self.definition_zone!=nil
 		initialize_nlp
 		if self.level <= SECTION
 			self.definition_zone=definition_section_heading?
-		elsif definition_zone_scope or definition_section_heading?
-			self.definition_zone=true
 		else
-			# treat same as previous sibling
-			previous = self.higher_item
-			self.definition_zone = previous.definition_zone if previous
+			self.definition_zone = self_definition_zone_scope ? true : false
 		end
-		self.definition_zone = false if !self.definition_zone
 		self.save
 		return
 	end	
@@ -525,7 +518,7 @@ class Container < ActiveRecord::Base
 					if phrases.size > 0
 						if DEBUG
 							log "wrapping "+word+" phrases: " 
-							phrases.each { |p| log p.inspect }
+							phrases.each { |p| log p.to_s }
 						end
 						wrap_defined_terms(phrases)
 						return
@@ -552,7 +545,7 @@ class Container < ActiveRecord::Base
 		end
 			
 		def translate_scope(scope_string)
-			return nil if !scope_string
+			return nil if scope_string.blank?
 			# expects a string like 'any Act', 'this Act', 'this [structural term]'
 			log "translating "+scope_string.inspect+" into a scope" if DEBUG
 			scope_string.strip!.downcase!
@@ -598,7 +591,7 @@ class Container < ActiveRecord::Base
 				e.words.any?{ |w| w.to_s.downcase == s }
 			end
 		end
-		
+				
 		def highest_phrases_with_word_or_stem(phrases, pattern, stem=true)
 			return phrases.find_all do |p| 
 				if !entity_includes_stem_or_word?(p, pattern, stem) or
@@ -655,9 +648,10 @@ class Container < ActiveRecord::Base
 						next
 					end
 				end
-				
+				scope           = definition_zone_scope
+				return if definition_zone_scope.blank?
 				subject_words   = siblings[index].to_s
-				scope           = translate_scope definition_zone_scope
+				scope           = translate_scope scope
 				if !scope
 					warn "translate_scope failed to get a definition_zone_scope from: "+definition_zone_scope
 					next
@@ -685,6 +679,21 @@ class Container < ActiveRecord::Base
 			self.definition_parsed = Time.now
 			self.save
 		end
+		
+		def self_definition_zone_scope
+			match_scope    =    SCOPE_REGEX.match self.content.to_s
+			match_purposes = PURPOSES_REGEX.match self.content.to_s
+			if match_scope and STRUCTURAL_FEATURE_WORDS.include? match_scope[REGEX_STRUCTURAL_NAME].downcase
+				return match_scope[REGEX_WHOLE_SCOPE]
+			elsif match_purposes and STRUCTURAL_FEATURE_WORDS.include? match_purposes[REGEX_STRUCTURAL_NAME].downcase
+				return match_purposes[REGEX_WHOLE_SCOPE]
+				# if the heading or title of this section is dictionary or definit*
+			elsif content.pair_distance_similar(OTHER_DEFINITIONAL_INTRODUCTION) > PARAGRAPH_SIMILARITY_THRESHOLD
+				return "this Act"
+			end
+			return false
+		end
+		
 	
 	#######################################################################
 	#																															        #
@@ -1069,7 +1078,7 @@ class Container < ActiveRecord::Base
 					end
 					next_container = next_container.next_container
 				end
-				puts "two dissimilar paragraphs being compared - what to do?"
+				raise "#############\ntwo dissimilar paragraphs being compared - #{first.inspect} vs #{second.inspect} - what to do?\n#############"
 				# TODO MEDIUM: consider whether to ask for user input here - right now it just returns 1 to signify that
 				# 'first' is later in the act than 'second'
 				return 1
@@ -1078,7 +1087,7 @@ class Container < ActiveRecord::Base
 
 
 		def self.compare_without_position(first, second)
-			
+						
 			# this method assumes that one or both of first and second has no ancestry
 			
 			# if we're here, we've already determined that these two elements have the same ancestors, and one of them

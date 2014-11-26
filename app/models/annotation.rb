@@ -66,7 +66,6 @@ class Annotation < ActiveRecord::Base
 		elsif self.category=="Placeholder"
 			return "<span class='reference'>"
 		elsif meta_link?
-			puts "self is "+self.inspect
 			data = "data-metadata_link='"+self.metadatum.content.id.to_s+"'"
 			case self.metadatum.category
 				when "Definition"

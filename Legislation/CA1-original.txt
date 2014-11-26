@@ -1,3 +1,4 @@
+
 Chapter 1-Introductory
 Part 1.1-Preliminary
   
@@ -172,25 +173,45 @@ When this section applies to a provision of a State or Territory law
 	(b)	a provision of the Corporations legislation (the Commonwealth provision);
 only if the State provision meets the conditions set out in the following table:
 
-Conditions to be met before section applies[operative]ItemKind of provisionConditions to be met1a pre-commencement (commenced) provision(a)	the State provision operated, immediately before this Act commenced, despite the provision of:
+Conditions to be met before section applies
+[operative]
+Item
+Kind of provision
+Conditions to be met
+1
+a pre-commencement (commenced) provision
+(a)	the State provision operated, immediately before this Act commenced, despite the provision of:
 (i)	the Corporations Law of the State or Territory (as in force at that time); or
 (ii)	the ASC or ASIC Law of the State or Territory (as in force at that time);
 	that corresponds to the Commonwealth provision; and
 (b)	the State provision is not declared to be one that this section does not apply to (either generally or specifically in relation to the Commonwealth provision) by:
 (i)	regulations made under this Act; or
-(ii)	a law of the State or Territory.2a pre-commencement (enacted) provision(a)	the State provision would have operated, immediately before this Act commenced, despite the provision of:
+(ii)	a law of the State or Territory.
+2
+a pre-commencement (enacted) provision
+(a)	the State provision would have operated, immediately before this Act commenced, despite the provision of:
 (i)	the Corporations Law of the State or Territory (as in force at that time); or
 (ii)	the ASC or ASIC Law of the State or Territory (as in force at that time);
 	that corresponds to the Commonwealth provision if the State provision had commenced before the commencement of this Act; and
 (b)	the State provision is not declared to be one that this section does not apply to (either generally or specifically in relation to the Commonwealth provision) by:
 (i)	regulations made under this Act; or
-(ii)	a law of the State or Territory.3a post-commencement provisionthe State provision is declared by a law of the State or Territory to be a Corporations legislation displacement provision for the purposes of this section (either generally or specifically in relation to the Commonwealth provision)4a provision that is materially amended on or after this Act commenced if the amendment was enacted before this Act commenced(a)	the State provision as amended would have operated, immediately before this Act commenced, despite the provision of:
+(ii)	a law of the State or Territory.
+3
+a post-commencement provision
+the State provision is declared by a law of the State or Territory to be a Corporations legislation displacement provision for the purposes of this section (either generally or specifically in relation to the Commonwealth provision)
+4
+a provision that is materially amended on or after this Act commenced if the amendment was enacted before this Act commenced
+(a)	the State provision as amended would have operated, immediately before this Act commenced, despite the provision of:
 (i)	the Corporations Law of the State or Territory (as in force at that time); or
 (ii)	the ASC or ASIC Law of the State or Territory (as in force at that time);
 	that corresponds to the Commonwealth provision if the amendment had commenced before the commencement of this Act; and
 (b)	the State provision is not declared to be one that this section does not apply to (either generally or specifically in relation to the Commonwealth provision) by:
 (i)	regulations made under this Act; or
-(ii)	a law of the State or Territory.5a provision that is materially amended on or after this Act commenced if the amendment is enacted on or after this Act commencedthe State provision as amended is declared by a law of the State or Territory to be a Corporations legislation displacement provision for the purposes of this section (either generally or specifically in relation to the Commonwealth provision)Note 1:	Item 1-subsection (12) tells you when a provision is a pre-commencement (commenced) provision.
+(ii)	a law of the State or Territory.
+5
+a provision that is materially amended on or after this Act commenced if the amendment is enacted on or after this Act commenced
+the State provision as amended is declared by a law of the State or Territory to be a Corporations legislation displacement provision for the purposes of this section (either generally or specifically in relation to the Commonwealth provision)
+Note 1:	Item 1-subsection (12) tells you when a provision is a pre-commencement (commenced) provision.
 Note 2:	Item 1 paragraph (a)-For example, a State or Territory provision enacted after the commencement of the Corporations Law might not have operated despite the Corporations Law if it was not expressly provided that the provision was to operate despite a specified provision, or despite any provision, of the Corporations Law (see, for example, section 5 of the Corporations (New South Wales) Act 1990).
 Note 3:	Item 2-subsection (13) tells you when a provision is a pre-commencement (enacted) provision.
 Note 4:	Item 3-subsection (14) tells you when a provision is a post-commencement provision.
@@ -1324,7 +1345,35 @@ standard opening hours means 10 am to 12 noon and 2 pm to 4 pm each business day
 State, when used in a geographical sense, includes the coastal sea of the State.
 State Fair Trading Act means the following Acts for each State and Territory:
 
-State Fair Trading ActsState or TerritoryAct1New South WalesFair Trading Act 19872VictoriaFair Trading Act 19993QueenslandFair Trading Act 19894South AustraliaFair Trading Act 19875Western AustraliaFair Trading Act 19876TasmaniaFair Trading Act 19907Northern TerritoryConsumer Affairs and Fair Trading Act 19908Australian Capital TerritoryFair Trading Act 1992State Family Court, in relation to a State, means a court of that State to which section 41 of the Family Law Act 1975 applies because of a Proclamation made under subsection 41(2) of that Act.
+State Fair Trading Acts
+
+State or Territory
+Act
+1
+New South Wales
+Fair Trading Act 1987
+2
+Victoria
+Fair Trading Act 1999
+3
+Queensland
+Fair Trading Act 1989
+4
+South Australia
+Fair Trading Act 1987
+5
+Western Australia
+Fair Trading Act 1987
+6
+Tasmania
+Fair Trading Act 1990
+7
+Northern Territory
+Consumer Affairs and Fair Trading Act 1990
+8
+Australian Capital Territory
+Fair Trading Act 1992
+State Family Court, in relation to a State, means a court of that State to which section 41 of the Family Law Act 1975 applies because of a Proclamation made under subsection 41(2) of that Act.
 statement, in Chapter 7, includes matter that is not written but conveys a message.
 State or Territory court means a court of a State, the Capital Territory or the Northern Territory.
 State or Territory Supreme Court means the Supreme Court of:
@@ -2330,10 +2379,43 @@ ASIC Practice Note 47]
 4.4 Notification to ASIC of changes
 		The company must notify ASIC if certain basic changes to the company occur. The following table sets out these notification requirements.
 
-Notification requirementsIf...the company must notify ASIC of the change...see section...1a company issues shareswithin 28 days after the issue254X2a company changes the location of a registerwithin 7 days after the change1723a company changes the address of its registered office or principal place of businesswithin 28 days after the change 142, 1464a company changes its directors or company secretarywithin 28 days after the change (unless the director or company secretary has notified ASIC of the change)205B5there is a change in the name or address of the company's directors or secretarywithin 28 days after the change205B7a company has a new ultimate holding company, or details about the ultimate holding company changewithin 28 days after the change happens349A8any of the changes in items 1 to 7 means that:
+Notification requirements
+
+If...
+the company must notify ASIC of the change...
+see section...
+1
+a company issues shares
+within 28 days after the issue
+254X
+2
+a company changes the location of a register
+within 7 days after the change
+172
+3
+a company changes the address of its registered office or principal place of business
+within 28 days after the change 
+142, 146
+4
+a company changes its directors or company secretary
+within 28 days after the change (unless the director or company secretary has notified ASIC of the change)
+205B
+5
+there is a change in the name or address of the company's directors or secretary
+within 28 days after the change
+205B
+7
+a company has a new ultimate holding company, or details about the ultimate holding company change
+within 28 days after the change happens
+349A
+8
+any of the changes in items 1 to 7 means that:
 (a) the company must add or alter particulars in its member register kept under section 169; or
-(b) the company must add or alter particulars in its member register kept under section 169, and as a result, details about the number and class of shares on issue, or the amount paid and unpaid on the shares, alter.within the time determined under the table in section 178D178A
-178C5  Company directors and company secretaries
+(b) the company must add or alter particulars in its member register kept under section 169, and as a result, details about the number and class of shares on issue, or the amount paid and unpaid on the shares, alter.
+within the time determined under the table in section 178D
+178A
+178C
+5  Company directors and company secretaries
 5.1 Who can be a director
 		Only an individual who is at least 18 years old can be a director. If a company has only 1 director, they must ordinarily reside in Australia. If a company has more than 1 director, at least 1 of the directors must ordinarily reside in Australia.
 		A director must consent in writing to holding the position of director. The company must keep the consent and must notify ASIC of the appointment.
@@ -2510,14 +2592,57 @@ Part 1.6-Interaction with Australian Charities and Not-for-profits Commission Ac
 111L  Provisions not applicable to the body corporate
 	(1)	A provision of this Act mentioned in the following table does not apply to the body corporate, subject to any conditions prescribed by the regulations for the purposes of this subsection in relation to the provision:
 
-Provisions of this Act that do not apply to bodies corporate registered under the ACNC ActItemColumn 1
-Provision(s)Column 2
-Topic1subsection 136(5)Public company must lodge with ASIC a copy of a special resolution adopting, modifying or repealing its constitution2section 138ASIC may direct company to lodge consolidated constitution3section 139Company must send copy of constitution to member4subsection 142(2), section 146 and subsection 146A(2)Company must notify ASIC of changes of address5(a) sections 180 to 183; and
-(b) section 185, to the extent that it relates to sections 180 to 183Duties of directors etc.6section 188, to the extent it relates to a provision mentioned in another item of this tableResponsibility of secretaries and directors for certain contraventions7sections 191 to 194Interests of directors8(a) sections 201L and 205A to 205C; and
+Provisions of this Act that do not apply to bodies corporate registered under the ACNC Act
+Item
+Column 1
+Provision(s)
+Column 2
+Topic
+1
+subsection 136(5)
+Public company must lodge with ASIC a copy of a special resolution adopting, modifying or repealing its constitution
+2
+section 138
+ASIC may direct company to lodge consolidated constitution
+3
+section 139
+Company must send copy of constitution to member
+4
+subsection 142(2), section 146 and subsection 146A(2)
+Company must notify ASIC of changes of address
+5
+(a) sections 180 to 183; and
+(b) section 185, to the extent that it relates to sections 180 to 183
+Duties of directors etc.
+6
+section 188, to the extent it relates to a provision mentioned in another item of this table
+Responsibility of secretaries and directors for certain contraventions
+7
+sections 191 to 194
+Interests of directors
+8
+(a) sections 201L and 205A to 205C; and
 (b) section 205D, to the extent it relates to section 205B; and
-(c) section 205EPublic information about directors etc.9(a) Part 2G.2 (other than sections 250PAA and 250PAB); and
-(b) Part 2G.3, to the extent that it relates to meetings of the body corporate's membersMeetings of members10(a) Parts 2M.1 and 2M.2; and
-(b) Part 2M.3Financial reports and audit11Chapter 2NUpdating ASIC information about companies and registered schemes12sections 601CDA, 601CK and 601CTAForeign companies13subsection 601CT(3), section 601CV and subsections 601DH(1) and (1A)Registered body must notify ASIC of certain changes	(2)	Regulations made for the purposes of subsection (1) may be indefinite or limited to a specified period.
+(c) section 205E
+Public information about directors etc.
+9
+(a) Part 2G.2 (other than sections 250PAA and 250PAB); and
+(b) Part 2G.3, to the extent that it relates to meetings of the body corporate's members
+Meetings of members
+10
+(a) Parts 2M.1 and 2M.2; and
+(b) Part 2M.3
+Financial reports and audit
+11
+Chapter 2N
+Updating ASIC information about companies and registered schemes
+12
+sections 601CDA, 601CK and 601CTA
+Foreign companies
+13
+subsection 601CT(3), section 601CV and subsections 601DH(1) and (1A)
+Registered body must notify ASIC of certain changes
+	(2)	Regulations made for the purposes of subsection (1) may be indefinite or limited to a specified period.
 Reporting by debenture issuers
 	(3)	Item 10 of the table in subsection (1) does not apply in relation to a financial year if the body corporate was a borrower in relation to debentures at the end of the year.
 Prescribed provisions
@@ -2554,7 +2679,19 @@ Part 2A.1-What companies can be registered
 Types of companies
 	(1)	The following types of companies can be registered under this Act:
 
-Proprietary companiesLimited by sharesUnlimited with share capitalPublic companiesLimited by sharesLimited by guaranteeUnlimited with share capitalNo liability companyNote:	Other types of companies that were previously allowed continue to exist under the Part 10.1 transitionals.
+Proprietary companies
+Limited by shares
+
+Unlimited with share capital
+Public companies
+Limited by shares
+
+Limited by guarantee
+
+Unlimited with share capital
+
+No liability company
+Note:	Other types of companies that were previously allowed continue to exist under the Part 10.1 transitionals.
 No liability companies
 	(2)	A company may be registered as a no liability company only if:
 	(a)	the company has a share capital; and
@@ -2563,7 +2700,32 @@ No liability companies
 Note 1:	Section 9 defines mining purposes and minerals.
 Note 2:	Special provisions on no liability companies are found in the provisions referred to in the following table:
 
-No liability company provisionsitemtopicprovisions1names148, 156, 1622terms of issue of shares254B3liability on partly-paid shares254M4calls254P-254R5winding up477-478, 483, 514 6registering a body as a company601BA 7transitionalthe Part 10.1 transitionals	(3)	A no liability company must not engage in activities that are outside its mining purposes objects.
+No liability company provisions
+item
+topic
+provisions
+1
+names
+148, 156, 162
+2
+terms of issue of shares
+254B
+3
+liability on partly-paid shares
+254M
+4
+calls
+254P-254R
+5
+winding up
+477-478, 483, 514 
+6
+registering a body as a company
+601BA 
+7
+transitional
+the Part 10.1 transitionals
+	(3)	A no liability company must not engage in activities that are outside its mining purposes objects.
 	(4)	The directors of a no liability company must not:
 	(a)	let the whole or proportion of a mine or claim on tribute; or
 	(b)	make any contract for working any land on tribute;
@@ -2859,9 +3021,154 @@ under which each person agrees to observe and perform the constitution and rules
 141  Table of replaceable rules
 		The following table sets out the provisions of this Act that apply as replaceable rules.
 
-Provisions that apply as replaceable rulesOfficers and Employees1Voting and completion of transactions-directors of proprietary companies1942Powers of directors198A3Negotiable instruments198B4Managing director198C5Company may appoint a director201G6Directors may appoint other directors201H7Appointment of managing directors201J8Alternate directors201K9Remuneration of directors202A10Director may resign by giving written notice to company203A11Removal by members-proprietary company203C12Termination of appointment of managing director203F13Terms and conditions of office for secretaries204FInspection of books14Company or directors may allow member to inspect books247DDirector's Meetings15Circulating resolutions of companies with more than 1 director248A16Calling directors' meetings248C17Chairing directors' meetings248E18Quorum at directors' meetings248F19Passing of directors' resolutions248GMeetings of members20Calling of meetings of members by a director249C21Notice to joint members249J(2)22When notice by post or fax is given249J(4)22AWhen notice under paragraph 249J(3)(cb) is given249J(5)23Notice of adjourned meetings249M24Quorum249T25Chairing meetings of members249U26Business at adjourned meetings249W(2)27Who can appoint a proxy
-[replaceable rule for proprietary companies only]249X28Proxy vote valid even if member dies, revokes appointment etc.250C(2)29How many votes a member has250E30Jointly held shares250F31Objections to right to vote250G32How voting is carried out250J33When and how polls must be taken250MShares33APre-emption for existing shareholders on issue of shares
-in proprietary company254D33BOther provisions about paying dividends254U34Dividend rights for shares in proprietary companies254W(2)Transfer of shares35Transmission of shares on death1072A36Transmission of shares on bankruptcy1072B37Transmission of shares on mental incapacity1072D38Registration of transfers1072F39Additional general discretion for directors of proprietary companies to refuse to register transfers1072GPart 2B.5-Registered office and places of business
+Provisions that apply as replaceable rules
+
+Officers and Employees
+
+1
+Voting and completion of transactions-directors of proprietary companies
+194
+2
+Powers of directors
+198A
+3
+Negotiable instruments
+198B
+4
+Managing director
+198C
+5
+Company may appoint a director
+201G
+6
+Directors may appoint other directors
+201H
+7
+Appointment of managing directors
+201J
+8
+Alternate directors
+201K
+9
+Remuneration of directors
+202A
+10
+Director may resign by giving written notice to company
+203A
+11
+Removal by members-proprietary company
+203C
+12
+Termination of appointment of managing director
+203F
+13
+Terms and conditions of office for secretaries
+204F
+
+Inspection of books
+
+14
+Company or directors may allow member to inspect books
+247D
+
+Director's Meetings
+
+15
+Circulating resolutions of companies with more than 1 director
+248A
+16
+Calling directors' meetings
+248C
+17
+Chairing directors' meetings
+248E
+18
+Quorum at directors' meetings
+248F
+19
+Passing of directors' resolutions
+248G
+
+Meetings of members
+
+20
+Calling of meetings of members by a director
+249C
+21
+Notice to joint members
+249J(2)
+22
+When notice by post or fax is given
+249J(4)
+22A
+When notice under paragraph 249J(3)(cb) is given
+249J(5)
+23
+Notice of adjourned meetings
+249M
+24
+Quorum
+249T
+25
+Chairing meetings of members
+249U
+26
+Business at adjourned meetings
+249W(2)
+27
+Who can appoint a proxy
+[replaceable rule for proprietary companies only]
+249X
+28
+Proxy vote valid even if member dies, revokes appointment etc.
+250C(2)
+29
+How many votes a member has
+250E
+30
+Jointly held shares
+250F
+31
+Objections to right to vote
+250G
+32
+How voting is carried out
+250J
+33
+When and how polls must be taken
+250M
+
+Shares
+
+33A
+Pre-emption for existing shareholders on issue of shares
+in proprietary company
+254D
+33B
+Other provisions about paying dividends
+254U
+34
+Dividend rights for shares in proprietary companies
+254W(2)
+
+Transfer of shares
+
+35
+Transmission of shares on death
+1072A
+36
+Transmission of shares on bankruptcy
+1072B
+37
+Transmission of shares on mental incapacity
+1072D
+38
+Registration of transfers
+1072F
+39
+Additional general discretion for directors of proprietary companies to refuse to register transfers
+1072G
+Part 2B.5-Registered office and places of business
   
 142  Registered office
 	(1)	A company must have a registered office in this jurisdiction. Communications and notices to the company may be addressed to its registered office.
@@ -2951,7 +3258,39 @@ Note:	For strict liability, see section 6.1 of the Criminal Code.
 	(b)	instead of words that are part of a company's name; and
 	(c)	with or without full stops.
 
-Acceptable abbreviations[operative table]WordAbbreviation1CompanyCo or Coy2ProprietaryPty3LimitedLtd4No LiabilityNL5AustralianAust6NumberNo7and&8Australian Company NumberACN9Australian Business NumberABN	(2)	If a company's name includes any of these abbreviations, the word corresponding to the abbreviation may be used instead.
+Acceptable abbreviations
+[operative table]
+
+Word
+Abbreviation
+1
+Company
+Co or Coy
+2
+Proprietary
+Pty
+3
+Limited
+Ltd
+4
+No Liability
+NL
+5
+Australian
+Aust
+6
+Number
+No
+7
+and
+&
+8
+Australian Company Number
+ACN
+9
+Australian Business Number
+ABN
+	(2)	If a company's name includes any of these abbreviations, the word corresponding to the abbreviation may be used instead.
 150  Exception to requirement for using "Limited" in name
 Name
 	(1)	A company is not required to have the word "Limited" at the end of its name if:
@@ -3114,20 +3453,43 @@ Part 2B.7-Changing company type
 	(a)	passing a special resolution resolving to change its type; and
 	(b)	complying with sections 163 and 164.
 
-Allowed conversions[operative table]This type of company may change......to this type of company1proprietary company limited by sharesunlimited proprietary company
+Allowed conversions
+[operative table]
+
+This type of company may change...
+...to this type of company
+1
+proprietary company limited by shares
+unlimited proprietary company
 unlimited public company
-public company limited by shares2unlimited proprietary companyproprietary company limited by shares (but only if, within the last 3 years, it was not a limited company that became an unlimited company)
+public company limited by shares
+2
+unlimited proprietary company
+proprietary company limited by shares (but only if, within the last 3 years, it was not a limited company that became an unlimited company)
 public company limited by shares (but only if, within the last 3 years, it was not a limited company that became an unlimited company)
-unlimited public company3public company limited by sharesunlimited public company
+unlimited public company
+3
+public company limited by shares
+unlimited public company
 unlimited proprietary company
 proprietary company limited by shares
-no liability company (see subsection (2))4company limited by guaranteepublic company limited by shares
+no liability company (see subsection (2))
+4
+company limited by guarantee
+public company limited by shares
 unlimited public company
 proprietary company limited by shares
-unlimited proprietary company5unlimited public companypublic company limited by shares (but only if, within the last 3 years, it was not a limited company that became an unlimited company)
+unlimited proprietary company
+5
+unlimited public company
+public company limited by shares (but only if, within the last 3 years, it was not a limited company that became an unlimited company)
 proprietary company limited by shares (but only if, within the last 3 years, it was not a limited company that became an unlimited company)
-unlimited proprietary company6public no liability companypublic company limited by shares (but only if all the issued shares are fully paid up)
-proprietary company limited by shares (but only if all the issued shares are fully paid up)Note 1:	A public company seeking to change to a proprietary company must comply with the requirements for proprietary companies set out in section 113.
+unlimited proprietary company
+6
+public no liability company
+public company limited by shares (but only if all the issued shares are fully paid up)
+proprietary company limited by shares (but only if all the issued shares are fully paid up)
+Note 1:	A public company seeking to change to a proprietary company must comply with the requirements for proprietary companies set out in section 113.
 Note 2:	Other types of companies that were previously allowed can change type under the Part 10.1 transitionals.
 	(2)	A public company limited by shares may only convert to a no liability company if:
 	(a)	the company's constitution states that its sole objects are mining purposes; and
@@ -3463,7 +3825,26 @@ Note:	For strict liability, see section 6.1 of the Criminal Code.
 178D  Time within which ASIC must be notified
 		A proprietary company must notify ASIC under section 178A within the time determined by this table.
 
-Time within which the company must notify ASICItemIf the need to add or alter a particular arises in connection with this event...The company must notify ASIC within this time...1the Court orders the company to correct its member register kept under section 169at the same time that it notifies ASIC of the correction under subsection 175(3)2the company divides shares into classes, or converts shares of a class into shares of another classwithin the time within which it must notify ASIC of the particulars of the division or conversion under subsection 246F(1)3the company issues shareswithin the time within which it must notify ASIC of the particulars of the issue under subsection 254X(1)4the company reduces its share capitalwithin the time within which it must notify ASIC of shareholder approval of the reduction under subsection 256C(3)5an event not covered by items 1 to 4within 28 days after the day on which it adds or alters the particular in the registerChapter 2D-Officers and employees
+Time within which the company must notify ASIC
+Item
+If the need to add or alter a particular arises in connection with this event...
+The company must notify ASIC within this time...
+1
+the Court orders the company to correct its member register kept under section 169
+at the same time that it notifies ASIC of the correction under subsection 175(3)
+2
+the company divides shares into classes, or converts shares of a class into shares of another class
+within the time within which it must notify ASIC of the particulars of the division or conversion under subsection 246F(1)
+3
+the company issues shares
+within the time within which it must notify ASIC of the particulars of the issue under subsection 254X(1)
+4
+the company reduces its share capital
+within the time within which it must notify ASIC of shareholder approval of the reduction under subsection 256C(3)
+5
+an event not covered by items 1 to 4
+within 28 days after the day on which it adds or alters the particular in the register
+Chapter 2D-Officers and employees
 Part 2D.1-Duties and powers
   
 179  Background to duties of directors, other officers and employees
@@ -6440,14 +6821,35 @@ Note 2:	Section 79 defines involved.
 256E  Signposts to other relevant provisions
 		The following table lists other provisions of this Act that are relevant to reductions in share capital.
 
-Other provisions relevant to reductions in share capital1section 588G
-section 1317Hliability of directors on insolvency
-Under the combined operation of these sections the directors may have to compensate the company if the company is, or becomes, insolvent when the company reduces its share capital.2section 1324injunctions to restrain contravention
-Under this section the Court may grant an injunction against conduct that constitutes or would constitute a contravention of this Act.4Chapter 6CAcontinuous disclosure provisions
-Under this Chapter a disclosing entity is required to disclose information about its securities that is material and not generally available.5Chapter 2Ebenefits to related parties to be disclosed
-Under this Chapter a financial benefit to a director or other related party that could adversely affect the interests of a public company's members as a whole must be approved at a general meeting before it can be given.6section 125provisions in constitution
-This section deals with the way in which a company's constitution may restrict the exercise of the company's powers and the consequences of a failure to observe these restrictions.7sections 246B-246Gvariation of class rights
-These sections deal with the variation of rights attached to a class of shares. This variation may be governed by the provisions of the company's constitution.Division 2-Share buy-backs
+Other provisions relevant to reductions in share capital
+
+
+1
+section 588G
+section 1317H
+liability of directors on insolvency
+Under the combined operation of these sections the directors may have to compensate the company if the company is, or becomes, insolvent when the company reduces its share capital.
+2
+section 1324
+injunctions to restrain contravention
+Under this section the Court may grant an injunction against conduct that constitutes or would constitute a contravention of this Act.
+4
+Chapter 6CA
+continuous disclosure provisions
+Under this Chapter a disclosing entity is required to disclose information about its securities that is material and not generally available.
+5
+Chapter 2E
+benefits to related parties to be disclosed
+Under this Chapter a financial benefit to a director or other related party that could adversely affect the interests of a public company's members as a whole must be approved at a general meeting before it can be given.
+6
+section 125
+provisions in constitution
+This section deals with the way in which a company's constitution may restrict the exercise of the company's powers and the consequences of a failure to observe these restrictions.
+7
+sections 246B-246G
+variation of class rights
+These sections deal with the variation of rights attached to a class of shares. This variation may be governed by the provisions of the company's constitution.
+Division 2-Share buy-backs
 257A  The company's power to buy back its own shares
 		A company may buy back its own shares if:
 	(a)	the buy-back does not materially prejudice the company's ability to pay its creditors; and
@@ -6459,8 +6861,86 @@ Note 2:	A company may buy-back redeemable preference shares and may do so on ter
 
 Procedures
 
-[and sections applied]minimum holdingemployee share schemeon-marketequal access schemeselective buy-backwithin 10/12 limitover 10/12 limitwithin 10/12 limitover 10/12 limitwithin 10/12 limitover 10/12 limitordinary resolution 
-[257C]--yes-yes-yes-special/unanimous resolution [257D]-------yeslodge offer documents with ASIC [257E]-----yesyesyes14 days notice [257F]-yesyesyesyesyesyesyesdisclose relevant information when offer made [257G]-----yesyesyescancel shares [257H]yesyesyesyesyesyesyesyesnotify cancellation to ASIC [254Y]yesyesyesyesyesyesyesyesNote:	Subsections (2) and (3) of this section explain what an equal access scheme is. The 10/12 limit is the 10% in 12 months limit laid down in subsections (4) and (5). Subsections (6) and (7) of this section explain what an on-market buy-back is. See section 9 for definitions of minimum holding buy-back, employee share scheme buy-back and selective buy-back.
+[and sections applied]
+minimum holding
+employee share scheme
+on-market
+equal access scheme
+selective buy-back
+
+
+within 10/12 limit
+over 10/12 limit
+within 10/12 limit
+over 10/12 limit
+within 10/12 limit
+over 10/12 limit
+
+ordinary resolution 
+[257C]
+-
+-
+yes
+-
+yes
+-
+yes
+-
+special/unanimous resolution [257D]
+-
+-
+-
+-
+-
+-
+-
+yes
+lodge offer documents with ASIC [257E]
+-
+-
+-
+-
+-
+yes
+yes
+yes
+14 days notice [257F]
+-
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+disclose relevant information when offer made [257G]
+-
+-
+-
+-
+-
+yes
+yes
+yes
+cancel shares [257H]
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+notify cancellation to ASIC [254Y]
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+Note:	Subsections (2) and (3) of this section explain what an equal access scheme is. The 10/12 limit is the 10% in 12 months limit laid down in subsections (4) and (5). Subsections (6) and (7) of this section explain what an on-market buy-back is. See section 9 for definitions of minimum holding buy-back, employee share scheme buy-back and selective buy-back.
 Equal access scheme
 	(2)	An equal access scheme is a scheme that satisfies all the following conditions:
 	(a)	the offers under the scheme relate only to ordinary shares;
@@ -6535,17 +7015,53 @@ Note:	ASIC must be notified of the cancellation under section 254Y.
 257J  Signposts to other relevant provisions
 		The following table sets out other provisions of this Act that are relevant to buy-backs.
 
-Other provisions relevant to buy-backsprovisioncomment1section 588G section 1317Hliability of directors on insolvency
-The directors may have to compensate the company if the company is, or becomes, insolvent when the company enters into the buy-back agreement.2section 1324injunctions to restrain contravention
-The Court may grant an injunction against conduct that constitutes, or would constitute, a contravention of this Act.4subsection 609(4) section 611 (item 19 of the table)application of takeover provisions
-These sections deal with the application of Chapter 6 to buy-backs.5section 259Aconsequences of failure to follow procedures-the company and the officers
-If a company fails to follow the procedure in this Division, the company contravenes this section and the officers who are involved in the contravention are liable to a civil penalty under Part 9.4B and may commit an offence.6section 256Dconsequences of failure to follow procedures if reduction in share capital involved-the company and the officers
-If the buy-back involves a reduction in share capital and the company fails to follow the procedures in this Division, the company contravenes this section and the officers who are involved in the contravention are liable to a civil penalty under Part 9.4B and may commit an offence.7section 256Dconsequences of failure to follow procedures if reduction in share capital involved-the transaction
-This section provides that a failure to follow the procedures for share capital reductions does not affect the validity of the buy-back transaction itself.8Chapter 6CAcontinuous disclosure provisions
-Under this Chapter a disclosing entity is required to disclose information about its securities that is material and not generally available.9Chapter 2Ebenefits to related parties to be disclosed
-Under this Chapter, a financial benefit to a director or other related party may need to be approved at a general meeting before it is given.10section 125provisions in constitution
-This section deals with the way in which a company's constitution may restrict the exercise of the company's powers and the consequences of a failure to observe these restrictions.11sections 246B-246Gvariation of class rights
-These sections deal with the variation of rights attached to a class of shares. This variation may be governed by the provisions of a company's constitution.Division 3-Other share capital reductions
+Other provisions relevant to buy-backs
+
+
+
+provision
+comment
+1
+section 588G section 1317H
+liability of directors on insolvency
+The directors may have to compensate the company if the company is, or becomes, insolvent when the company enters into the buy-back agreement.
+2
+section 1324
+injunctions to restrain contravention
+The Court may grant an injunction against conduct that constitutes, or would constitute, a contravention of this Act.
+4
+subsection 609(4) section 611 (item 19 of the table)
+application of takeover provisions
+These sections deal with the application of Chapter 6 to buy-backs.
+5
+section 259A
+consequences of failure to follow procedures-the company and the officers
+If a company fails to follow the procedure in this Division, the company contravenes this section and the officers who are involved in the contravention are liable to a civil penalty under Part 9.4B and may commit an offence.
+6
+section 256D
+consequences of failure to follow procedures if reduction in share capital involved-the company and the officers
+If the buy-back involves a reduction in share capital and the company fails to follow the procedures in this Division, the company contravenes this section and the officers who are involved in the contravention are liable to a civil penalty under Part 9.4B and may commit an offence.
+7
+section 256D
+consequences of failure to follow procedures if reduction in share capital involved-the transaction
+This section provides that a failure to follow the procedures for share capital reductions does not affect the validity of the buy-back transaction itself.
+8
+Chapter 6CA
+continuous disclosure provisions
+Under this Chapter a disclosing entity is required to disclose information about its securities that is material and not generally available.
+9
+Chapter 2E
+benefits to related parties to be disclosed
+Under this Chapter, a financial benefit to a director or other related party may need to be approved at a general meeting before it is given.
+10
+section 125
+provisions in constitution
+This section deals with the way in which a company's constitution may restrict the exercise of the company's powers and the consequences of a failure to observe these restrictions.
+11
+sections 246B-246G
+variation of class rights
+These sections deal with the variation of rights attached to a class of shares. This variation may be governed by the provisions of a company's constitution.
+Division 3-Other share capital reductions
 258A  Unlimited companies
 		An unlimited company may reduce its share capital in any way.
 258B  Right to occupy or use real property

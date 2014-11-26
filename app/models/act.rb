@@ -55,10 +55,10 @@ STRUCTURAL_REGEXES = {
 	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                               "Subs_4"      ],
 	ROMAN_CATCH_ALL  => [ /\A\t*\((.+?)\)\s+(.+)\Z/,                                  "Subs_3"      ], # if it has braces and can't match any of the proper regexes, it's probably one of those stupid amended romans like ivb
 	PARA_LIST_HEAD   => [ /:\s*\z/,                                                   "p"           ],  # this one has to come after all the subsection ones
-	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——](.+)\Z/,              "Subdivision" ],
-	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——](.+)\Z/,                 "Division"    ],
-	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[-——](.+)\Z/ ,                    "Part",       ],
-	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[-——](.+)\Z/,                  "Chapter",    ],
+	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——-](.+)\Z/,              "Subdivision" ],
+	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——-](.+)\Z/,                 "Division"    ],
+	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[-——-](.+)\Z/ ,                    "Part",       ],
+	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[-——-](.+)\Z/,                  "Chapter",    ],
 }
 
 KEY   = 0
@@ -85,8 +85,8 @@ SUBHEADING   = "Subheading"
 
 SINGLE_LINE_REGEXES = {
 	SUBHEADING => /(?<![\.:;,]|and|or)\s*\Z/ ,
-	NOTE       => /\A\s*Note\s*:\s+(.*)\Z/,
-	EXAMPLE    => /\A\s*Example\s*\d*\s*:\s+(.*)\Z/
+	NOTE       => /\A\s*Note( \d)?\s*:\s+(.*)\Z/,
+	EXAMPLE    => /\A\s*Example( \d)?\s*:\s+(.*)\Z/
 }
 
 # Subheading regex looks for any lines that don't end in a full stop, semicolon, colon or comma.  Must be 
@@ -230,7 +230,7 @@ class Act < ActiveRecord::Base
 			else
 				root=reference_container.subtree.where(number: first_number).first
 			end
-			log "root is "+root.inspect if DEBUG
+			log "root after first set of checks is "+root.inspect if DEBUG
 			if !root
 				# if not, find the ancestor that has a level immediately above this number
 				puts "no parent found, need to go to ancestors' siblings" if DEBUG
@@ -241,8 +241,10 @@ class Act < ActiveRecord::Base
 			end
 		end
 		
+		log "final root is "+root.inspect if DEBUG
+		
 		while numbers.size>0
-			puts "root is "+root.inspect
+			puts 
 			new_number = numbers.shift
 			root = root.subtree.where(number: new_number).first
 			return nil if !root
@@ -274,11 +276,13 @@ class Act < ActiveRecord::Base
 		@current_container = find_current_container
 		
 		process_entity(@nlp_act.sections[0], true)
+		ActiveRecord::Base.logger.level = 1
 		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
 		
-		parse_tree :definitions
-		parse_tree :anchors
-		parse_tree :annotations
+		#parse_tree :definitions
+		#parse_tree :anchors
+		#parse_tree :annotations
+		ActiveRecord::Base.logger.level = 0
 		self.save
 	end
 	
@@ -302,7 +306,7 @@ class Act < ActiveRecord::Base
 			result.level               = params[:level]
 			result.content             = params[:content]
 			result.number              = params[:number]
-			result.special_paragraph   = params[:special_type]
+			result.special_paragraph   = params[:special_paragraph]
 			result.parent              = params[:parent]
 			return result
 			
@@ -328,19 +332,30 @@ class Act < ActiveRecord::Base
 			return container
 		end
 		
-		def find_parent(level)
+		def find_parent(new_container)
+			
+			log "looking for parent for "+new_container.inspect+"\n@current_container is "+@current_container.inspect if DEBUG
 			
 			return nil if !@current_container
 			
 			result = @current_container
 			
+			level = new_container.level
+
+			# starting from the current_container, loop up the chain of ancestry until we find the
+			# appropriate parent
 			while result
-				if result.level == TEXT
+			
+				log "is the current result the right container?  It is #{result.inspect}" if DEBUG
+				
+				# plain paragraphs can't be parents of anything other than notes and examples
+				if result.level == TEXT and ![NOTE, EXAMPLE].include? new_container.special_paragraph
 					result=result.parent
 					next
 				end
 				
-				# sections and higher structural elements are never children of lists - just a straight out level comparison
+				# parentage rules are different depending on whether there's a massive paragraph-led list
+				# however, sections and higher structural elements are never children of lists - just do a straight out level comparison
 				if level <= SECTION
 					if level > result.level
 						break
@@ -350,8 +365,8 @@ class Act < ActiveRecord::Base
 					end
 				end
 				
+				# list is the most immediate paragraph list item in the parentage chain
 				list = result.level == PARA_LIST_HEAD ? result : result.ancestors.where(level: PARA_LIST_HEAD).last
-				log "should we close previous container?  New level is "+level.inspect+"\nCurrent container is #{@current_container.inspect}\nresult is #{result.inspect} and result's ancestors are #{result.ancestors.inspect}" if DEBUG
 				
 				if !list
 					# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
@@ -366,22 +381,25 @@ class Act < ActiveRecord::Base
 				
 				# there's a list - what do we do?
 				
+				# work out what the highest list is, as we want to know whether we're working under a definitional list or an Act outline
+
+				# different rules depending on what the new container's level is
+				highest_list=list
+				while highest_list.parent.level == PARA_LIST_HEAD
+					highest_list=list.parent
+				end
 				if level < PARA_LIST_HEAD
 					# it's a structural element
-					# if the new item is superior or equal to the list head's parent, close off the list 
-					highest_list=list
-					while highest_list.parent.level == PARA_LIST_HEAD
-						highest_list=list.parent
-					end
+					# if the new item is superior or equal to the highest list head's parent, close off the list 
 					if level <= highest_list.parent.level
-						log "new section is superior to the open list's parent - close the open list, and then return true so that the open list's parent gets removed too"
+						log "new container is superior to the highest list's parent - move the current result to the highest list's parent, and go to next" if DEBUG
 						result = list.parent
-						break
+						next
 					end
 					# if it isn't, then it's either a child of the list head, or of the previous item
 					log "need to decide whether this structural entity is direct child of the list or not" if DEBUG
 					if result == list
-						log "it's a direct child of the list - returning false" if DEBUG 
+						log "new container is a direct child of the list" if DEBUG 
 						# this is the first child of a list head - it must belong to the list head
 						break
 					else
@@ -395,20 +413,58 @@ class Act < ActiveRecord::Base
 						end
 					end
 				elsif level == PARA_LIST_HEAD
-					# if it's a paragraph list heading, assume that it should start a new sub-list and close the existing list
-					# unless the PARA_LIST_HEAD is the first child of a structural element, and contains either the word 'outline' or
-					# is a definitional zone, in which case we leave it alone
+					# the new container is a paragraph list heading
+					# if the list is the first child of a structural element, and the list either:
+						# contains the word 'outline' or
+						# is a definitional zone, 
+					# then we let that be the parent
+					# otherwise, assume that it should start a new sub-list and close the existing list
 					# maybe better to get user input?
 					if list.previous_container == list.parent
 						if /[Oo]utline/.match list.content or list.is_definition_zone?
 							break
 						end
 					end
-					result=result.parent
+					result=result.parent  # maybe this should be result = list.parent; break
 					next
 				elsif level == TEXT
-					if list.children.size == 0 or # this is the first child of the list - it must belong to the list head
-						list.children.first.level==level # the list's children are also paragraphs, so this paragraph presumably belongs in the list
+					if result==list and list.children.size == 0 # this is the first child of the list - it must belong to the list head
+						break
+					elsif (new_container.content and ["and", "but", "is ", "as "].include? new_container.content[0..2]) or
+								[NOTE, EXAMPLE].include? new_container.special_paragraph
+						# if the new container starts with these words, 
+						# or if it's a note or an example
+						# then it's not a fresh list item
+						if result.parent == list
+							# if the current candidate for parent is a direct child of the list, then the new
+							# container must be its child
+							break
+						else
+							# otherwise, lines starting with 'and' or 'but' tend to not belong to its immediate
+							# predecessor, but instead to that one's parent
+							result = result.parent
+							break
+						end
+					elsif highest_list.is_definition_zone?
+						if new_container.content.include? "mean" or 
+					     new_container.content.include? "includ" or
+							 new_container.content.include? ": see" or
+							 /[-——-] ?see/.match new_container.content or
+							 (new_container.content.index(': ') and new_container.content.index(': ') < 30) # some acts are lazy with definitions, they just go xxx: definition of xxx
+							# the new container is a new definition, and its parent should be the highest list item
+							result = highest_list
+							break
+						elsif result==highest_list  # it's a definitional zone, the current container is a paragraph, the lowest item is the definitional list, so that has to be the parent
+							break
+						else
+							# get user input
+							
+							log "User choosing a parent for "+new_container.inspect+"\nCurrent result was "+result.inspect if DEBUG
+							result = choose_parent(result, new_container, list, highest_list)
+							log "User chose "+result.inspect if DEBUG
+							break
+						end
+					elsif result==list and list.children.first.level==level # the list's children are also paragraphs, so this paragraph presumably belongs in the list
 						break
 					else
 						result=result.parent
@@ -418,17 +474,55 @@ class Act < ActiveRecord::Base
 			end
 			return result
 		end
+
+		def choose_parent(result, new_container, list, highest_list)
+			
+			puts "\nFrom the last list, the content has been: "
+			current=list
+			count=0
+			while current and current.content != new_container.content and count < 10
+				puts current.content_with_number
+				current=current.next_container
+				count += 1
+			end
+			puts "\nThe current content is:\n"+new_container.content+"\n"
+			puts "\nWhich of the following is its parent?"
+			choices=result.ancestors.reverse
+			choices.unshift result
+			index = choices.index(highest_list)
+			choices = choices[0..index]
+			count = 0
+			choices.each do |c|
+				puts "["+count.to_s+"] ("+c.long_citation+") "+c.content
+				count+=1
+			end
+			print 7.chr
+			print ">>"
+			choice = STDIN.gets.strip
+			if DECIMAL_REGEX.match choice and choices[choice.to_i]
+				choice=choices[choice.to_i]
+			elsif choice.length==0
+				choice = choices.first
+			else
+				choice = choices.find { |c| c.number == choice }
+				if !choice
+					print "That was not in the list of choices.  Please choose again.\n>>"
+					return choose_parent(result, new_container, list, highest_list)
+				end
+			end
+			return choice
+		end
 		
 		def process_entity(entity, first=false)
 			
-			level        = nil
-			content      = nil
-			number       = nil           
-			special_type = nil
+			level             = nil
+			content           = nil
+			number            = nil           
+			special_paragraph = nil
 			if entity.type == :paragraph
-				level   = TEXT
-				content = entity.to_s
-				special_type = entity.get(:special_type)
+				level             = TEXT
+				content           = entity.to_s
+				special_paragraph = entity.get(:special_paragraph)
 			elsif entity.type == :section
 				level   = entity.get(:level)
 				content = entity.get(:strip_number)
@@ -444,18 +538,19 @@ class Act < ActiveRecord::Base
 			log "processing entity "+content+"\nlevel: "+level.inspect+"\nnumber: "+number.inspect if DEBUG
 			
 			# find the right parent for the new container
+
+			new_container = stage_container(level: level, content: content, number: number, special_paragraph: special_paragraph)
 			
-			parent = first ? nil : find_parent(level)
-			new_container = stage_container(level: level, content: content, number: number, special_type: special_type, parent: parent)
+			new_container.parent = first ? nil : find_parent(new_container)
 			
-			if !first
-				@current_container=@current_container.next_container if @current_container
-			end
-			
-			log "considering @current_container of "+@current_container.inspect if DEBUG
+			log "considering new_container of "+new_container.inspect if DEBUG
+			puts "\nconsidering new_container of "+new_container.inspect if DEBUG
 			log "against #{new_container.inspect}" if DEBUG
+			
+			if !first and @current_container
+				@current_container=@current_container.next_container
+			end
 			compare = @current_container <=> new_container
-			puts "compare is "+compare.to_s
 			while @current_container and compare < 0 
 				# the container currently being processed is higher precedence than what's in the database, so what's in the database has to be deleted
 				flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
@@ -479,6 +574,8 @@ class Act < ActiveRecord::Base
 				skip_save=true
 			end
 			
+			# raise "no skip_save" if !skip_save
+							
 			# save the container
 			commit_container(new_container, skip_save)
 			# recursively call this again for each child paragraph
@@ -529,16 +626,16 @@ class Act < ActiveRecord::Base
 			else
 				log "no structural regex " if DEBUG
 				result = Treat::Entities::Paragraph.new(string)
-				special_type = nil
-				SINGLE_LINE_REGEXES.each do |array|
-					matches = array[VALUE].match string
+				special_paragraph = nil
+				SINGLE_LINE_REGEXES.each do |key, regex|
+					matches = regex.match string
 					if matches
-						special_type=array[KEY]
+						special_paragraph=key
 						break
 					end
 				end
-				if special_type
-					result.set :special_type, special_type
+				if special_paragraph
+					result.set :special_paragraph, special_paragraph
 				end
 			end
 			return result

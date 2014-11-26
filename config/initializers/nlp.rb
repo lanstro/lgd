@@ -28,7 +28,7 @@ end
 
 Treat::Workers::Processors::Tokenizers.add(:naive) do |sentence, options={}| 
   sentence.to_s.split(' ').each do |token|
-		match = /\A(\d+.?)(-)(\d.+)/.match token
+		match = /\A(\d+.?)(-)(\D.+)/.match token  # ie something like Part 3-see.
 		if match
 			sentence << Treat::Entities::Token.from_string(match[1])
 			sentence << Treat::Entities::Token.from_string(match[2])
