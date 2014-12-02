@@ -38,3 +38,17 @@ Treat::Workers::Processors::Tokenizers.add(:naive) do |sentence, options={}|
 		end
   end
 end
+
+Treat::Workers::Processors::Tokenizers.add(:lgd2) do |entity, options={}| 
+	entity.check_hasnt_children
+	if entity.has_children?
+		raise Treat::Exception,
+		"Cannot tokenize an #{entity.class} " +
+		"that already has children."
+	end
+	chunks = Act.tokenizer_split(entity.to_s, options)
+	chunks.each do |chunk|
+		next if chunk =~ /([[:space:]]+)/
+		entity << Treat::Entities::Token.from_string(chunk)
+	end
+end

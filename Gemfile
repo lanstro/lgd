@@ -74,7 +74,7 @@ end
 # nlp
 gem 'treat'
 gem 'activesupport'
-gem 'stanford-core-nlp'
+gem 'stanford-core-nlp', '0.5.1'
 gem 'scalpel'
 
 # Other treat gems that may need to be re-included for future nlp tasks

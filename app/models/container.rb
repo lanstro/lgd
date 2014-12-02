@@ -63,11 +63,13 @@ DEFINITION_PARSING_STRATEGIES = { "mean" =>   { stem: true,  filter_method: :rej
 																	"includ" => { stem: true,  filter_method: nil },
 																	"see" =>    { stem: false, filter_method: :reject_see_phrase? } }
 
-WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:-——-])'
-WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:-——-])'
+WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:\-——\-(])'
+WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:\-——\-)])'
 
 OTHER_DEFINITIONAL_INTRODUCTION = "Unless the contrary intention appears:"
-																	
+MAX_LENGTH_OF_IS_DEFINITION        = 20
+MAX_LENGTH_OF_SEMICOLON_DEFINITION = 30
+
 class Container < ActiveRecord::Base
 
 	include LgdLog
@@ -239,7 +241,7 @@ class Container < ActiveRecord::Base
 		# -1 means self comes earlier in an Act than other
 		# +1 means self comes later in the Act than other
 		
-		puts "<=> comparing "+self.inspect+"\n against "+other.inspect if DEBUG
+		# puts "<=> comparing "+self.inspect+"\n against "+other.inspect if DEBUG
 		
 		return 0 if self==other
 		
@@ -297,6 +299,13 @@ class Container < ActiveRecord::Base
 		text=self.content.dup
 		
 		annotations=self.annotations.order("position ASC")
+		
+		if annotations.size==0
+			self.annotated_content = self.content
+			self.annotation_parsed = Time.now
+			self.save
+			return
+		end
 		
 		# check that the positions given by the annotation and the words there are all correct
 		# if they are, put down a 3 character marker "{*}"
@@ -379,9 +388,12 @@ class Container < ActiveRecord::Base
 		else
 			return if @nlp_handle and !@nlp_handle.get('naive')
 			@nlp_handle = paragraph self.content
-			@nlp_handle.apply(:segment, :tokenize, :stem)
+			@nlp_handle.segment
+			@nlp_handle.apply(tokenize: :lgd2)
+			@nlp_handle.apply(:stem)
 			@nlp_handle.set('naive', false)
 		end
+		return
 	end
 	
 	# finding definitions
@@ -390,7 +402,6 @@ class Container < ActiveRecord::Base
 	def parse_definitions
 		initialize_nlp
 		calculate_definition_zone
-		return if is_definition_zone? == false or definition_zone_scope.blank?
 		existing = Metadatum.where(category: "Definition", content_id: self.id)
 		process_definitions
 		deleted = Metadatum.where(category: "Definition", content_id: self.id) - existing
@@ -408,7 +419,7 @@ class Container < ActiveRecord::Base
 	end
 
 	def definition_zone_scope
-		return self_definition_zone_scope if definition_zone
+		return self_definition_zone_scope if self.definition_zone
 		parent=self.ancestors.where(definition_zone: true).order('level ASC').last
 		return parent.definition_zone_scope if parent
 		return false
@@ -496,32 +507,60 @@ class Container < ActiveRecord::Base
 	end
 
 	
-	private
+	# Pirate
 
 	#######################################################################
 	#																															        #
-	#   Private methods for parsing definitions                           #
+	#   Pirate methods for parsing definitions                           #
 	#																															        #
 	#######################################################################
 	
 		
 		def process_definitions
-			
-			@nlp_handle.apply(:parse)
+
+			return if is_definition_zone? == false or definition_zone_scope.blank?
+			if self.parent and self.parent.contents.where(category: "Definition").count > 0
+				# this container's parent is the start of a definition, so it's unlikely there's a nested definition - save some processing power
+				return
+			end
+			return if self.level <= SECTION or self.special_paragraph
+		
+			# this loop handles most forms of definitions
 			
 			DEFINITION_PARSING_STRATEGIES.each do | word, params |
-				phrases = highest_phrases_with_word_or_stem(@nlp_handle.phrases, word, params[:stem])
+				phrases = highest_phrases_with_word_or_stem(word, params[:stem])
 				if params[:filter_method]
 					phrases.delete_if do |p|
 						self.send(params[:filter_method], p)
 					end
-					if phrases.size > 0
-						if DEBUG
-							log "wrapping "+word+" phrases: " 
-							phrases.each { |p| log p.to_s }
-						end
-						wrap_defined_terms(phrases)
-						return
+				end
+				if phrases.size > 0
+					if DEBUG
+						log "wrapping "+word+" phrases: " 
+						phrases.each { |p| log p.to_s }
+					end
+					create_definitions_from_phrases(phrases)
+					return
+				end
+			end
+			
+			# now for some special cases
+			
+			# where the sentence ends in 'means:'
+			if self.content.length > 7 and self.content[-6..-1] == "means:"
+				create_definition([self.content[0..-8]])
+			# where the definition is just 'xxx is yyyy'
+			else
+				# where the definition is xxx: yyy' - limit it to when the 'is' comes early in the sentence
+				index=self.content.index(": ")
+				index = self.content.index(/: $/)
+				if index and index < MAX_LENGTH_OF_SEMICOLON_DEFINITION 
+					create_definition([self.content[0..index-1]])
+				else
+					# where the definition is just 'xxx is yyy' - limit it to when the 'is' comes early in the sentence
+					index = self.content.index(" is ")
+					if index and index < MAX_LENGTH_OF_IS_DEFINITION
+						create_definition([self.content[0..index-1]])
 					end
 				end
 			end
@@ -548,7 +587,7 @@ class Container < ActiveRecord::Base
 			return nil if scope_string.blank?
 			# expects a string like 'any Act', 'this Act', 'this [structural term]'
 			log "translating "+scope_string.inspect+" into a scope" if DEBUG
-			scope_string.strip!.downcase!
+			scope_string = scope_string.strip.downcase
 			result = {}
 			if scope_string == "any act"
 				result[:universal_scope] = true
@@ -583,45 +622,80 @@ class Container < ActiveRecord::Base
 			end
 			return words.any?  { |w| w.stem.downcase == "definit" or w.to_s.downcase == "dictionary" }
 		end
-		
-		def entity_includes_stem_or_word?(e, s, stem=true)
-			if stem
-				e.words.any? { |w| w.stem.downcase==s }
-			else
-				e.words.any?{ |w| w.to_s.downcase == s }
-			end
-		end
-				
-		def highest_phrases_with_word_or_stem(phrases, pattern, stem=true)
-			return phrases.find_all do |p| 
-				if !entity_includes_stem_or_word?(p, pattern, stem) or
-					(p.parent.type == :phrase and entity_includes_stem_or_word?(p.parent, pattern, stem))
-					next false
+
+		def highest_phrases_with_word_or_stem(pattern, stem=true)
+			initialize_nlp
+			@nlp_handle.apply(:parse)
+			# monkey fix for treat bug where the word 'when' often gets parsed funny
+			@nlp_handle.symbols.each do |s|
+				if s.value=="(WRB when)"
+					s.value="when"
+					s.type=:word
 				end
-				next true
+			end
+			relevant_words = @nlp_handle.words.find_all do |w|
+				if stem
+					w.stem.downcase==pattern
+				else
+					w.to_s.downcase == pattern
+				end
+			end
+			result = []
+			return relevant_words.map do |w|
+				w.ancestors_with_type(:phrase).max do |p|
+					p.to_s == self.content ? 0 : p.to_s.length
+				end
 			end
 		end
 		
-		def create_definition(params)
+		def create_definition(anchor)
 			
-			d = Metadatum.new(category: "Definition")
-			d.anchor = [params[:anchor]]
-			d.content=self
-			if params[:universal_scope]
-				d.universal_scope = true
-			else
-				d.scope = params[:scope]
+			# API:
+			# :universal_scope - expect true or false for whether the definition applies in all acts
+			# :anchor          - expect array of strings, for anchor terms
+			
+			# assume that self is the content of the definition
+			# and that the definitional zone is found in definition_zone_scope
+			
+			scope           = definition_zone_scope
+			return nil if definition_zone_scope.blank?
+			scope           = translate_scope scope
+			if !scope
+				warn "translate_scope failed to get a definition_zone_scope from: "+definition_zone_scope
+				return nil
 			end
+			
+			return nil if Metadatum.where(  content_id:   		self.id, 
+																			anchor: 					anchor.to_yaml, 
+																			category: 				"Definition", 
+																			scope_id:      		scope[:scope] ? scope[:scope].id   : nil,
+																			scope_type:       scope[:scope] ? scope[:scope].class.to_s : nil,
+																			universal_scope:  scope[:universal_scope]).count > 0
+
+			d 								= Metadatum.new(category: "Definition")
+			d.anchor				  = anchor
+			d.content					= self
+			d.universal_scope = scope[:universal_scope]
+			d.scope           = scope[:scope]
+			
 			if !d.save
 				warn "definition failed to save "+d.inspect+"\nErrors were "+d.errors.inspect
-				return nil
+				return
+			end
+				
+			position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor.first)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
+			if self.annotations.where(	anchor:   anchor.first, 
+																	category: "Defined_term", 
+																	position: position ).count == 0
+				create_annotation category: "Defined_term", anchor: anchor.first, position: position
 			end
 			return d
 		end
 
-		def wrap_defined_terms(definition_phrases)
+		def create_definitions_from_phrases(definition_phrases)
 			definition_phrases.each do |p| 
 				log "creating definition metadatum and annotation for "+p.to_s+" " if DEBUG
+				# each definition phrase should be something like "includes x and y", "means z" or "see a", so the word that comes right before this is the one we want
 				index = p.position-1
 				if index==-1
 					# maybe that means we should be finding one more level up?
@@ -639,41 +713,26 @@ class Container < ActiveRecord::Base
 				while index > 0 and siblings[index].type != :phrase
 					index-=1
 				end
-				log "siblings[index] is "+siblings[index].to_s+" and index is "+index.to_s+" and inspect is "+siblings[index].inspect+" and its children are "+siblings[index].children.inspect if DEBUG
+				anchor = siblings[index]
+				log "index is "+index.to_s+" and anchor is "+anchor.inspect+" and its children are "+anchor.children.inspect if DEBUG
 				
-				if siblings[index].words.size == 1
-					word = siblings[index].words.first
+				if anchor.words.size == 1
+					word = anchor.words.first
 					# reject if coordinating conjunction (eg 'and'), determiner (eg 'the') 
 					if word.tag== "CC" or word.tag=="DT"
 						next
 					end
 				end
-				scope           = definition_zone_scope
-				return if definition_zone_scope.blank?
-				subject_words   = siblings[index].to_s
-				scope           = translate_scope scope
-				if !scope
-					warn "translate_scope failed to get a definition_zone_scope from: "+definition_zone_scope
-					next
+				anchor=anchor.to_s
+				if ["-","—","—"].include? anchor[-1]
+					anchor=anchor[0..-2]
 				end
-				universal_scope = scope[:universal_scope]
-				scope_id        = scope[:scope] ? scope[:scope].id : nil
-				scope_type      = scope[:scope] ? scope[:scope].class.to_s : nil
-				if Metadatum.where(  content_id:   		self.id, 
-														 anchor: 					[subject_words].to_yaml, 
-														 category: 				"Definition", 
-														 scope_id:      	scope_id,
-														 scope_type:      scope_type,
-														 universal_scope: universal_scope).count == 0
-					create_definition anchor: 				 subject_words,
-														scope:  				 scope[:scope],
-														universal_scope: scope[:universal_scope]
-				end
-				position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(subject_words)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
-				if self.annotations.where(	anchor:   subject_words, 
+				create_definition([anchor])
+				position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
+				if self.annotations.where(	anchor:   anchor, 
 																		category: "Defined_term", 
 																		position: position ).count == 0
-					create_annotation category: "Defined_term", anchor: subject_words, position: position
+					create_annotation category: "Defined_term", anchor: anchor, position: position
 				end
 			end
 			self.definition_parsed = Time.now
@@ -697,7 +756,7 @@ class Container < ActiveRecord::Base
 	
 	#######################################################################
 	#																															        #
-	#   Private methods for parsing internal and act references           #
+	#   Pirate methods for parsing internal and act references           #
 	#																															        #
 	#######################################################################
 		
@@ -724,13 +783,11 @@ class Container < ActiveRecord::Base
 				end
 			end
 			
-			puts "relevant_metadata is "+relevant_metadata.inspect
+			# puts "relevant_metadata is "+relevant_metadata.inspect if DEBUG
 			
 			relevant_metadata.each do |meta|
-				log "processing metadatum "+meta.id.to_s if DEBUG
 				next if meta.content == self
 				meta.anchor.each do |anchor|
-					log "processing anchor "+anchor if DEBUG
 					# exclude any anchors that are a subset of an existing metadatum anchor
 					regex = /#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor)+WORD_BOUNDARY_REPLACEMENT_BACK}/
 					next if self.contents.any? { |content | content.anchor.any? { |a| regex.match a } }
@@ -825,7 +882,7 @@ class Container < ActiveRecord::Base
 			# if the first character is an opening brace, and this follows a structural word, surely it's a reference to a container
 			return true if token.to_s[0] == "(" and token.to_s.include? ")"
 			reference = sentence token.to_s
-			reference.tokenize
+			reference.tokenize(:lgd2)
 			# if the first character is a number, then surely also a container reference
 			return true if reference.children.first.type == :number
 			first=reference.children.first.to_s.downcase
@@ -977,7 +1034,7 @@ class Container < ActiveRecord::Base
 		
 	#######################################################################
 	#																															        #
-	#   Private methods for supporting the comparison rules               #
+	#   Pirate methods for supporting the comparison rules               #
 	#																															        #
 	#######################################################################
 		

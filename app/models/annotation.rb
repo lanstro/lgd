@@ -45,7 +45,6 @@ class Annotation < ActiveRecord::Base
 	
 	def anchor_exists_at_position
 		if meta_link?
-			puts "validating annotation: checking whether the anchor "+anchor+" exists in metadatum "+metadatum.inspect
 			if !metadatum or !metadatum.anchor.include?(anchor)
 				errors.add(:anchor, "The anchor does not match up with the metadatum object's anchors")
 			end

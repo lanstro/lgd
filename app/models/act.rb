@@ -89,6 +89,10 @@ SINGLE_LINE_REGEXES = {
 	EXAMPLE    => /\A\s*Example( \d)?\s*:\s+(.*)\Z/
 }
 
+# used to break dashed words like "Part 2-see" into three tokens instead of a single token
+TOKENIZER_DASH_BREAKUPS   = [/(?:\d|\))([-——-])(?:.+)/,
+                             /(?:\S+)([-——-])(?:see|\$)/]
+
 # Subheading regex looks for any lines that don't end in a full stop, semicolon, colon or comma.  Must be 
 # run after the subsection_regex, because a lot of subsections end in 'and', 'or' etc
 # captures the subheading in item 1
@@ -278,11 +282,11 @@ class Act < ActiveRecord::Base
 		process_entity(@nlp_act.sections[0], true)
 		ActiveRecord::Base.logger.level = 1
 		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
-		
+		ActiveRecord::Base.logger.level = 0
 		#parse_tree :definitions
 		#parse_tree :anchors
 		#parse_tree :annotations
-		ActiveRecord::Base.logger.level = 0
+		
 		self.save
 	end
 	
@@ -530,6 +534,9 @@ class Act < ActiveRecord::Base
 					content=entity.title.to_s
 				end
 				number  = entity.get(:number)
+				if level==SUBPARAGRAPH and number=="i" and @current_container and @current_container.number=="h"
+					level=PARAGRAPH
+				end
 			else
 				raise 'unknown entity type '+entity.inspect
 			end
@@ -639,6 +646,78 @@ class Act < ActiveRecord::Base
 				end
 			end
 			return result
+		end
+
+		def self.tokenizer_split(string, options)
+			
+			# vast majority of this taken from ptb tokenizer
+			
+			s = " " + string + " "
+			
+			s.gsub!(/‘/,"'")
+			s.gsub!(/’/,"'")
+			s.gsub!(/“/,"``")
+			s.gsub!(/”/,"''")
+			
+			s.gsub!(/\s+/," ")
+			s.gsub!(/(\s+)''/,'\1"')
+			s.gsub!(/(\s+)``/,'\1"')
+			s.gsub!(/''(\s+)/,'"\1')
+			s.gsub!(/``(\s+)/,'"\1')
+			s.gsub!(/ (['`]+)([^0-9].+) /,' \1 \2 ')
+			s.gsub!(/([ (\[{<])"/,'\1 `` ')
+			s.gsub!(/\.\.\./,' ... ')
+			s.gsub!(/[,;:@\#$%&]/,' \& ')
+			s.gsub!(/([^.])([.])([\])}>"']*)[ 	]*$/,'\1 \2\3 ')
+			s.gsub!(/[?!]/,' \& ')
+			s.gsub!(/[\]\[(){}<>]/,' \& ')
+			s.gsub!(/--/,' -- ')
+			s.sub!(/$/,' ')
+			s.sub!(/^/,' ')
+			s.gsub!(/"/,' \'\' ')
+			s.gsub!(/([^'])' /,'\1 \' ')
+			s.gsub!(/'([sSmMdD]) /,' \'\1 ')
+			s.gsub!(/'ll /,' \'ll ')
+			s.gsub!(/'re /,' \'re ')
+			s.gsub!(/'ve /,' \'ve ')
+			s.gsub!(/n't /,' n\'t ')
+			s.gsub!(/'LL /,' \'LL ')
+			s.gsub!(/'RE /,' \'RE ')
+			s.gsub!(/'VE /,' \'VE ')
+			s.gsub!(/N'T /,' N\'T ')
+			s.gsub!(/ ([Cc])annot /,' \1an not ')
+			s.gsub!(/ ([Dd])'ye /,' \1\' ye ')
+			s.gsub!(/ ([Gg])imme /,' \1im me ')
+			s.gsub!(/ ([Gg])onna /,' \1on na ')
+			s.gsub!(/ ([Gg])otta /,' \1ot ta ')
+			s.gsub!(/ ([Ll])emme /,' \1em me ')
+			s.gsub!(/ ([Mm])ore'n /,' \1ore \'n ')
+			s.gsub!(/ '([Tt])is /,' \'\1 is ')
+			s.gsub!(/ '([Tt])was /,' \'\1 was ')
+			s.gsub!(/ ([Ww])anna /,' \1an na ')
+			while s.sub!(/(\s)([0-9]+) , ([0-9]+)(\s)/, '\1\2,\3\4'); end
+			s.gsub!(/\//, ' / ')
+			s.gsub!(/\s+/,' ')
+			
+
+			TOKENIZER_DASH_BREAKUPS.each do |reg|
+				match = reg.match s
+				while match
+					s[Regexp.last_match.offset(1).first]=" "+Regexp.last_match[1]+" "
+					puts "s is now "+s
+					match=reg.match s
+				end
+			end
+
+			s.strip!
+			
+			# Remove directional quotes.
+			unless options[:directional_quotes]
+				s.gsub!(/``/,'"')
+				s.gsub!(/''/,'"')
+			end
+			
+			s.split(/\s+/)
 		end
 
 		
