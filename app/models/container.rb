@@ -34,8 +34,8 @@
 #   DEFINITIONS AND CROSS REFERENCES                               #
 ####################################################################
 
-SCOPE_REGEX =    /[Ii]n(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-]/
-PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-]/
+SCOPE_REGEX =    /[Ii]n(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-——-]/
+PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-——-]/
 
 # for both regexes:
 # match group 1 is the whole scope, ie 'this Act', 'section 2', etc
@@ -63,12 +63,18 @@ DEFINITION_PARSING_STRATEGIES = { "mean" =>   { stem: true,  filter_method: :rej
 																	"includ" => { stem: true,  filter_method: nil },
 																	"see" =>    { stem: false, filter_method: :reject_see_phrase? } }
 
-WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:\-——\-(])'
-WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:\-——\-)])'
+CANNOT_BE_ANCHORS = ["in", "and", "the", "of", "above", "below", "be", "to", "a", "that", "have", "it", "for", "not",
+										 "on", "with", "as", "you", "do", "at", "this", "but", "by", "from", "or", "an", "will", "one", "all",
+										 "there", "so", "if"]
+																	
+WORD_BOUNDARY_REPLACEMENT_FRONT='(?<=^|\s|[.,;:\-——\-(/])'
+WORD_BOUNDARY_REPLACEMENT_BACK= '(?=\s|$|[.,;:\-——\-)/])'
 
 OTHER_DEFINITIONAL_INTRODUCTION = "Unless the contrary intention appears:"
 MAX_LENGTH_OF_IS_DEFINITION        = 20
 MAX_LENGTH_OF_SEMICOLON_DEFINITION = 30
+
+DEFINITION_FLAGGABLE_LENGTH = 50
 
 class Container < ActiveRecord::Base
 
@@ -319,6 +325,8 @@ class Container < ActiveRecord::Base
 			start_modified  = start
 			finish_modified = finish
 			
+			puts "marker_positions is "+marker_positions.inspect
+			
 			marker_positions.each do |p|
 				if p < start_modified
 					start_modified+=3
@@ -340,7 +348,7 @@ class Container < ActiveRecord::Base
 			else
 				log "processing annotations: no match" if DEBUG
 				log "anchor text is "+annotation.anchor+" and found text is "+self.content[start..finish] if DEBUG
-				flag = annotation.flags.create(category: "Relete", comment: "failed to find the anchor when processing this flag.  Container content was "+self.content)
+				flag = annotation.flags.create(category: "Delete", comment: "failed to find the anchor when processing this flag.  Container content was "+self.content)
 				flag.save
 				
 				warn "failed to find anchor position while recalculating annotation for "+self.content+":\nstart position is "+start.to_s+" and end position is "+finish.to_s+"\nannotation details wrong - annotation is "+annotation.inspect+" and container is id: "+self.id.to_s+" with text: "+self.content
@@ -356,7 +364,7 @@ class Container < ActiveRecord::Base
 			text.sub!(ANNOTATION_START_MARKER,  annotation.open_tag)
 			text.sub!(ANNOTATION_FINISH_MARKER, annotation.close_tag)
 		end
-		if text.include? ANNOTATION_START_MARKER or text.include? ANNOTATION_FINISH_MARKER
+		if text.include? "{" or text.include? "}"
 			f = self.flags.build(category: "Review", comment: "the calculated annotation has leftover annotation markers: "+text)
 			f.save
 			warn "the calculated annotation for container "+self.inspect+" has leftover annotation markers: "+text
@@ -519,9 +527,11 @@ class Container < ActiveRecord::Base
 		def process_definitions
 
 			return if is_definition_zone? == false or definition_zone_scope.blank?
-			if self.parent and self.parent.contents.where(category: "Definition").count > 0
-				# this container's parent is the start of a definition, so it's unlikely there's a nested definition - save some processing power
-				return
+			current = self.parent
+			while current and !current.definition_zone 
+				# one of this container's parents is the start of a definition, so it's unlikely that this container is a separate definition - save some processing
+				return if current.contents.where(category: "Definition").count > 0
+				current=current.parent
 			end
 			return if self.level <= SECTION or self.special_paragraph
 		
@@ -529,6 +539,8 @@ class Container < ActiveRecord::Base
 			
 			DEFINITION_PARSING_STRATEGIES.each do | word, params |
 				phrases = highest_phrases_with_word_or_stem(word, params[:stem])
+				# puts "phrases are: "
+				# phrases.each { |p| puts p.inspect }
 				if params[:filter_method]
 					phrases.delete_if do |p|
 						self.send(params[:filter_method], p)
@@ -547,18 +559,21 @@ class Container < ActiveRecord::Base
 			# now for some special cases
 			
 			# where the sentence ends in 'means:'
-			if self.content.length > 7 and self.content[-6..-1] == "means:"
+			if self.content.length > 7 and ["means:", "means-"].include? self.content[-6..-1]
 				create_definition([self.content[0..-8]])
 			# where the definition is just 'xxx is yyyy'
 			else
 				# where the definition is xxx: yyy' - limit it to when the 'is' comes early in the sentence
 				index=self.content.index(": ")
-				index = self.content.index(/: $/)
+				index = self.content.index(/:$/) if !index
+				index = self.content.index(/[-——\-] /) if !index
+				index = self.content.index(/[-——\-]$/) if !index
 				if index and index < MAX_LENGTH_OF_SEMICOLON_DEFINITION 
 					create_definition([self.content[0..index-1]])
 				else
 					# where the definition is just 'xxx is yyy' - limit it to when the 'is' comes early in the sentence
 					index = self.content.index(" is ")
+					index = self.content.index(" are ") if !index
 					if index and index < MAX_LENGTH_OF_IS_DEFINITION
 						create_definition([self.content[0..index-1]])
 					end
@@ -635,15 +650,19 @@ class Container < ActiveRecord::Base
 			end
 			relevant_words = @nlp_handle.words.find_all do |w|
 				if stem
-					w.stem.downcase==pattern
+					pattern == w.stem.downcase 
 				else
-					w.to_s.downcase == pattern
+					pattern == w.to_s.downcase
 				end
 			end
 			result = []
 			return relevant_words.map do |w|
 				w.ancestors_with_type(:phrase).max do |p|
-					p.to_s == self.content ? 0 : p.to_s.length
+					if p.to_s.length == self.content.length
+						0
+					else 
+						p.to_s.length
+					end
 				end
 			end
 		end
@@ -657,6 +676,11 @@ class Container < ActiveRecord::Base
 			# assume that self is the content of the definition
 			# and that the definitional zone is found in definition_zone_scope
 			
+			return if !anchor or anchor.size == 0
+			
+			anchor.delete_if { |a| (CANNOT_BE_ANCHORS.include? a) or (/^\W$/.match a)}
+			return if anchor.size==0
+
 			scope           = definition_zone_scope
 			return nil if definition_zone_scope.blank?
 			scope           = translate_scope scope
@@ -680,14 +704,19 @@ class Container < ActiveRecord::Base
 			
 			if !d.save
 				warn "definition failed to save "+d.inspect+"\nErrors were "+d.errors.inspect
-				return
+				return nil
 			end
 				
-			position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor.first)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
-			if self.annotations.where(	anchor:   anchor.first, 
-																	category: "Defined_term", 
-																	position: position ).count == 0
-				create_annotation category: "Defined_term", anchor: anchor.first, position: position
+			if anchor.first.length > DEFINITION_FLAGGABLE_LENGTH 
+				f=d.flags.build(category: "Review", comment: "anchor and scope probably need to be restricted")
+				f.save
+			else
+				position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor.first)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
+				if self.annotations.where(	anchor:   anchor.first, 
+					category: "Defined_term", 
+					position: position ).count == 0
+					create_annotation category: "Defined_term", anchor: anchor.first, position: position
+				end
 			end
 			return d
 		end
@@ -723,10 +752,16 @@ class Container < ActiveRecord::Base
 						next
 					end
 				end
-				anchor=anchor.to_s
+				
+				anchor = Regexp.new(anchor.tokens.map{|t| Regexp.quote(t.to_s)}.join(' ?')).match(self.content)[0]
+					
 				if ["-","—","—"].include? anchor[-1]
 					anchor=anchor[0..-2]
 				end
+				
+				anchor=anchor[2..-1] if anchor[0..1] == ", "
+				anchor=anchor[0..-2] if PUNCTUATION.include? anchor[-1]
+				
 				create_definition([anchor])
 				position = self.content.index(/#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor)+WORD_BOUNDARY_REPLACEMENT_BACK}/)
 				if self.annotations.where(	anchor:   anchor, 
@@ -782,26 +817,30 @@ class Container < ActiveRecord::Base
 					current=current.parent
 				end
 			end
-			
-			# puts "relevant_metadata is "+relevant_metadata.inspect if DEBUG
-			
+			anchors={}
 			relevant_metadata.each do |meta|
 				next if meta.content == self
+				next if meta.flags.count > 0
 				meta.anchor.each do |anchor|
-					# exclude any anchors that are a subset of an existing metadatum anchor
-					regex = /#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor)+WORD_BOUNDARY_REPLACEMENT_BACK}/
-					next if self.contents.any? { |content | content.anchor.any? { |a| regex.match a } }
-					self.content.scan(regex) do |match|
-						position = Regexp.last_match.offset(0).first
-						# exclude any annotations that already exist
-						next if self.annotations.where(anchor: anchor, metadatum_id: meta.id, position: position).size > 0
-						log "trying to make a new annotation for container id "+self.id.to_s+" with anchor "+anchor+", "+
-						"position of "+position.to_s+" and "+
-						"metadatum of "+meta.inspect if DEBUG
-						create_annotation anchor: anchor, position: position, metadatum: meta
-					end
+					anchors[anchor]=meta
 				end
 			end
+			anchors.sort_by{|k, v| k.length}.reverse.each do |anchor, meta|  # sort from longest to shortest so subsets don't get caught
+				regex = /#{WORD_BOUNDARY_REPLACEMENT_FRONT+Regexp.quote(anchor)+WORD_BOUNDARY_REPLACEMENT_BACK}/
+				#log "considering anchor "+anchor+" and meta "+meta.id.to_s
+				next if self.annotations.any? { |a| regex.match a.anchor }
+				#log "passed the subset test"
+				self.content.scan(regex) do |match|
+					position = Regexp.last_match.offset(0).first
+					# exclude any annotations that already exist
+					next if self.annotations.where(anchor: anchor, metadatum_id: meta.id, position: position).size > 0
+					log "trying to make a new annotation for container id "+self.id.to_s+" with anchor "+anchor+", "+
+					"position of "+position.to_s+" and "+
+					"metadatum of "+meta.inspect if DEBUG
+					create_annotation anchor: anchor, position: position, metadatum: meta
+				end
+			end
+			# puts "relevant_metadata is "+relevant_metadata.inspect if DEBUG
 			self.recalculate_annotations if specific_metadata
 		end
 		
@@ -811,7 +850,7 @@ class Container < ActiveRecord::Base
 			initialize_nlp(true)
 			process_act_references
 			process_container_references
-			self.recalculate_annotations
+			# self.recalculate_annotations
 		end
 		
 	
@@ -973,6 +1012,8 @@ class Container < ActiveRecord::Base
 				
 				if !container
 					warn "could not find a container for "+anchor+".  Self has id "+self.id.to_s
+					f=self.flags.build(category: "Review", comment: "could not find a container for "+anchor)
+					f.save
 					next
 				end
 				

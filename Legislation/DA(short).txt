@@ -1,0 +1,516 @@
+﻿
+CHAPTER 1-PRELIMINARY
+	1	Purpose
+The main purpose of this Act is to create and charge a number of duties.
+	2	Commencement
+This Act comes into operation on 1 July 2001.
+	3	Definitions
+	(1)	In this Act-
+acquisition statement, in Part 2 of Chapter 3, means a statement referred to in section 80(1);
+advance, in Chapter 7, has the meaning given by section 150;
+allotment statement, in Part 4 of Chapter 3, means a statement referred to in section 101;
+approved means approved by the Commissioner;
+approved agent means a person registered as an approved agent under section 248A;
+associated person means a person who is associated with another person in accordance with any of the following provisions-
+	(a)	persons are associated persons if they are related persons;
+	(b)	natural persons are associated persons if they are partners in a partnership to which the Partnership Act 1958 applies;
+	(c)	companies are associated persons if-
+	(i)	there are minority shareholders common to each company who, if their interests were aggregated, would be majority shareholders in each company; or
+	(ii)	any majority shareholder or relative is a majority shareholder in each company;
+	(ca)	companies are associated persons if the shares in the companies are "stapled", in that they are unable to be traded other than as if they together represented a single security;
+	(d)	trustees are associated persons if any person is a beneficiary common to the trusts (not including a public unit trust scheme) of which they are trustees;
+	(e)	a company and a trustee are associated persons if the company or a related body corporate of the company is a beneficiary of the trust (not including a public unit trust scheme) of which the trustee is a trustee;
+	(f)	a company and the trustee of a unit trust scheme are associated persons if their shares and units are "stapled", in that they are unable to be traded other than as if they together represented a single security;
+	(g)	trustees of unit trust schemes are associated persons if the units in each of the unit trust schemes are "stapled", in that they are unable to be traded other than as if they together represented a single security;
+	(h)	a qualified investor and a private company are associated persons if the qualified investor is a majority shareholder in the private company;
+	(i)	a qualified investor and the trustee of a private unit trust scheme are associated persons if the qualified investor holds 20% or more of the units in the private unit trust scheme;
+and, for the purposes of Part 2 of Chapter 3, a public company and a subsidiary of a public company are taken to be associated persons;
+ASX means ASX Limited (A.C.N. 008 624 691);
+
+
+Australian register has the same meaning as in the Corporations Act;
+
+
+
+
+
+
+
+
+authorised deposit-taking institution has the same meaning as in the Banking Act 1959 of the Commonwealth;
+
+
+calf means any cattle less than 6 weeks of age;
+cattle means bull, cow, ox, steer, heifer or buffalo;
+charge includes impose;
+collateral mortgage means a mortgage that secures all or part of the same amount as another mortgage, security instrument or mortgage package that has been duly stamped under this Act or a corresponding Act;
+commercial hire business has the meaning given by section 126;
+commercial vehicle means-
+	(a)	a motor vehicle or trailer within the meaning of the Road Safety Act 1986 constructed or adapted principally for the carriage of goods but does not include a motor vehicle of the kind known as a utility, a station wagon or a panel van; or
+
+
+	(b)	a vehicle without motive power of its own and constructed or adapted principally for the carriage of goods and for being drawn by a motor vehicle within the meaning of that Act;
+Commissioner means the Commissioner of State Revenue referred to in section 62 of the Taxation Administration Act 1997;
+complying approved deposit fund means an entity that is a complying approved deposit fund in accordance with section 43 of the Superannuation Industry (Supervision) Act 1993 of the Commonwealth;
+complying superannuation fund means an entity that is a complying superannuation fund in accordance with section 42 or 42A of the Superannuation Industry (Supervision) Act 1993 of the Commonwealth and an exempt public sector superannuation scheme and in section 40 includes a complying approved deposit fund and an eligible rollover fund;
+co-operative has the same meaning as in the Co-operatives Act 1996;
+co-operative housing society has the same meaning as in the meaning of the Co-operative Housing Societies Act 1958;
+corporation means a body corporate, whether incorporated in this State or elsewhere;
+corresponding Act means an Act of another State or of a Territory corresponding to this Act;
+
+
+
+counterpart includes a duplicate;
+Crown leasehold means a lease under the Land Act 1958 or any other Act or enactment in respect of which a Crown grant in fee-simple is by law directed or authorised to be made to the lessee on payment of all sums (whether referred to as rent or otherwise) reserved by the lease and on compliance with the other covenants of the lease;
+
+
+
+
+demonstrator vehicle means a motor vehicle that is used exclusively for the purpose of sale of another vehicle of the same class;
+
+discretionary trust means a trust under which the vesting of the whole or any part of the capital of the trust estate, or the whole or any part of the income from that capital, or both-
+	(a)	is required to be determined by a person either in respect of the identity of the beneficiaries or the quantum of interest to be taken, or both; or
+	(b)	will occur if a discretion conferred under the trust is not exercised; or
+	(c)	has occurred but under which the whole or any part of that capital or the whole or any part of that income, or both, will be divested from the person or persons in whom it is vested if a discretion conferred under the trust is exercised;
+domestic partner of a person means a person with whom the person is in a domestic relationship;
+
+
+domestic relationship means-
+	(a)	a registered domestic relationship; or 
+	(b)	a relationship between two persons who are not married to each other but who are living together as a couple on a genuine domestic basis (irrespective of gender);
+
+
+dutiable property has the meaning given by section 10;
+dutiable proportion, for a mortgage, means the proportion of the amount secured by the mortgage worked out under section 159;
+
+dutiable transaction has the meaning given by section 7(2);
+dutiable value-
+	(a)	of dutiable property has the meaning given by section 20;
+	(b)	of a motor vehicle has the meaning given by section 219;
+eligible first home owner has the meaning given by section 61;
+eligible pensioner has the meaning given by section 58;
+eligible rollover fund means an entity that is an eligible rollover fund in accordance with section 242 of the Superannuation Industry (Supervision) Act 1993 of the Commonwealth and includes an entity the trustee of which is satisfied will be an eligible rollover fund within 12 months after the date on which a liability to duty arises (or would otherwise arise);
+execute, in relation to an instrument not under seal, means sign;
+farm machinery means-
+	(a)	a harvester, binder, tractor, plough or other agricultural implement; or
+	(b)	a boat;
+	(c)	fishing equipment;
+	(d)	any other goods of a class commonly used for the purposes of primary production that are determined by the Commissioner to be farm machinery for the purposes of sections 132(j) and 170-
+where the goods are acquired for the purposes of primary production;
+financial institution means-
+	(a)	an authorised deposit-taking institution within the meaning of the Banking Act 1959 of the Commonwealth; or
+	(b)	a co-operative within the meaning of the Co-operatives Act 1996; or
+	(c)	a co-operative housing society within the meaning of the Co-operative Housing Societies Act 1958; or
+	(d)	a body approved by the Governor in Council by Order published in the Government Gazette;
+friendly society means a body that was a society within the meaning of the Friendly Societies (Victoria) Code immediately before the transfer date within the meaning of the Financial Sector Reform (Victoria) Act 1999 or is a friendly society for the purposes of the Life Insurance Act 1995 of the Commonwealth;
+general insurance has the meaning given by section 176;
+general insurer has the meaning given by section 184;
+GST has the same meaning as it has in the A New Tax System (Goods and Services Tax) Act 1999 of the Commonwealth except that it includes notional GST of the kind for which payments may be made under Part 3 of the National Taxation Reform (Consequential Provisions) Act 2000 by a person that is a State entity within the meaning of that Act;
+heavy trailer means a trailer or semi-trailer within the meaning of the Road Safety Act 1986 with an MRC exceeding 45 tonnes;
+hire of goods has the meaning given by section 129;
+hire purchase agreement has the meaning given by section 130(2);
+hiring charges has the meaning given by section 135;
+industrial organisation means an association of employees or employers registered as an organisation under the Fair Work (Registered Organisations) Act 2009 of the Commonwealth;
+
+instrument includes a written document and a written statement;
+insurance includes assurance;
+insurance intermediary means-
+	(a)	a person who arranges contracts of insurance in Victoria-
+	(i)	for reward; and
+	(ii)	as an agent for a person carrying on a business of insurance; or
+	(b)	a financial services licensee (within the meaning of section 761A of the Corporations Act) whose licence covers arranging contracts of insurance as an agent for a person carrying on a business of insurance; or
+	(c)	a regulated principal (within the meaning of section 1430 of the Corporations Act) when carrying on business as an insurance broker that the regulated principal is authorised to carry on by Subdivision D of Division 1 of Part 10.2 of that Act;
+interest includes an estate or proprietary right;
+interest in a landholder has the meaning given by section 76(1);
+
+land use entitlement means an entitlement to occupy land in Victoria conferred through an ownership of shares in a company or units in a unit trust scheme, or a combination of a shareholding or ownership of units together with a lease or licence;
+lease means a lease of land in Victoria or an agreement for a lease of land in Victoria;
+
+
+
+
+liability date, for a mortgage, means the date the mortgage is liable under section 152 for mortgage duty;
+
+licensed motor car trader has the same meaning as in the Motor Car Traders Act 1986;
+life insurance has the meaning given by section 198;
+life insurer has the meaning given by section 202;
+linked entity has the meaning given in section 74;
+
+
+listed trust means-
+	(a)	a unit trust scheme all the units in which are quoted on the ASX; or
+	(b)	a unit trust scheme-
+	(i)	all the units in which are quoted on any exchange of the World Federation of Exchanges (other than the ASX); and
+	(ii)	that is declared by the Commissioner under subsection (4)(a) to be a listed trust;
+majority shareholder in a company means-
+	(a)	in the case of a company the shares in which are not divided into classes-a person entitled to not less than 50% of those shares; and
+	(b)	in the case of a company the shares in which are divided into classes-a person entitled to not less than 50% of the shares in any of those classes;
+managed investment scheme means a managed investment scheme within the meaning of Chapter 5C of the Corporations Act;
+
+
+
+marketable securities means the following-
+	(a)	shares referred to in section 10(1)(b);
+	(b)	units referred to in section 10(1)(c);
+	(c)	an interest in shares or units referred to in paragraph (a) or (b);
+minority shareholder in a company, means a shareholder in that company who is not a majority shareholder;
+
+
+
+
+mortgage-
+	(a)	subject to paragraph (b), has the meaning given by section 149;
+	(b)	for the purposes of section 251A and the definitions of mortgage-backed security and pool of mortgages means a mortgage of any estate or interest in land, including a leasehold estate or interest in land, whether the land is situated in Victoria or elsewhere, and includes a charge over any such land;
+mortgage-backed security means-
+	(a)	an interest in a trust that entitles the holder of or beneficial owner under the interest-
+	(i)	to the whole or any part of the rights or entitlements of a mortgagee and any other rights or entitlements in respect of a mortgage or any money payable by the mortgagor under the mortgage (whether the money is payable to the holder of or beneficial owner under the interest on the same terms and conditions as under the mortgage or not); or
+	(ii)	to the whole or any part of the rights or entitlements of a mortgagee and any other rights or entitlements in respect of a pool of mortgages or any money payable by mortgagors under those mortgages (whether the money is payable to the holder of or beneficial owner under the interest on the same terms and conditions as under the mortgages or not); or
+	(iii)	to payments that are derived substantially or, if the regulations prescribe the extent, to the prescribed extent, from the income or receipts of a pool of mortgages-
+and that may, in addition, entitle the holder or beneficial owner to a transfer or assignment of the mortgage or mortgages; or
+	(b)	a debt security (whether or not in writing) the payments under which by the person who issues or makes the debt security are derived substantially or, if the regulations prescribe the extent, to the prescribed extent, from the income or receipts of a pool of mortgages; or
+	(c)	any of the following-
+	(i)	an interest in a trust creating, conferring or comprising a right or interest (whether described as a unit, bond or otherwise) of or on a beneficiary in a scheme under which any profit or income in which the beneficiaries participate arises from the acquisition, holding, management or disposal of prescribed property, or any instrument that evidences such a right or interest;
+	(ii)	a security (whether or not in writing) the payments under which by the person who issues or makes the security are derived substantially from the income or receipts of prescribed property;
+	(iii)	an interest in a trust, a debt security (whether or not in writing), an instrument or property that creates an interest in or charge over an interest in a trust, a debt security (whether or not in writing) or other instrument or property, to which paragraph (a) or (b) or subparagraph (i) or (ii) of this paragraph applies-
+but does not include an instrument or property comprising-
+	(d)	a mortgage; or
+	(e)	the transfer of a mortgage; or
+	(f)	a declaration of trust; or
+	(g)	an instrument of a class or description of instruments, or property of a class or description of property, prescribed not to be a mortgage-backed security for the purposes of this definition;
+mortgage package has the meaning given by section 160;
+motor vehicle means-
+	(a)	a motor vehicle within the meaning of the Road Safety Act 1986; or
+	(b)	a heavy trailer;
+MRC (Mass Rating for Charging) has the same meaning as in the National Schedule;
+
+National Schedule means the Schedule to the Road Transport Charges (Australian Capital Territory) Act 1993 of the Commonwealth;
+
+on-line duty payment system means a system for the electronic payment of duty authorised by the Commissioner under a taxation law;
+
+
+partner of a person means the person's spouse or domestic partner;
+
+
+passenger car means-
+	(a)	a motor vehicle constructed principally for the carriage of passengers; or
+	(b)	a motor vehicle that-
+	(i)	is designed principally for the conveyance of not more than 8 adults; and
+	(ii)	is constructed either on a truck chassis or with special features for off-road operation-
+but does not include-
+	(c)	a motor cycle; or
+	(d)	a motor vehicle having a utility or panel van type body in which the forward part of the body form and the greater part of the mechanical equipment are the same as those in a passenger car manufactured by the manufacturer of the motor vehicle; or
+	(e)	a motor vehicle constructed for the carriage of passengers and equipped to seat more than 8 adults (including the driver);
+person includes an unincorporated association and a partnership;
+Note
+person also includes a body corporate-see section 38 of the Interpretation of Legislation Act 1984.
+
+pooled superannuation trust means an entity that is a pooled superannuation trust in accordance with section 44 of the Superannuation Industry (Supervision) Act 1993 of the Commonwealth;
+pool of mortgages means a pool or collection of assets-
+	(a)	that consists solely of mortgages; or
+	(b)	that consists substantially, or to the extent declared under subsection (2)(d), of mortgages or of money paid under mortgages, or both, and may include-
+	(i)	cash;
+	(ii)	investments of a kind referred to in section 4(1)(a), (b), (c), (d), (e), (f), (g), (h), (i), (ia), (j), (k) or (o) of the Trustee Act 1958 as in force immediately before the commencement of section 4 of the Trustee and Trustee Companies (Amendment) Act 1995;
+	(iii)	assets of a class of assets declared under subsection (2)(e);
+premium, in relation to general insurance, has the meaning given by section 177;
+prescribed property means any of the following-
+	(a)	cash;
+	(b)	investments of a kind referred to in section 4(1)(a), (b), (c), (d), (e), (f), (g), (h), (i), (ia), (j), (k) or (o) of the Trustee Act 1958 as in force immediately before the commencement of section 4 of the Trustee and Trustee Companies (Amendment) Act 1995;
+primary production means the use of land primarily for-
+	(a)	cultivation for the purpose of selling the produce of cultivation (whether in a natural, processed or converted state); or
+	(b)	the maintenance of animals or poultry for the purpose of selling them or their natural increase or bodily produce; or
+	(c)	the keeping of bees for the purpose of selling their honey; or
+	(d)	commercial fishing, including the preparation for commercial fishing or the storage or preservation of fish or fishing gear; or
+	(e)	the cultivation or propagation for sale of plants, seedlings, mushrooms or orchids;
+private company means-
+	(a)	a corporation that is not limited by shares; or
+	(b)	a corporation that is not listed and whose shares are not quoted on the ASX or any exchange of the World Federation of Exchanges; or
+	(c)	a corporation declared by the Commissioner under subsection (4)(b) to be a private company;
+
+
+
+private unit trust scheme means a unit trust scheme that is not-
+	(a)	a public unit trust scheme; or
+	(b)	a wholesale unit trust scheme;
+public unit trust scheme means any of the following unit trust schemes-
+	(a)	a listed trust;
+	(b)	a widely held trust;
+	(c)	a registered imminent public unit trust scheme;
+	(d)	a registered declared public unit trust scheme-
+but does not include a unit trust scheme that is, or was at any time, a wholesale unit trust scheme or eligible for registration as such;
+qualified investor has the meaning given in section 89K;
+
+receiving body, in Chapter 4, has the same meaning as in the Financial Sector (Transfers of Business) Act 1999 of the Commonwealth.
+recognised stock exchange means-
+	(a)	a stock exchange that is a member of the World Federation of Exchanges; or
+	(b)	a prescribed financial market (within the meaning of section 9 of the Corporations Act); or
+	(c)	a licensed market (within the meaning of section 761A of the Corporations Act) that is prescribed as a recognised stock exchange for the purposes of this Act;
+
+referrable point, for the dutiable proportion of a mortgage, means the document or approved method used to work out the dutiable proportion under section 159;
+registered declared public unit trust scheme means a unit trust scheme declared as a public unit trust scheme under Division 7 of Part 2 of Chapter 3;
+
+registered imminent public unit trust scheme means a unit trust scheme that is registered as an imminent public unit trust scheme under Division 7 of Part 2 of Chapter 3;
+
+registered insurer means an insurer registered under Part 2 of Chapter 8;
+registered operator has the same meaning as in the Road Safety Act 1986;
+
+
+
+
+related body corporate has the same meaning as in the Corporations Act;
+
+
+related person means a person who is related to another person in accordance with any of the following provisions-
+	(a)	natural persons are related persons if one of them is a relative of the other;
+	(b)	companies are related persons if they are related bodies corporate within the meaning of the Corporations Act;
+	(c)	a natural person and a company are related persons if the natural person is a majority shareholder or director of the company or of another company that is a related body corporate of the company within the meaning of the Corporations Act;
+	(d)	a natural person and a trustee are related persons if the natural person is a beneficiary of the trust (not being a public unit trust scheme) of which the trustee is a trustee;
+	(e)	a company and a trustee are related persons if the company, or a majority shareholder or director of the company, is a beneficiary of the trust (not being a public unit trust scheme) of which the trustee is a trustee;
+
+relative in relation to a natural person, means a person who is-
+	(a)	a child or remoter lineal descendant of the person or of the partner of the person;
+	(b)	a parent or remoter lineal ancestor of the person or of the partner of the person;
+	(c)	a brother or sister of the person or of the partner of the person;
+	(d)	the partner of the person or a partner of any person referred to in paragraph (a), (b) or (c);
+	(e)	a child of a brother or sister of the person or of the partner of the person;
+	(f)	a brother or sister of a parent of the person or of a parent of the partner of the person;
+rent reserved in relation to a lease, means the rent paid or payable during the term of the lease and any amount paid or payable for the right to use the land under the lease;
+Example
+Amounts paid under the lease for the following purposes are payments for the right to use the land under the lease-
+	(a)	rates;
+	(b)	charges;
+	(c)	taxes;
+	(d)	maintenance;
+	(e)	utilities;
+	(f)	legal costs required to be paid by the lessee on behalf of the lessor in relation to the grant of the lease;
+	(g)	insurance premiums;
+	(h)	marketing costs;
+	(i)	car park contributions.
+responsible entity of a managed investment scheme, has the same meaning as in the Corporations Act;
+
+
+right to shares or units means any right (whether actual, prospective or contingent) of a person to have shares or units issued by a company or trust to the person, whether or not on payment of money or for other consideration;
+shares includes rights to shares;
+special dealer means a person who would be a motor car trader within the meaning of the Motor Car Traders Act 1986 but for the fact that the motor vehicles in which the person trades are not motor cars within the meaning of that Act;
+special hiring agreement has the meaning given by section 133;
+spouse of a person means a person to whom the person is married;
+
+
+stamp means duty stamp whether impressed by machine imprint or adhesive;
+Territory means Territory of the Commonwealth;
+transfer includes an assignment, a conveyance, an exchange and a buy-back of shares in accordance with Division 2 of Part 2J.1 of the Corporations Act;
+trustee of a unit trust scheme that is a managed investment scheme, includes-
+	(a)	a responsible entity of the scheme; and
+	(b)	an agent appointed, or other person engaged, by a responsible entity of the scheme under Part 5C.2 of the Corporations Act;
+unencumbered value of dutiable property has the meaning given by section 22;
+unit in a unit trust scheme means-
+	(a)	a right or interest (whether described as a unit or a sub-unit or otherwise) of a beneficiary under the scheme; or
+	(b)	a right to any such right or interest-
+and, for the purposes of the definitions of listed trust and widely held trust and Part 2 of Chapter 3, means a unit (within the meaning of paragraph (a) or (b)) that entitles the beneficiary to participate proportionately with other unit holders in a distribution of the property of the trust on its vesting;
+unit trust scheme means any arrangements made for the purpose, or having the effect, of providing, for persons having funds available for investment, facilities for the participation by them, as beneficiaries under a trust, in any profits, income or distribution of assets arising from the acquisition, holding, management or disposal of any property whatever pursuant to the trust;
+
+
+
+Victorian company means-
+	(a)	a company incorporated or taken to be incorporated under the Corporations Act that is taken to be registered in Victoria; or
+	(b)	any other body corporate that is incorporated under a Victorian Act;
+wholesale unit trust scheme means a unit trust scheme that is registered under Division 7 of Part 2 of Chapter 3 as a wholesale unit trust scheme, an imminent wholesale unit trust scheme or a declared wholesale unit trust scheme;
+widely held trust means a unit trust scheme-
+	(a)	that is a managed investment scheme registered under Part 5C.1 of the Corporations Act; and
+	(b)	that has not less than 300 registered unitholders; and
+	(c)	in which units have been offered to the public under a prospectus or product disclosure statement lodged with the Australian Securities and Investments Commission; and
+	(d)	none of the registered unitholders in which, either individually or together with associated persons, holds or is entitled to more than 20% of the units in the scheme.
+	(2)	The Governor in Council, by order published in the Government Gazette, may declare-
+
+
+
+
+	(d)	the extent to which a pool of assets consists of mortgages or money paid under mortgages, or both, to be a pool of mortgages;
+	(e)	a class of assets to be assets included in a pool of mortgages.
+	(3)	For the purposes of the definition of domestic relationship in subsection (1)-
+
+
+
+	(a)	registered domestic relationship has the same meaning as in the Relationships Act 2008; and
+
+	(b)	in determining whether persons who are not in a registered domestic relationship are in a domestic relationship, all the circumstances of their relationship are to be taken into account, including any one or more of the matters referred to in section 35(2) of the Relationships Act 2008 as may be relevant in a particular case.
+
+
+	(4)	The Commissioner, by instrument, may-
+
+
+	(a)	declare that a unit trust scheme all the units in which are quoted on any exchange of the World Federation of Exchanges (other than the ASX) is a listed trust for the purposes of this Act if the Commissioner is satisfied that the listing of the unit trust scheme was not for the purpose of, or as part of a scheme or arrangement with a collateral purpose of, avoiding or reducing duty otherwise chargeable under Part 2 of Chapter 3;
+	(b)	declare that a corporation is a private company for the purposes of this Act if the Commissioner is satisfied that the listing of the corporation was for the purpose of, or as part of a scheme or arrangement with a collateral purpose of, avoiding or reducing duty otherwise chargeable under Part 2 of Chapter 3.
+	(5)	For the purposes of the definition of widely held trust in subsection (1), if a registered unitholder holds units as a trustee of a number of different trusts, the unitholder is taken to be a separate registered unitholder in relation to each trust and the units held are taken to be separate unitholdings, except where the beneficiaries of the trusts are the same or associated persons.
+	4	Division of Act into Chapters
+	(1)	This Act is divided into Chapters, Parts and Divisions.
+	(2)	If a provision of this Act refers to a Chapter by number, the reference must, unless the context otherwise requires, be construed as a reference to the Chapter designated by that number in this Act.
+	(3)	If a provision of this Act refers to a Part by a number, the reference must, unless the context otherwise requires, be construed as a reference to the Part designated by that number of the Chapter in which the reference occurs.
+	5	Taxation Administration Act 1997
+This Act is to be read together with the Taxation Administration Act 1997 which provides for the administration and enforcement of this Act and other taxation laws.
+	6	Act binds the Crown
+	(1)	This Act binds the Crown in right of Victoria and, so far as the legislative power of the Parliament permits, the Crown in all its other capacities.
+	(2)	Nothing in this Act makes the Crown in any of its capacities liable to be prosecuted for an offence.
+
+
+CHAPTER 2-TRANSACTIONS CONCERNING DUTIABLE PROPERTY
+PART 1-INTRODUCTION AND OVERVIEW
+	7	Imposition of duty on certain transactions concerning dutiable property
+	(1)	This Chapter charges duty on-
+	(a)	a transfer of dutiable property; and
+	(b)	the following transactions-
+	(i)	a declaration of trust relating to dutiable property the specification of which forms part of the declaration of trust or part of the transaction constituted by the declaration of trust;
+	(ii)	a surrender of dutiable property;
+
+
+	(iia)	a disclaimer of an interest or a right in respect of dutiable property (other than dutiable property referred to in section 10(1)(b) or section 10(1)(c)) under the will or codicil of a deceased person or in or under the estate of a deceased person, irrespective of whether the will, codicil or estate has been fully administered;
+	(iib)	a vesting of land in Victoria by, or expressly authorised by, statute law of this or another jurisdiction, whether in or outside Australia;
+	(iii)	a vesting of dutiable property by a court order or an order of the Registrar of Titles;
+	(iv)	the enlargement of a term into a fee-simple under section 153 of the Property Law Act 1958; or
+	(v)	the granting of a lease for which any consideration other than rent reserved is paid or agreed to be paid, either in respect of the lease or in respect of-
+	(A)	a right to purchase the land or a right to a transfer of the land;
+	(B)	an option to purchase the land or an option for the transfer of the land;
+	(C)	a right of first refusal in respect of the sale or transfer of the land;
+	(D)	any other lease, licence, contract, scheme or arrangement by which the lessee, or an associated person of the lessee, obtains any right or interest in the land that is the subject of the lease other than the leasehold estate;
+	(va)	the transfer or assignment of a lease for which any consideration is paid or agreed to be paid, either in respect of the transfer or assignment or in respect of-
+	(A)	a right to purchase the land or a right to a transfer of the land;
+	(B)	an option to purchase the land or an option for the transfer of the land;
+	(C)	a right of first refusal in respect of the sale or transfer of the land;
+
+	(D)	any other lease, licence, contract, scheme or arrangement by which the transferee or assignee, or an associated person of the transferee or assignee, obtains any right or interest in the land that is the subject of the lease other than the leasehold estate;
+	(vi)	any other transaction that results in a change in beneficial ownership of dutiable property (other than an excluded transaction).
+
+	(2)	Such a transfer or transaction is a dutiable transaction for the purposes of this Act.
+	(2A)	Despite subsection (1)(b)(vi), an excluded transaction that results in a change in beneficial ownership of dutiable property is a dutiable transaction if it is part of a scheme or arrangement that, in the Commissioner's opinion, was made with a collateral purpose of reducing the duty otherwise chargeable under this Chapter.
+	(3)	Despite subsection (1), the assignment of a term referred to in section 153 of the Property Law Act 1958 is not a dutiable transaction unless it is a transaction referred to in subsection (1)(b)(va).
+	(3AA)	Despite subsection (1), the granting, transfer, assignment or surrender of a lease creating or giving rise to a residency right in a retirement village within the meaning of the Retirement Villages Act 1986 is not a dutiable transaction.
+	(3AAB)	Despite subsection (1), the granting of a lease is not a dutiable transaction if the lease was granted as a result of the exercise of an option for a further term where-
+	(a)	the option was provided for by a lease which was granted before 21 November 2008; and
+	(b)	the lease referred to in paragraph (a) required the payment of consideration for the exercise of the option.
+	(3A)	Despite subsection (1), a transfer of marketable securities, or a transaction referred to in subsection (1)(b) in respect of marketable securities, that takes place or occurs on or after 1 July 2002 is not a dutiable transaction.
+	(4)	In this Chapter-
+beneficial ownership includes, but is not limited to, ownership of dutiable property by a person as trustee of a trust;
+
+change in beneficial ownership includes, but is not limited to-
+	(a)	the creation of dutiable property;
+	(b)	the extinguishment of dutiable property;
+	(c)	a change in equitable interests in dutiable property;
+	(d)	dutiable property becoming the subject of a trust;
+	(e)	dutiable property ceasing to be the subject of a trust;
+declaration of trust means any declaration (other than by a will or testamentary instrument) that any identified property vested or to be vested in the person making the declaration is or is to be held in trust for the person or persons, or the purpose or purposes, mentioned in the declaration although the beneficial owner of the property, or the person entitled to appoint the property, may not have joined in or assented to the declaration;
+excluded transaction means-
+	(a)	the purchase, gift, allotment or issue of a unit in a unit trust scheme;
+	(b)	the cancellation, redemption or surrender of a unit in a unit trust scheme;
+	(c)	the abrogation or alteration of a right pertaining to a unit in a unit trust scheme;
+	(d)	the payment of an amount owing for a unit in a unit trust scheme;
+	(e)	any combination of the transactions referred to in paragraphs (a), (b), (c) and (d).
+	7A	Vesting of land in Victoria by statute law
+	(1)	Without limiting section 7(1)(b)(iib), land in Victoria is vested under statute law if the law vests the land in an entity that the law states is the successor in law of, continuation of or same entity as, the entity in which the land was previously vested.
+	(2)	Despite subsection (1), land in Victoria is not vested under statute law on the registration of a company under Part 5B.1 of Chapter 5B of the Corporations Act.
+	(3)	The merger of a corporation (company A) with and into another corporation (company B) in circumstances where neither subsection (4) nor subsection (5) applies is taken to be a vesting of the land in Victoria of company A in company B by statute law.
+	(4)	A merger of corporations (the merging corporations) in circumstances where another corporation (company C) results as a consequence of the merger is taken to be a vesting of the land in Victoria of the merging corporations in company C by statute law.
+	(5)	A merger of corporations (the merging corporations) with and into each other in circumstances where each of the merging corporations continues in existence is taken to be a vesting in the merging corporations, jointly, of 50% (in value) of the land in Victoria of the merging corporations by statute law.
+	8	Imposition of duty on dutiable transactions that are not transfers
+	(1)	The duty charged by this Chapter on a dutiable transaction referred to in section 7(1)(b) is to be charged as if each such dutiable transaction were a transfer of dutiable property.
+	(2)	Accordingly, for the purpose of charging duty under this Chapter, in relation to a dutiable transaction specified in Column 1 of the following Table-
+	(a)	the property specified in Column 2 opposite the dutiable transaction is taken to be the property transferred (and a reference in this Act to property transferred includes a reference to such property); and
+	(b)	the person specified in Column 3 opposite the dutiable transaction is taken to be the transferee of the dutiable property (and a reference in this Act to a transferee includes a reference to such a person); and
+
+
+	(c)	the transfer of the dutiable property is taken to have occurred at the time specified in Column 4 opposite the dutiable transaction (and a reference in this Act to the time at which a transfer occurs includes a reference to such a time).
+TABLE
+Column 1Column 2Column 3Column 4Dutiable transactionProperty transferredTransfereeWhen transfer occursdeclaration of trustthe property vested in the declarant as is subjected to the trustthe person declaring the trustwhen the declaration becomes effectivesurrenderthe surrendered dutiable propertythe person to whom the property is surrenderedwhen the surrender takes placedisclaimerthe disclaimed interest or right under a will, codicil or estatethe person who benefits from the disclaimerwhen the interest or right is disclaimedvesting by statute lawthe vested land in Victoriathe person in whom the property is vestedwhen the vesting by statute law occursvesting by court orderthe vested propertythe person in whom the property is vestedwhen the order takes effectvesting by order of the Registrar of Titlesthe vested propertythe person in whom the property is vestedwhen the order takes effectenlargement of interest into fee-simplethe estate in fee simplethe person in whom the term was previously vestedwhen the interest is enlargedgranting of a lease for consideration other than rent reservedthe leased propertythe lessee when the lease is grantedtransfer or assignment of leasethe leased propertythe transferee or assigneewhen the lease is transferred or assignedany other transaction that results in a change in beneficial ownership of dutiable propertythe property the beneficial ownership of which is changedthe person who obtains the beneficial ownership or whose beneficial ownership is increasedwhen beneficial ownership changes	9	What form must a dutiable transaction take?
+	(1)	A dutiable transaction may be effected or evidenced-
+	(a)	wholly in writing; or
+	(b)	partly in writing and partly orally; or
+	(c)	wholly orally as evidenced by whole or part performance.
+	(2)	A dutiable transaction may be effected or recorded by any means, including electronic means.
+	10	What is dutiable property?
+	(1)	Dutiable property is any of the following-
+	(a)	each of the following estates or interests in land in Victoria-
+	(i)	an estate in fee-simple;
+	(ia)	a life estate;
+
+	(ib)	an estate in remainder;
+
+
+	(ii)	a Crown leasehold estate;
+	(iii)	a term referred to in section 153 of the Property Law Act 1958 that may be enlarged into a fee-simple under that section;
+
+
+
+	(v)	a land use entitlement;
+
+
+	(ab)	a lease, if the lease is of a kind referred to in section 7(1)(b)(v) or 7(1)(b)(va);
+
+	(ac)	an interest in any dutiable property referred to in paragraph (a) or (ab) other than-
+	(i)	a security interest;
+	(ii)	an option to purchase;
+	(iii)	a lease other than a lease referred to in paragraph (ab);
+	(b)	shares-
+	(i)	in a Victorian company; or
+	(ii)	in a corporation incorporated outside Australia that are kept on the Australian register kept in Victoria;
+
+
+	(c)	units in a unit trust scheme, being units-
+	(i)	registered on a register kept in Victoria; or
+	(ii)	that are not registered on a register kept in Australia, but in respect of which the manager (or, if there is no manager, the trustee) of the unit trust scheme is a Victorian company or is a natural person resident in Victoria;
+	(d)	goods in Victoria, if the subject of an arrangement that includes a dutiable transaction over an estate or interest in land elsewhere referred to in this section, including goods used in connection with a business carried on or in connection with the land, but not including the following-
+	(i)	goods that are stock-in-trade;
+	(ii)	materials held for use in manufacture;
+	(iii)	goods under manufacture;
+	(iv)	goods held or used in connection with primary production;
+
+	(v)	livestock;
+	(e)	an interest-
+	(i)	under the will or codicil of a deceased person disposing of property elsewhere referred to in this section; or
+	(ii)	in or under the estate of a deceased person comprising property elsewhere referred to in this section;
+
+
+
+
+	(g)	an interest in shares referred to in paragraph (b) or in units referred to in paragraph (c) (other than an interest as mortgagee).
+	(2)	Despite subsection (1), the following marketable securities are not dutiable property-
+	(a)	shares, or units in a unit trust scheme, that are listed for quotation on the ASX or a recognised stock exchange;
+
+	(b)	an interest in shares or units referred to in paragraph (a), whether or not the interest is listed for quotation on the ASX or a recognised stock exchange.
+	11	When does a liability for duty arise?
+	(1)	A liability for duty charged by this Chapter arises when a dutiable transaction occurs.
+
+
+
+	12	Who is liable to pay the duty?
+Duty charged by this Chapter is payable by the transferee, unless this Chapter requires another person to pay the duty.
+	13	The liability of joint tenants
+For the purpose of assessing duty charged by this Chapter, joint tenants of dutiable property are taken to hold the dutiable property as tenants in common in equal shares.
+	14	Necessity for written instrument or written statement
+	(1)	If a dutiable transaction that is liable to ad valorem duty under this Chapter is not effected by a written instrument, the transferee must make a written statement in the approved form.
+	(2)	The written statement must be made within 30 days after the liability arises.
+
+	(3)	If a dutiable transaction is completed or evidenced by a written instrument within 30 days after the date on which the dutiable transaction occurs, the requirement to lodge a statement and pay duty in respect of the statement may be satisfied by the lodgement of, and payment of duty on, the written instrument within 30 days after the date on which the dutiable transaction occurs.
+	(4)	For the purposes of this Act, an instrument of transfer of an estate in land is to be taken to effect the transfer of dutiable property referred to in section 10(1)(d) in respect of that land.
+	(5)	This section does not apply in respect of a dutiable transaction that is effected electronically in accordance with the Electronic Transactions (Victoria) Act 2000.
+	15	Lodging written instrument or statement with Commissioner
+
+	(1)	A transferee who is liable to pay duty in respect of a dutiable transaction must, within 30 days after the liability arises, lodge with the Commissioner-
+
+	(a)	the written instrument that effects the dutiable transaction or, if there is more than one such written instrument, each one of them as provided by section 10; or
+	(b)	the written statement made in compliance with section 14.
+	(2)	This section does not apply in respect of a dutiable transaction that is effected electronically in accordance with the Electronic Transactions (Victoria) Act 2000.
+	(3)	A written instrument that effects a dutiable transaction or a written statement made in compliance with section 14 is taken to be lodged with the Commissioner if-
+	(a)	the on-line duty payment system is used in respect of the dutiable transaction effected or evidenced by the instrument or written statement; and
+	(b)	it is determined that-
+	(i)	duty is payable on the dutiable transaction and the duty is paid in full; or
+	(ii)	no duty is payable on the dutiable transaction.
+	16	When must duty be paid?
+A tax default does not occur for the purposes of the Taxation Administration Act 1997 if duty is paid within 30 days after the liability to pay the duty arises.
+	17	No double duty
+	(1)	If a dutiable transaction is effected by more than one instrument, one instrument is to be stamped with the duty payable on the dutiable transaction and each other instrument is to be denoted with a statement of the amount, and date of payment, of the duty.
+	(1A)	If a dutiable transaction is effected electronically (in accordance with the Electronic Transactions (Victoria) Act 2000) in whole or in part and duty has been paid, no further duty is payable in respect of an instrument or electronic transaction that forms part of the dutiable transaction.
+	(2)	No duty is chargeable under this Chapter on a transfer to a trustee of dutiable property subject to a declaration of trust if ad valorem duty has been paid on the declaration of trust in respect of the same dutiable property.
+	(3)	No duty is chargeable under this Chapter on a declaration of trust that declares the same trusts as those upon and subject to which the same dutiable property was transferred to the person declaring the trust if ad valorem duty has been paid on the transfer.
+	18	What is the rate of duty?
+Duty is charged on the dutiable value of the dutiable property the subject of the dutiable transaction at the relevant rate set out in Part 3.
+	19	Concessions and exemptions from duty
+Concessions and exemptions from duty charged by this Chapter are dealt with in Part 5.
+

@@ -23,12 +23,11 @@ class Flag < ActiveRecord::Base
 	validates :user_id, numericality: {only_integer: true, greater_than: 0}, allow_blank: true
 	validates :category, presence: true, inclusion:    { in: ["Delete", "Review", "User"] }
 	
-	#			- deletion of a container involves:
-	#			- removal from ancestry/positioning
-	#     - check whether its children are also flagged for deletion - if so, fine, if not, log/error out
-	#			- removal of all its annotations
-	#			- if any metadata point at it, removal of all the metadata
-	#				- removal of any annotations pointing at that metadata
-	#				- recalculating annotated text for any annotations that are removed
-	
+	# TODO HIGH - if a flag is destroyed, whatever it was flagging should be re-run
+	# 
+	# so definitions should go through its scope again and insert themselves
+	# nothing for comments
+	# containers should rerun its definitions, anchors and also recalculate annotations
+	# nothing for acts
+
 end

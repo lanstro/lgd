@@ -22,5 +22,6 @@
 //= require ./marionette/initializer
 //= require ckeditor-jquery
 //= require backbone-forms.min.js
+//= require backbone.paginator.min.js
 //= require_tree .
 

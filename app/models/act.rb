@@ -47,18 +47,18 @@ include LgdLog
 ROMAN_CATCH_ALL = 1000
 
 STRUCTURAL_REGEXES = {
-	SECTION          => [ /\A(\d+\w*)\s+(.+)\Z/,                                      "Section"     ],
+	SECTION          => [ /\A((?:\d+\w*)(?:\.\d+)*)\s+(.+)\Z/,                        "Section"     ],
 	SUBSECTION       => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,                         "Subs_1"      ],
 	# VERY IMPORTANT that SUBPARAGRAPH remains above PARAGRAPH, as it loops through this in order, and several roman numeral sequences register under both regexes
 	SUBPARAGRAPH 	   => [ /\A\t*\(((?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3"      ], # catches empty braces too - may need to account for that case in future
 	PARAGRAPH        => [ /\A\t*\(([a-z]+)\)\s+(.+)\Z/,                               "Subs_2"      ],
 	SUBSUBPARAGRAPH  => [ /\A\t*\(([A-Z]+)\)\s+(.+)\Z/,                               "Subs_4"      ],
 	ROMAN_CATCH_ALL  => [ /\A\t*\((.+?)\)\s+(.+)\Z/,                                  "Subs_3"      ], # if it has braces and can't match any of the proper regexes, it's probably one of those stupid amended romans like ivb
-	PARA_LIST_HEAD   => [ /:\s*\z/,                                                   "p"           ],  # this one has to come after all the subsection ones
-	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[-——-](.+)\Z/,              "Subdivision" ],
-	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[-——-](.+)\Z/,                 "Division"    ],
-	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[-——-](.+)\Z/ ,                    "Part",       ],
-	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[-——-](.+)\Z/,                  "Chapter",    ],
+	PARA_LIST_HEAD   => [ /[:\-\—\—\-]\s*\z/,                                             "p"           ],  # this one has to come after all the subsection ones
+	SUBDIVISION      => [ /(?<=\ASubdivision\s)\s*([\w\.]*)[\-\—\—\-](.+)\Z/,              "Subdivision" ],
+	DIVISION         => [ /(?<=\ADivision\s)\s*([\w\.]*)[\-\—\—\-](.+)\Z/,                 "Division"    ],
+	PART             => [ /(?<=\APart\s)\s*([\w\.]*)[\-\—\—\-](.+)\Z/i ,                   "Part",       ],
+	CHAPTER          => [ /(?<=\AChapter\s)\s*([\w\.]*)[\-\—\—\-](.+)\Z/i,                 "Chapter",    ],
 }
 
 KEY   = 0
@@ -84,7 +84,7 @@ EXAMPLE      = "Example"
 SUBHEADING   = "Subheading"
 
 SINGLE_LINE_REGEXES = {
-	SUBHEADING => /(?<![\.:;,]|and|or)\s*\Z/ ,
+	SUBHEADING => /(?<![\.:;,-——-]|and|or)\s*\Z/ ,
 	NOTE       => /\A\s*Note( \d)?\s*:\s+(.*)\Z/,
 	EXAMPLE    => /\A\s*Example( \d)?\s*:\s+(.*)\Z/
 }
@@ -131,14 +131,25 @@ class Act < ActiveRecord::Base
 		attr_accessor :nlp_act
 	end
 
-	def parse_tree(task)
-		if task != :definitions and task != :anchors and task != :annotations
-			return
+	# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
+	
+	def parse_tree(task, silent=false)
+		return if ![:definitions, :anchors, :annotations].include? task
+		ActiveRecord::Base.logger.level = 1 if silent
+		case task
+			when :definitions
+				task = :parse_definitions
+			when :anchors
+				task = :parse_anchors
+			when :annotations
+				task = :recalculate_annotations
 		end
-		roots = self.containers.roots
-		roots.each do |container|
-			recursive_tree_parse(container.subtree.arrange, task)
+		current = self.containers.roots.first
+		while current
+			current.send(task)
+			current=current.next_container
 		end
+		ActiveRecord::Base.logger.level = 0
 	end
 		
 	
@@ -283,6 +294,7 @@ class Act < ActiveRecord::Base
 		ActiveRecord::Base.logger.level = 1
 		@nlp_act.sections[1..-1].each { |section| process_entity(section) }
 		ActiveRecord::Base.logger.level = 0
+		@nlp_act=nil
 		#parse_tree :definitions
 		#parse_tree :anchors
 		#parse_tree :annotations
@@ -293,7 +305,7 @@ class Act < ActiveRecord::Base
 	def relevant_metadata
 		# gather all relevant anchors
 		# start with those with universal scope
-		relevant_metadata = Metadatum.where(universal_scope:true)
+		relevant_metadata = Metadatum.where(universal_scope: true)
 		# add to it the metadata with scope being the entire Act
 		if self.scopes.size > 0
 			relevant_metadata += self.scopes
@@ -350,7 +362,7 @@ class Act < ActiveRecord::Base
 			# appropriate parent
 			while result
 			
-				log "is the current result the right container?  It is #{result.inspect}" if DEBUG
+				log "looking for parent - is the current result the right container?  It is #{result.inspect}" if DEBUG
 				
 				# plain paragraphs can't be parents of anything other than notes and examples
 				if result.level == TEXT and ![NOTE, EXAMPLE].include? new_container.special_paragraph
@@ -370,9 +382,9 @@ class Act < ActiveRecord::Base
 				end
 				
 				# list is the most immediate paragraph list item in the parentage chain
-				list = result.level == PARA_LIST_HEAD ? result : result.ancestors.where(level: PARA_LIST_HEAD).last
+				nearest_list = result.level == PARA_LIST_HEAD ? result : result.ancestors.where(level: PARA_LIST_HEAD).last
 				
-				if !list
+				if !nearest_list
 					# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
 					log "no list open; current level is "+level.to_s if DEBUG
 					if level > result.level
@@ -388,22 +400,26 @@ class Act < ActiveRecord::Base
 				# work out what the highest list is, as we want to know whether we're working under a definitional list or an Act outline
 
 				# different rules depending on what the new container's level is
-				highest_list=list
-				while highest_list.parent.level == PARA_LIST_HEAD
-					highest_list=list.parent
+				highest_list=nearest_list
+				while highest_list.parent.level == PARA_LIST_HEAD or 
+							(highest_list.parent.definition_zone and [":", "-", "—"].include? highest_list.parent.content.strip[-1])
+					highest_list=highest_list.parent
 				end
 				if level < PARA_LIST_HEAD
 					# it's a structural element
 					# if the new item is superior or equal to the highest list head's parent, close off the list 
 					if level <= highest_list.parent.level
 						log "new container is superior to the highest list's parent - move the current result to the highest list's parent, and go to next" if DEBUG
-						result = list.parent
+						result = nearest_list.parent
 						next
+					elsif level == highest_list.level
+						parent=highest_list.parent
+						break
 					end
 					# if it isn't, then it's either a child of the list head, or of the previous item
 					log "need to decide whether this structural entity is direct child of the list or not" if DEBUG
-					if result == list
-						log "new container is a direct child of the list" if DEBUG 
+					if result == nearest_list
+						log "new container is a direct child of the nearest list" if DEBUG 
 						# this is the first child of a list head - it must belong to the list head
 						break
 					else
@@ -424,24 +440,25 @@ class Act < ActiveRecord::Base
 					# then we let that be the parent
 					# otherwise, assume that it should start a new sub-list and close the existing list
 					# maybe better to get user input?
-					if list.previous_container == list.parent
-						if /[Oo]utline/.match list.content or list.is_definition_zone?
+					if nearest_list.previous_container == nearest_list.parent
+						if /[Oo]utline/.match nearest_list.content or nearest_list.is_definition_zone?
 							break
 						end
 					end
 					result=result.parent  # maybe this should be result = list.parent; break
 					next
 				elsif level == TEXT
-					if result==list and list.children.size == 0 # this is the first child of the list - it must belong to the list head
+					if result==nearest_list and nearest_list.children.size == 0 # this is the first child of the list - it must belong to the list head
 						break
 					elsif (new_container.content and ["and", "but", "is ", "as "].include? new_container.content[0..2]) or
 								[NOTE, EXAMPLE].include? new_container.special_paragraph
 						# if the new container starts with these words, 
 						# or if it's a note or an example
 						# then it's not a fresh list item
-						if result.parent == list
+						if result.parent == nearest_list
 							# if the current candidate for parent is a direct child of the list, then the new
 							# container must be its child
+							result = choose_parent(result, new_container, nearest_list, highest_list)
 							break
 						else
 							# otherwise, lines starting with 'and' or 'but' tend to not belong to its immediate
@@ -456,19 +473,22 @@ class Act < ActiveRecord::Base
 							 /[-——-] ?see/.match new_container.content or
 							 (new_container.content.index(': ') and new_container.content.index(': ') < 30) # some acts are lazy with definitions, they just go xxx: definition of xxx
 							# the new container is a new definition, and its parent should be the highest list item
-							result = highest_list
+							if new_container.content=="and includes:"
+								result = choose_parent(result, new_container, nearest_list, highest_list)
+							else
+								result = highest_list
+							end
 							break
 						elsif result==highest_list  # it's a definitional zone, the current container is a paragraph, the lowest item is the definitional list, so that has to be the parent
 							break
 						else
 							# get user input
-							
 							log "User choosing a parent for "+new_container.inspect+"\nCurrent result was "+result.inspect if DEBUG
-							result = choose_parent(result, new_container, list, highest_list)
+							result = choose_parent(result, new_container, nearest_list, highest_list)
 							log "User chose "+result.inspect if DEBUG
 							break
 						end
-					elsif result==list and list.children.first.level==level # the list's children are also paragraphs, so this paragraph presumably belongs in the list
+					elsif result==nearest_list and nearest_list.children.first.level==level # the list's children are also paragraphs, so this paragraph presumably belongs in the list
 						break
 					else
 						result=result.parent
@@ -476,6 +496,7 @@ class Act < ActiveRecord::Base
 					end
 				end
 			end
+			log "Determined that parent is "+result.inspect
 			return result
 		end
 
@@ -557,28 +578,33 @@ class Act < ActiveRecord::Base
 			if !first and @current_container
 				@current_container=@current_container.next_container
 			end
-			compare = @current_container <=> new_container
-			while @current_container and compare < 0 
-				# the container currently being processed is higher precedence than what's in the database, so what's in the database has to be deleted
-				flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
-				flag.save
-				@current_container = @current_container.next_container
-				compare = @current_container <=> new_container
-			end
 			
-			if @current_container and compare == 0  # ie it's the same container
-				if @current_container.content == content
-					log "Not adding this object as it is already in database:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
-				else
+			
+			if @current_container and new_container.content == @current_container.content
+				# if the text is identical to the current_container, assume it's the same container - this way we don't mess up with
+				# any manually changed structures
+				skip_save=true
+			else
+				compare = @current_container <=> new_container
+				while @current_container and compare < 0 
+					# the container currently being processed is higher precedence than what's in the database, so what's in the database has to be deleted
+					flag = @current_container.flags.create(category: "Delete", comment: "deleted by "+self.comlawID)
+					flag.save
+					@current_container = @current_container.next_container
+					compare = @current_container <=> new_container
+				end
+				
+				if @current_container and compare == 0  # ie it's the same container
 					log "overwriting this object:\nContent: "+content+"\nLevel: "+level.to_s+"\nNumber: "+number.to_s+"\nExisting container: "+@current_container.inspect
+					# TODO MEDIUM: check that the same container but with different text still triggers here
 					@current_container.content           = content
 					@current_container.annotated_content = nil
 					@current_container.definition_parsed = nil
 					@current_container.references_parsed = nil
 					@current_container.annotation_parsed = nil
 					@current_container.save
+					skip_save=true
 				end
-				skip_save=true
 			end
 			
 			# raise "no skip_save" if !skip_save
@@ -588,22 +614,6 @@ class Act < ActiveRecord::Base
 			# recursively call this again for each child paragraph
 			entity.paragraphs.each { |p| process_entity(p) if p != entity}
 		end
-		
-		# TODO Medium: better way of traversing tree / finding definitions - current code hits DB way too much
-		
-		def recursive_tree_parse(node, task)
-			node.each do |child, grandchildren|
-				if task == :definitions
-					child.parse_definitions
-				elsif task == :anchors
-					child.parse_anchors
-				elsif task == :annotations
-					child.recalculate_annotations
-				end
-				recursive_tree_parse(grandchildren, task)
-			end
-		end
-		
 		
 		# should be private
 		def self.from_string_lgd(string)
