@@ -21,6 +21,7 @@
 #  references_parsed :datetime
 #  annotation_parsed :datetime
 #  definition_zone   :boolean
+#  flags_count       :integer
 #
 # Indexes
 #

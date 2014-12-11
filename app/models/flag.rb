@@ -16,7 +16,7 @@
 
 class Flag < ActiveRecord::Base
 	
-	belongs_to :flaggable, polymorphic: true
+	belongs_to :flaggable, polymorphic: true, counter_cache: true
 	delegate :act, :to => :flaggable, :allow_nil => true
 	
 	validates :flaggable, presence: true

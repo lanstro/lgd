@@ -11,6 +11,7 @@
 #  updated_at     :datetime
 #  ancestry       :string(255)
 #  ancestry_depth :integer
+#  flags_count    :integer
 #
 # Indexes
 #

@@ -17,6 +17,7 @@
 #  number        :integer
 #  published     :boolean
 #  comlawID      :string(255)
+#  flags_count   :integer
 #
 # Indexes
 #
@@ -47,7 +48,7 @@ include LgdLog
 ROMAN_CATCH_ALL = 1000
 
 STRUCTURAL_REGEXES = {
-	SECTION          => [ /\A((?:\d+\w*)(?:\.\d+)*)\s+(.+)\Z/,                        "Section"     ],
+	SECTION          => [ /\A((?:\d+\w*)(?:\.\d+\w*)*)\s+(.+)\Z/,                     "Section"     ],
 	SUBSECTION       => [ /\A\t*\((\d+[a-zA-z]*)\)\s+(.+)\Z/,                         "Subs_1"      ],
 	# VERY IMPORTANT that SUBPARAGRAPH remains above PARAGRAPH, as it loops through this in order, and several roman numeral sequences register under both regexes
 	SUBPARAGRAPH 	   => [ /\A\t*\(((?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\)\s+(.+)\Z/, "Subs_3"      ], # catches empty braces too - may need to account for that case in future
@@ -79,14 +80,18 @@ HEADING      = 2
 ####################################################################
 
 # single line types
-NOTE         = "Note"
-EXAMPLE      = "Example"
-SUBHEADING   = "Subheading"
+NOTE         		= "Note"
+EXAMPLE      		= "Example"
+SUBHEADING   		= "Subheading"
+NOTE_HEADING    = "Note_heading"
+EXAMPLE_HEADING = "Example_heading"
 
 SINGLE_LINE_REGEXES = {
-	SUBHEADING => /(?<![\.:;,-——-]|and|or)\s*\Z/ ,
-	NOTE       => /\A\s*Note( \d)?\s*:\s+(.*)\Z/,
-	EXAMPLE    => /\A\s*Example( \d)?\s*:\s+(.*)\Z/
+	SUBHEADING 			 => /(?<![\.:;,-——-]|and|or)\s*\Z/ ,
+	NOTE       			 => /\A\s*Note( \d)?\s*:\s+(.*)\Z/,
+	EXAMPLE    			 => /\A\s*Example( \d)?\s*:\s+(.*)\Z/,
+	NOTE_HEADING  	 => /\ANote[\.:;,-——-]?\Z/,
+	EXAMPLE_HEADING  => /\AExample[\.:;,-——-]?\Z/
 }
 
 # used to break dashed words like "Part 2-see" into three tokens instead of a single token
@@ -183,6 +188,11 @@ class Act < ActiveRecord::Base
 		# reference_container required if it's a relative reference
 		
 		return nil if str.count('(') > str.count(')')
+		
+		while [",", ".", ":", "-"].include? str[-1]
+			str=str[0..-2]
+		end
+		
 		str = str.split(' ')
 		return nil if str.size > 2 or str.size==0
 		
@@ -305,7 +315,7 @@ class Act < ActiveRecord::Base
 	def relevant_metadata
 		# gather all relevant anchors
 		# start with those with universal scope
-		relevant_metadata = Metadatum.where(universal_scope: true)
+		relevant_metadata = Metadatum.where(universal_scope: true).without_flags
 		# add to it the metadata with scope being the entire Act
 		if self.scopes.size > 0
 			relevant_metadata += self.scopes
@@ -365,7 +375,7 @@ class Act < ActiveRecord::Base
 				log "looking for parent - is the current result the right container?  It is #{result.inspect}" if DEBUG
 				
 				# plain paragraphs can't be parents of anything other than notes and examples
-				if result.level == TEXT and ![NOTE, EXAMPLE].include? new_container.special_paragraph
+				if result.level == TEXT and new_container.can_be_parent?
 					result=result.parent
 					next
 				end
@@ -387,7 +397,10 @@ class Act < ActiveRecord::Base
 				if !nearest_list
 					# no paragraph lists are open - straightforward - just close things off until the deepest open container is higher than current
 					log "no list open; current level is "+level.to_s if DEBUG
-					if level > result.level
+					if level >= PARA_LIST_HEAD and [EXAMPLE_HEADING, NOTE_HEADING].include? result.special_paragraph and result.children.size == 0
+						# first paragraph child of a note or example heading - must be its child
+						break
+					elsif level > result.level
 						break
 					else
 						result=result.parent
@@ -440,7 +453,10 @@ class Act < ActiveRecord::Base
 					# then we let that be the parent
 					# otherwise, assume that it should start a new sub-list and close the existing list
 					# maybe better to get user input?
-					if nearest_list.previous_container == nearest_list.parent
+					if [EXAMPLE_HEADING, NOTE_HEADING].include? result.special_paragraph and result.children.size == 0
+						# first paragraph child of a note or example heading - must be its child
+						break
+					elsif nearest_list.previous_container == nearest_list.parent
 						if /[Oo]utline/.match nearest_list.content or nearest_list.is_definition_zone?
 							break
 						end
@@ -450,8 +466,11 @@ class Act < ActiveRecord::Base
 				elsif level == TEXT
 					if result==nearest_list and nearest_list.children.size == 0 # this is the first child of the list - it must belong to the list head
 						break
+					elsif [EXAMPLE_HEADING, NOTE_HEADING].include? result.special_paragraph and result.children.size == 0
+						# first paragraph child of a note or example heading - must be its child
+						break
 					elsif (new_container.content and ["and", "but", "is ", "as "].include? new_container.content[0..2]) or
-								[NOTE, EXAMPLE].include? new_container.special_paragraph
+								new_container.can_be_parent?
 						# if the new container starts with these words, 
 						# or if it's a note or an example
 						# then it's not a fresh list item

@@ -22,6 +22,7 @@
 #  references_parsed :datetime
 #  annotation_parsed :datetime
 #  definition_zone   :boolean
+#  flags_count       :integer
 #
 # Indexes
 #
@@ -34,7 +35,7 @@
 #   DEFINITIONS AND CROSS REFERENCES                               #
 ####################################################################
 
-SCOPE_REGEX =    /[Ii]n(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-——-]/
+SCOPE_REGEX =    /\AIn(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-——-]/
 PURPOSES_REGEX = /[Ff]or the purposes of(( this| any)? (\w+)( [\diI]+\w*(\(\w+\))?)?)[,:-——-]/
 
 # for both regexes:
@@ -98,6 +99,7 @@ class Container < ActiveRecord::Base
 	validates :regulations, numericality: {only_integer: true, greater_than: 0}, :allow_blank => true  # TODO MEDIUM: this is not right - regulations needs to be a formal relation
 	
 	validates :content, uniqueness: { scope: [:act_id, :ancestry, :number, :position], message: "A container with the same ancestry, number and content already exists." }
+	validates :special_paragraph, :allow_blank => true, inclusion:    { in: ["Note", "Note_heading", "Example", "Example_heading", "Subheading"] }
 	
 	# before_destroy :check_descendants_also_being_destroyed
 	after_destroy :flag_metadata_with_no_scope
@@ -233,6 +235,11 @@ class Container < ActiveRecord::Base
 		else
 			return "("+self.number+") "+self.content
 		end
+	end
+	
+	def can_be_parent?
+		return true if self.level < PARA_LIST_HEAD or [NOTE, EXAMPLE, NOTE_HEADING, EXAMPLE_HEADING].include? self.special_paragraph
+		return false
 	end
 	
 	################################################################
@@ -561,6 +568,8 @@ class Container < ActiveRecord::Base
 			# where the sentence ends in 'means:'
 			if self.content.length > 7 and ["means:", "means-"].include? self.content[-6..-1]
 				create_definition([self.content[0..-8]])
+			# probably no need for equivalent of 'see' and 'include' because they should be caught anyway - means isn't because the
+			# parsing often thinks that the 'means' is a noun in this context
 			# where the definition is just 'xxx is yyyy'
 			else
 				# where the definition is xxx: yyy' - limit it to when the 'is' comes early in the sentence
@@ -568,7 +577,7 @@ class Container < ActiveRecord::Base
 				index = self.content.index(/:$/) if !index
 				index = self.content.index(/[-——\-] /) if !index
 				index = self.content.index(/[-——\-]$/) if !index
-				if index and index < MAX_LENGTH_OF_SEMICOLON_DEFINITION 
+				if index and index < MAX_LENGTH_OF_SEMICOLON_DEFINITION and !self_definition_zone_scope and !["and ", "but "].include? self.content[0..3] # ie exclude things like 'in this section:', 'and does not include: '
 					create_definition([self.content[0..index-1]])
 				else
 					# where the definition is just 'xxx is yyy' - limit it to when the 'is' comes early in the sentence
@@ -676,7 +685,7 @@ class Container < ActiveRecord::Base
 			# assume that self is the content of the definition
 			# and that the definitional zone is found in definition_zone_scope
 			
-			return if !anchor or anchor.size == 0
+			return if !anchor or anchor.size == 0 or anchor.first.size==0
 			
 			anchor.delete_if { |a| (CANNOT_BE_ANCHORS.include? a) or (/^\W$/.match a)}
 			return if anchor.size==0
@@ -739,7 +748,7 @@ class Container < ActiveRecord::Base
 				# look for the previous phrase, and assume that is the defined term
 				siblings=p.parent.children
 				
-				while index > 0 and siblings[index].type != :phrase
+				while index > 0 and (siblings[index].type != :phrase or siblings[index].to_s.length > 1)
 					index-=1
 				end
 				anchor = siblings[index]
@@ -801,7 +810,6 @@ class Container < ActiveRecord::Base
 			log "processing metadata for container "+self.id.to_s if DEBUG
 			
 			return false if self.level <= SECTION or self.special_paragraph == "Subheading"
-			
 			# find definitional anchors
 			if specific_metadata
 				relevant_metadata = specific_metadata
@@ -811,16 +819,16 @@ class Container < ActiveRecord::Base
 				current = self
 				while current != nil
 					# TODO low: should be able to memoize this and make it more efficient
-					current.scopes.each do |meta|
+					current.scopes.without_flags.each do |meta|
 						relevant_metadata.push meta
 					end
 					current=current.parent
 				end
+				start=Time.now
 			end
 			anchors={}
 			relevant_metadata.each do |meta|
 				next if meta.content == self
-				next if meta.flags.count > 0
 				meta.anchor.each do |anchor|
 					anchors[anchor]=meta
 				end
@@ -840,6 +848,7 @@ class Container < ActiveRecord::Base
 					create_annotation anchor: anchor, position: position, metadatum: meta
 				end
 			end
+			start=Time.now
 			# puts "relevant_metadata is "+relevant_metadata.inspect if DEBUG
 			self.recalculate_annotations if specific_metadata
 		end
@@ -1049,6 +1058,7 @@ class Container < ActiveRecord::Base
 		
 		def create_annotation(params)
 			log "Create_annotation called with params "+params.inspect
+			raise "anchor is blank" if params[:anchor].length == 0
 			metadatum_id = params[:metadatum] ? params[:metadatum].id : nil
 			if self.annotations.where(position:      params[:position],
 				anchor:        params[:anchor],
@@ -1204,13 +1214,29 @@ class Container < ActiveRecord::Base
 			if is_roman
 				result= compare_romans(first.number, second.number)
 			elsif [SECTION, SUBSECTION, CHAPTER, DIVISION, PART].include? first.level
-				result= compare_arabic_numbers(first.number, second.number)
+				if first.number.include? "." or second.number.include? "."
+					result = compare_version_numbers(first.number, second.number)
+				else
+					result= compare_arabic_numbers(first.number, second.number)
+				end
 			elsif [PARAGRAPH, SUBSUBPARAGRAPH, SUBDIVISION].include? first.level
 				result= compare_alphabetical_numbers(first.number, second.number)
 			else
 				result= compare_paragraphs(first, second)
 			end
 			return result 
+		end
+		
+		def self.compare_version_numbers(first, second)
+			first_numbers=first.split('.')
+			second_numbers=second.split('.')
+			while first_numbers.size > 0 and second_numbers.size > 0
+				result = Container.compare_arabic_numbers(first_numbers.shift, second_numbers.shift)
+				return result if result != 0
+			end
+			# one of the numbers is exhausted and the other one isn't - the exhausted one is smaller
+			return -1 if first_numbers.size == 0
+			return 1
 		end
 
 		

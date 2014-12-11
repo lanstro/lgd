@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141120063623) do
+ActiveRecord::Schema.define(version: 20141210233214) do
 
   create_table "acts", force: true do |t|
     t.string   "title"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 20141120063623) do
     t.integer  "number"
     t.boolean  "published"
     t.string   "comlawID"
+    t.integer  "flags_count"
   end
 
   add_index "acts", ["year", "number"], name: "index_acts_on_year_and_number"
@@ -52,6 +53,7 @@ ActiveRecord::Schema.define(version: 20141120063623) do
     t.datetime "updated_at"
     t.string   "ancestry"
     t.integer  "ancestry_depth"
+    t.integer  "flags_count"
   end
 
   add_index "comments", ["ancestry"], name: "index_comments_on_ancestry"
@@ -76,6 +78,7 @@ ActiveRecord::Schema.define(version: 20141120063623) do
     t.datetime "references_parsed"
     t.datetime "annotation_parsed"
     t.boolean  "definition_zone"
+    t.integer  "flags_count"
   end
 
   add_index "containers", ["act_id", "number"], name: "index_containers_on_act_id_and_number"
@@ -112,6 +115,7 @@ ActiveRecord::Schema.define(version: 20141120063623) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "universal_scope"
+    t.integer  "flags_count"
   end
 
   add_index "metadata", ["anchor", "scope_id", "scope_type", "content_id", "content_type", "universal_scope", "category"], name: "metadata_uniqueness", unique: true

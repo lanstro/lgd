@@ -12,6 +12,7 @@
 #  created_at      :datetime
 #  updated_at      :datetime
 #  universal_scope :boolean
+#  flags_count     :integer
 #
 # Indexes
 #
@@ -44,6 +45,7 @@ class Metadatum < ActiveRecord::Base
 	
 	scope :definitions,          -> { where(category: 'Definition') } 
 	scope :internal_references,  -> { where(category: 'Internal_reference') } 
+	scope :without_flags,        -> { where(flags_count: 0) }
 
 	validates :anchor, uniqueness: { scope: [:scope_id, :scope_type, :content_id, :content_type, :universal_scope, :category],
 																	 message: "The metadata already exists in the database." }

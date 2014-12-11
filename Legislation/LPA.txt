@@ -1,4 +1,5 @@
-﻿CHAPTER 1-INTRODUCTION
+﻿
+CHAPTER 1-INTRODUCTION
 PART 1.1-PRELIMINARY
 	1.1.1	Purpose
 The purpose of this Act is-
@@ -13,7 +14,7 @@ The purpose of this Act is-
 	(2)	Sections 3.5.2(7) and (9) and 8.1.1(1) come into operation on the day after the day on which this Act receives the Royal Assent.
 
 	(3)	If a provision of this Act (other than section 3.5.2(7) or (9) or 8.1.1(1)) does not come into operation before 1 January 2006, it comes into operation on that day.
-__________________
+
 
 PART 1.2-INTERPRETATION
 	1.2.1	Definitions
@@ -366,7 +367,7 @@ For the purposes of this Act, an information notice is a written notice to a per
 
 	1.2.9	References to Parts
 Unless the context otherwise requires, a reference in this Act to a Part by a number must be construed as a reference to the Part, designated by that number, of this Act.
-__________________
+
 
 CHAPTER 2-GENERAL REQUIREMENTS FOR ENGAGING IN LEGAL PRACTICE
 PART 2.1-INTRODUCTION AND OVERVIEW
@@ -384,7 +385,7 @@ PART 2.1-INTRODUCTION AND OVERVIEW
 *	Part 2.8 regulates the practice of the law of a foreign country in this jurisdiction;
 *	Part 2.9 regulates community legal centres.
 	(3)	Subsection (2) is intended only as a guide to readers as to the general scheme of this Chapter.
-__________________
+
 
 PART 2.2-RESERVATION OF LEGAL WORK AND LEGAL TITLES
 Division 1-Preliminary
@@ -529,7 +530,7 @@ Division 5-General
 	2.2.12	Professional discipline
 	(1)	A contravention of this Part by an Australian lawyer who is not an Australian legal practitioner is capable of constituting unsatisfactory professional conduct or professional misconduct.
 	(2)	Nothing in this Part affects any liability that a person who is an Australian lawyer but not an Australian legal practitioner may have under Chapter 4, and the person may be punished for an offence under this Part as well as being dealt with under Chapter 4 in relation to the same matter.
-__________________
+
 
 PART 2.3-ADMISSION OF LOCAL LAWYERS
 Division 1-Preliminary
@@ -639,7 +640,7 @@ Division 5-Admission rules
 	(d)	so as to confer a discretionary authority or impose a duty on a specified person or body or a specified class of person or body; and
 	(e)	so as to provide in a specified case or class of case for the exemption of persons or things or a class of persons or things from any of the provisions of the rules, whether unconditionally or on specified conditions and either wholly or to such an extent as is specified.
 	(5)	For the purposes of the Subordinate Legislation Act 1994, rules made under this section are deemed to be statutory rules.
-__________________
+
 
 PART 2.4-LEGAL PRACTICE BY AUSTRALIAN LEGAL PRACTITIONERS
 Division 1-Preliminary
@@ -1133,7 +1134,7 @@ whether before or after the commencement of this section.
 	(4)	Before applying for an order that the lawyer's name be removed, the Board must afford the lawyer a reasonable opportunity to show cause why his or her name should not be removed.
 	(5)	The Supreme Court may, on application made under this section, order that the lawyer's name be removed from the local roll, or may refuse to do so.
 	(6)	The lawyer is entitled to appear before and be heard by the Supreme Court at a hearing in respect of an application under this section.
-__________________
+
 
 PART 2.5-SUITABILITY REPORTS
 Division 1-Preliminary
@@ -1240,7 +1241,7 @@ Penalty: 60 penalty units.
 	(a)	disclosure of the report or information in it to someone else is authorised by the Board of Examiners to the extent necessary to perform a function under this Act in relation to an application for admission to the legal profession under this Act; or
 	(b)	the disclosure is made with the consent of the person to whom it relates; or
 	(c)	the disclosure is otherwise required or permitted by law.
-__________________
+
 
 PART 2.6-INTER-JURISDICTIONAL PROVISIONS REGARDING ADMISSION AND PRACTISING CERTIFICATES
 Division 1-Preliminary
@@ -1379,7 +1380,7 @@ or may refuse to make an order.
 
 	2.6.13	Local authority may give information to other local authorities
 An authority of this jurisdiction that receives information from an authority of another jurisdiction under provisions of a corresponding law that correspond to this Part may furnish the information to other authorities of this jurisdiction that have functions under this Act.
-__________________
+
 
 PART 2.7-INCORPORATED LEGAL PRACTICES AND MULTI-DISCIPLINARY PARTNERSHIPS
 Division 1-Preliminary
@@ -1868,7 +1869,7 @@ under this or any other Act, the regulations or the legal profession rules in hi
 	(3)	A regulation may provide that a contravention of the regulations is capable of constituting unsatisfactory professional conduct or professional misconduct-
 	(a)	in the case of an incorporated legal practice-by a legal practitioner director, or by an Australian legal practitioner responsible for the contravention, or both; or
 	(b)	in the case of a multi-disciplinary partnership-by a legal practitioner partner, or by an Australian legal practitioner responsible for the contravention, or both.
-__________________
+
 
 PART 2.8-LEGAL PRACTICE BY FOREIGN LAWYERS
 Division 1-Preliminary
@@ -2316,7 +2317,7 @@ An Australian-registered foreign lawyer is not required to join (but may, if eli
 	(d)	to suspend registration under section 2.8.34; or
 	(e)	to impose a period under section 2.8.33 during which the lawyer is not entitled to apply for registration.
 	(2)	An application for review must be made within 28 days after the day on which the information notice about the decision, or the notice referred to in section 2.8.34(2), was given to the foreign lawyer.
-__________________
+
 
 
 PART 2.9-COMMUNITY LEGAL CENTRES
@@ -2353,7 +2354,7 @@ For the avoidance of doubt a community legal centre is entitled, subject to Part
 	(b)	the duties, obligations and liabilities of supervising legal practitioners and other Australian legal practitioners employed or engaged by community legal centres;
 	(c)	the information to be included in notices under this Part.
 	(2)	The regulations may provide that other provisions of this Act do not apply to community legal centres or supervising legal practitioners and other Australian legal practitioners employed or engaged by community legal centres, or apply to them subject to any modifications specified in the regulations.
-__________________
+
 
 
 CHAPTER 3-GETTING THINGS RIGHT
@@ -2368,7 +2369,7 @@ PART 3.1-INTRODUCTION AND OVERVIEW
 *	Part 3.6 establishes a system for compensating clients who suffer loss because of a default of a law practice or an approved clerk.
 
 	(3)	Subsection (2) is intended only as a guide to readers as to the general scheme of this Chapter.
-__________________
+
 
 PART 3.2-MANNER OF LEGAL PRACTICE
 Division 1-Preliminary
@@ -2527,7 +2528,7 @@ If, in the course of an investigation under this Division, it appears to the Boa
 	(1)	The Attorney-General must cause the report of an investigation under this Division to be laid before each House of Parliament within 7 sitting days of that House after receiving the report.
 	(2)	If a report contains a recommendation that the government take any action, the Attorney-General, within 6 months after receiving the report, must report to Parliament as to the action (if any) proposed to be taken by the government with respect to the recommendation.
 	(3)	If the government does not propose to implement a recommendation of the Board, the report under subsection (2) must contain a full statement of the reasons.
-__________________
+
 
 PART 3.3-TRUST MONEY AND TRUST ACCOUNTS
 Division 1-Preliminary
@@ -3281,7 +3282,7 @@ Penalty: 240 penalty units.
 The regulations may make provision for or with respect to-
 	(a)	providing exemptions, or the giving of exemptions, from all or any specified requirements of this Part in relation to trust money that is regulated by a corresponding law; or
 	(b)	the creation and exercise of liens over trust money.
-__________________
+
 
 PART 3.4-COSTS DISCLOSURE AND REVIEW
 Division 1-Preliminary
@@ -3911,7 +3912,7 @@ in the course of acting on behalf of a law practice is taken to have been done o
 	(i)	an Australian legal practitioner; or
 	(ii)	an Australian-registered foreign lawyer (except for the purposes of section 3.4.28(4) or for the purposes of any provisions of this Part prescribed for the purposes of this section)-
 becomes or is aware of, or has a belief as to, the matter in the course of acting on behalf of the law practice.
-__________________
+
 
 PART 3.5-PROFESSIONAL INDEMNITY INSURANCE
 	3.5.1	Definition
@@ -3983,7 +3984,7 @@ For the purposes of the Competition and Consumer Act 2010 of the Commonwealth an
 	(c)	the practice has professional indemnity insurance in accordance with the requirements of a corresponding law in that other jurisdiction; and
 	(d)	the insurance referred to in paragraph (c) covers civil liability of the practice and each person who is or was a principal or an employee of the practice in connection with the legal practice of, and administration of trusts by, the practice in this jurisdiction.
 	(4)	The Board may exempt a corporate legal practitioner or class of corporate legal practitioners from the requirement to be covered by professional indemnity insurance in relation to legal practice engaged in on a pro bono basis.
-__________________
+
 
 
 PART 3.6-FIDELITY COVER
@@ -4418,7 +4419,7 @@ Division 9-Miscellaneous
 	(a)	a manager or receiver is appointed under this Act for the law practice; or
 	(b)	the period of 6 months after the practising certificate actually lapsed expires; or
 	(c)	the lawyer's application for the grant or renewal of an Australian practising certificate is refused under this Act or a corresponding law.
-__________________
+
 
 CHAPTER 4-COMPLAINTS AND DISCIPLINE
 PART 4.1-INTRODUCTION AND APPLICATION
@@ -4469,7 +4470,7 @@ Section 2.8.8 also applies this Chapter to Australian-registered foreign lawyers
 	(b)	conduct of the practitioner as or in becoming an insolvent under administration;
 	(c)	conduct of the practitioner in becoming disqualified from managing or being involved in the management of any corporation under the Corporations Act.
 	(2)	This section has effect despite anything in section 4.1.4.
-__________________
+
 
 PART 4.2-MAKING A COMPLAINT
 	4.2.1	Complaints
@@ -4565,7 +4566,7 @@ Despite anything to the contrary in the Victorian Civil and Administrative Tribu
 	(b)	the financial position of the practice or practitioner.
 	(4)	Nothing in subsection (3) limits the matters the Commissioner may take into account in making a decision under subsection (1).
 	(5)	The Board, by written notice to the Commissioner before the beginning of a financial year, may set a maximum amount that may be paid to complainants (whether individually or in total or both) in that year and may, in special circumstances, vary that amount at any time during the year.
-__________________
+
 
 PART 4.3-CIVIL COMPLAINTS AND DISPUTES
 Division 1-Application of Part
@@ -4678,7 +4679,7 @@ The parties to a proceeding in the Tribunal under this Division are-
 	(f)	any other order the Tribunal thinks fit.
 	(2)	If a complainant has lodged an amount with the Commissioner under section 4.3.3, an order under subsection (1) must include directions as to the payment of that money.
 	(3)	If the Tribunal makes an order under subsection (1)(b)(ii), the interest is payable from the day specified by the Tribunal, being at least 30 days after payment of the costs in dispute was demanded.
-__________________
+
 
 PART 4.4-DISCIPLINARY COMPLAINTS AND DISCIPLINE
 Division 1-Application of Part
@@ -5008,7 +5009,7 @@ Division 8-Miscellaneous
 The inherent jurisdiction and powers of the Supreme Court with respect to the control and discipline of local lawyers are not affected by anything in this Part, and extend to-
 	(a)	local legal practitioners; and
 	(b)	interstate legal practitioners engaged in legal practice in this jurisdiction.
-__________________
+
 
 CHAPTER 5-EXTERNAL INTERVENTION
 PART 5.1-INTRODUCTION AND APPLICATION
@@ -5046,7 +5047,7 @@ This Chapter applies, with any necessary adaptations, to-
 	(c)	the administrator or receiver, or receiver and manager, or official manager, of the property of an incorporated legal practice; and
 	(d)	the liquidator of an incorporated legal practice that is being or has been wound up-
 in the same way as it applies to law practices.
-__________________
+
 
 PART 5.2-INITIATION OF EXTERNAL INTERVENTION
 	5.2.1	Circumstances warranting external intervention
@@ -5093,7 +5094,7 @@ External intervention may take place in relation to a law practice in any of the
 	(3)	The Board may, from time to time, make further determinations in relation to the law practice and for that purpose may revoke a previous determination with effect from a date or event specified by the Board.
 	(4)	A further determination may be made under subsection (3) whether or not there has been any change in the circumstances in consequence of which the original determination was made and whether or not any further circumstances have come into existence in relation to the law practice after the original determination was made.
 	(5)	An appointment of an external intervener for a law practice may be made in respect of the practice generally or may be limited in any way the Board, or in the case of a receiver, the Supreme Court, considers appropriate, including for example to matters connected with a particular legal practitioner associate or to matters connected with a particular office or a particular subject-matter.
-__________________
+
 
 
 PART 5.3-SUPERVISORS OF TRUST MONEY
@@ -5197,7 +5198,7 @@ under this section the supervisor, on request by the occupier, a principal of th
 	(f)	a determination of the Board that the appointment be terminated has taken effect.
 	(2)	The Board may determine in writing that the appointment be terminated immediately or with effect from a specified date.
 	(3)	The Board must serve a written notice of the termination on all persons originally served with notice of the appointment.
-__________________
+
 
 PART 5.4-MANAGERS
 	5.4.1	Appointment of manager
@@ -5316,7 +5317,7 @@ under this section the manager, on request by the occupier, a principal of the l
 	(b)	the practice, if another external intervener is not appointed for the practice.
 	(4)	The former manager need not transfer property and files to the law practice in compliance with subsection (3) unless the manager's expenses have been paid to the Board.
 	(5)	The Board must serve a written notice of the termination on all persons originally served with notice of the appointment.
-__________________
+
 
 PART 5.5-RECEIVERS
 	5.5.1	Appointment of receiver
@@ -5501,7 +5502,7 @@ Penalty: Level 6 imprisonment (5 years maximum).
 	(c)	another person in accordance with arrangements approved by the Supreme Court, if it is not practicable to transfer and deliver the regulated property to the practice.
 	(7)	The former receiver need not transfer and deliver regulated property to the law practice in compliance with subsection (6) unless the expenses of receivership have been paid.
 	(8)	The Board must serve a written notice of the termination on all persons originally served with notice of the appointment.
-__________________
+
 
 PART 5.6-GENERAL
 	5.6.1	Conditions on appointment of external intervener
@@ -5625,7 +5626,7 @@ The purpose of this Chapter is to establish organisational and funding structure
 *	Part 6.6 provides for the Legal Practitioners' Liability Committee, which arranges professional indemnity insurance for law practices, Australian legal practitioners and Australian-registered foreign lawyers in this jurisdiction;
 *	Part 6.7 sets out the funding arrangements for the regulation of the legal profession in this jurisdiction and the funding of compensation for claimants under Part 3.6, including the imposition of contributions and levies to the Fidelity Fund.
 	(2)	Subsection (1) is intended only as a guide to readers as to the general scheme of this Chapter.
-__________________
+
 
 PART 6.2-LEGAL SERVICES BOARD
 Division 1-The Board
@@ -5858,7 +5859,7 @@ Division 4-The register
 	6.2.24	Requirement to notify the Board of change of information
 If there is any change in the information recorded on the register in relation to a law practice, local legal practitioner or locally registered foreign lawyer, the practice, practitioner or lawyer must notify the Board of the change within 14 days after it occurs.
 Penalty:	10 penalty units.
-__________________
+
 
 PART 6.3-LEGAL SERVICES COMMISSIONER
 Division 1-Establishment, objectives, functions and powers
@@ -5971,7 +5972,7 @@ An act or decision of the Commissioner or Acting Commissioner is not invalid onl
 The Commissioner may from time to time issue guidelines for the handling of complaints.
 Note
 The Commissioner may also give directions to prescribed investigatory bodies regarding complaints referred to them-see section 4.4.9.
-__________________
+
 
 PART 6.4-GENERAL PROVISIONS FOR THE BOARD AND THE COMMISSIONER
 Division 1-Staffing
@@ -6011,7 +6012,7 @@ Penalty: 120 penalty units.
 	(a)	producing a document or giving evidence to a court or tribunal in the course of criminal proceedings or proceedings under this Act; or
 	(b)	reporting a suspected offence to the police or assisting them in their investigations.
 	(4)	Subsection (2) does not prevent a mediator giving evidence to a court or tribunal of the existence of a settlement or agreement achieved through mediation or of the failure to achieve such a settlement or agreement.
-__________________
+
 
 PART 6.5-ADMISSION BODIES
 Division 1-Council of Legal Education
@@ -6172,7 +6173,7 @@ Division 3-General provisions
 
 	6.5.19	Staff
 Any employees that are necessary for the purposes of the Council or the Board of Examiners are to be employed under Part 3 of the Public Administration Act 2004.
-__________________
+
 
 PART 6.6-LEGAL PRACTITIONERS' LIABILITY COMMITTEE
 Division 1-Liability Committee
@@ -6304,7 +6305,7 @@ The Liability Committee may invest any money standing to the credit of the Liabi
 	(3)	A law practice referred to in subsection (1) must pay the levy to the Liability Committee at the time, and in the manner, fixed by the Liability Committee.
 	(4)	The Liability Committee may, in a special case, allow further time for the payment of a levy or of a part of a levy.
 	(5)	The amount of a levy that is not paid in accordance with this section is recoverable in the Magistrates' Court from the law practice concerned by the Liability Committee as a debt.
-__________________
+
 
 PART 6.7-FUNDING
 Division 1-Public Purpose Fund
@@ -6580,7 +6581,7 @@ Penalty: 120 penalty units.
 	(a)	membership of a contributor class is determined under section 6.7.24 by reference to a specified period; and
 	(b)	a member of that class has more than one employer during that period-
 the employer of the member as at the end of that period is their employer for the purposes of this section.
-__________________
+
 
 CHAPTER 7-GENERAL
 	
@@ -6789,7 +6790,7 @@ Division 4-Regulations
 	(ii)	as in force at a particular time or as in force from time to time; and
 	(d)	so as to confer a discretionary authority or impose a duty on specified persons or bodies or specified classes of persons or bodies; and
 	(e)	so as to provide in specified cases or classes of case for the exemption of persons or things or classes of persons or things from any of the provisions of the regulations, whether unconditionally or on specified conditions and either wholly or to such an extent as is specified.
-__________________
+
 
 
 CHAPTER 8-REPEALS, AMENDMENTS AND TRANSITIONAL PROVISIONS
@@ -6800,7 +6801,7 @@ CHAPTER 8-REPEALS, AMENDMENTS AND TRANSITIONAL PROVISIONS
 PART 8.2-TRANSITIONAL PROVISIONS
 	8.2.1	Transitional provisions
 Schedule 2 has effect.
-__________________
+
 
 SCHEDULES
 SCHEDULE 1
@@ -6882,7 +6883,7 @@ The Board may enter into arrangements with the Victorian Electoral Commission es
 	(i)	to be supported by a specified number of electors;
 	(ii)	to be accompanied by a deposit of a specified amount not exceeding $500;
 	(b)	make provision for the forfeiture and return of deposits.
-__________________
+
 
 SCHEDULE 2
 Section 8.2.1
@@ -7247,7 +7248,7 @@ PART 14-PROFESSIONAL STANDARDS AND LEGAL PROFESSION ACTS AMENDMENT ACT 2008
 
 	14.1	Dealing with complaints
 Sections 4.2.8(3) and 4.2.10(3), as inserted by section 23 of the Professional Standards and Legal Profession Acts Amendment Act 2008, apply to a complaint made on or after the commencement of that section 23.
-__________________
+
 PART 15-LEGAL PROFESSION AND PUBLIC NOTARIES AMENDMENT ACT 2012
 
 
@@ -7256,70 +7257,3 @@ Section 4.2.10(1)(f), as substituted by section 8 of the Legal Profession and Pu
 	15.2	Investigations under Division 3 of Part 4.4
 	(1)	Section 4.4.12(1), as amended by section 9 of the Legal Profession and Public Notaries Amendment Act 2012, applies to an investigation under Division 3 of Part 4.4 commenced before, on or after the day on which section 9 of that Act comes into operation.
 	(2)	Sections 4.4.12A, 4.4.12B and 4.4.12C, as inserted by section 10 of the Legal Profession and Public Notaries Amendment Act 2012, apply to an investigation under Division 3 of Part 4.4 commenced before, on or after the day on which section 10 of that Act comes into operation.
- (((((((((((((((
-
-
-
-ENDNOTES
-
-1. General Information
-Minister's second reading speech-
-Legislative Assembly: 16 November 2004
-Legislative Council: 2 December 2004
-The long title for the Bill for this Act was "to improve the regulation of the legal profession, principally by implementing national model provisions for the regulation of the profession and establishing new bodies responsible for regulating it, to facilitate the regulation of legal practice on a national basis across State and Territory borders, to repeal the Legal Practice Act 1996, to make consequential amendments to Acts and for other purposes."
-The Legal Profession Act 2004 was assented to on 14 December 2004 and sections 3.5.2(7)(9) and 8.1.1(1) came into operation on 15 December 2004: section 1.1.2(2); remainder of Act on 12 December 2005: Government Gazette 1 December 2005 page 2781.
-2. 
-Table of Amendments
-This Version incorporates amendments made to the Legal Profession Act 2004 by Acts and subordinate instruments.
--------------------------------------------------------------
-Public Administration Act 2004, No. 108/2004
-Assent Date:21.12.04Commencement Date:S. 117(1)(Sch. 3 item 113) on 5.4.05: Government Gazette 31.3.05 p. 602Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Legal Profession (Consequential Amendments) Act 2005, No. 18/2005
-Assent Date:24.5.05Commencement Date:Ss 4-17, 19 on 12.12.05: Government Gazette 1.12.05 p. 2781Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Health Professions Registration Act 2005, No. 97/2005
-Assent Date:7.12.05Commencement Date:S. 182(Sch. 4 item 32) on 1.7.07: s. 2(3)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Justice Legislation (Miscellaneous Amendments) Act 2006, No. 14/2006
-Assent Date:11.4.06Commencement Date:S. 29 on 12.4.06: s. 2(1)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Statute Law (Further Revision) Act 2006, No. 29/2006
-Assent Date:6.6.06Commencement Date:S. 3(Sch. 1 item 17) on 14.12.04: s. 2(2)(g)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Conveyancers Act 2006, No. 75/2006
-Assent Date:10.10.06Commencement Date:S. 190 on 1.7.08: s. 2(2)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Justice Legislation (Further Amendment) Act 2006, No. 79/2006
-Assent Date:10.10.06Commencement Date:Ss 32-44 on 11.10.06: s. 2(1)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004
-
-
-Public Sector Acts (Further Workplace Protection and Other Matters) Act 2006, No. 80/2006
-Assent Date:10.10.06Commencement Date:S. 26(Sch. item 59) on 11.10.06: s. 2(1)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Legal Profession Amendment Act 2007, No. 12/2007
-Assent Date:8.5.07Commencement Date:S. 6(1) on 27.3.06: s. 2(2); ss 4, 5, 7-47, 50-79 on 9.5.07: s. 2(1); ss 48, 49 on 8.11.07: s. 2(5); s. 6(2) on 1.7.08: s. 2(4)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Statute Law Revision Act 2007, No. 28/2007
-Assent Date:26.6.07Commencement Date:S. 3(Sch. item 38) on 27.6.07: s. 2(1)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Legal Profession Amendment (Education) Act 2007, No. 46/2007
-Assent Date:25.9.07Commencement Date:Ss 19-27 on 26.9.07: s. 2(1); ss 4-18 on 1.7.08: s. 2(2)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Relationships Act 2008, No. 12/2008
-Assent Date:15.4.08Commencement Date:S. 73(1)(Sch. 1 item 36) on 1.12.08: s. 2(2)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Courts Legislation Amendment (Associate Judges) Act 2008, No. 24/2008
-Assent Date:3.6.08Commencement Date:S. 84 on 17.12.08: Special Gazette (No. 377) 16.12.08 p. 1Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Courts Legislation Amendment (Costs Court and Other Matters) Act 2008, No. 78/2008
-Assent Date:11.12.08Commencement Date:Ss 10-14 on 31.12.09: s. 2(3)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Professional Standards and Legal Profession Acts Amendment Act 2008, No. 81/2008
-Assent Date:11.12.08Commencement Date:Ss 23, 24 on 12.12.08: s. 2Current State:This information relates only to the provision/s amending the Legal Profession Act 2004
-Criminal Procedure Amendment (Consequential and Transitional Provisions) Act 2009, No. 68/2009
-Assent Date:24.11.09Commencement Date:S. 97(Sch. item 77) on 1.1.10: Government Gazette 10.12.09 p. 3215Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Fair Work (Commonwealth Powers) Amendment Act 2009, No. 74/2009
-Assent Date:1.12.09Commencement Date:S. 15 on 1.1.10: Government Gazette 10.12.09 p. 3215Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Statute Law Amendment (National Health Practitioner Regulation) Act 2010, No. 13/2010
-Assent Date:30.3.10Commencement Date:S. 51(Sch. item 33) on 1.7.10: s. 2(2)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Justice Legislation Further Amendment Act 2010, No. 64/2010
-
-Assent Date:28.9.10Commencement Date:S. 21 on 12.12.05: s. 2(4); s. 22 on 1.7.11: s. 2(5)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Civil Procedure and Legal Profession Amendment Act 2011, No. 1/2011
-
-Assent Date:29.3.11Commencement Date:S. 11 on 30.3.11: s. 2Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Consumer Acts Amendment Act 2011, No. 36/2011
-Assent Date:23.8.11Commencement Date:S. 37 on 24.8.11: s. 2(1)Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Legal Profession and Public Notaries Amendment Act 2012, No. 15/2012
-Assent Date:3.4.12Commencement Date:Ss 3-15 on 2.5.12: Special Gazette (No. 140) 1.5.12 p. 1Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Associations Incorporation Reform Act 2012, No. 20/2012
-Assent Date:1.5.12Commencement Date:S. 226(Sch. 5 item 17) on 26.11.12: Special Gazette (No. 384) 20.11.12 p. 1Current State:This information relates only to the provision/s amending the Legal Profession Act 2004
-
-Australian Consumer Law and Fair Trading Act 2012, No. 21/2012
-Assent Date:8.5.12Commencement Date:S. 239(Sch. 6 item 24) on 1.7.12:Special Gazette (No. 214) 28.6.12 p. 1Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Courts and Other Justice Legislation Amendment Act 2013, No. 68/2013
-Assent Date:19.11.13Commencement Date:S. 15 on 1.2.14: Special Gazette (No. 17) 28.1.14 p. 1Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Victoria Police Amendment (Consequential and Other Matters) Act 2014, No. 37/2014
-Assent Date:3.6.14Commencement Date:S. 10(Sch. item 94) on 1.7.14: Special Gazette (No. 200) 24.6.14 p. 2Current State:This information relates only to the provision/s amending the Legal Profession Act 2004Courts Legislation Miscellaneous Amendments Act 2014, No. 62/2014
-Assent Date:9.9.14Commencement Date:Ss 18, 19 on 10.11.14: Special Gazette (No. 364) 14.10.14 p. 1Current State:This information relates only to the provision/s amending the Legal Profession Act 2004-------------------------------------------------------------
-3. 
-Explanatory Details
-No entries at date of publication.
-Part 1.1-Preliminary
-
-
-
-Legal Profession Act 2004
-No. 99 of 2004
-
-
-
-
-
-
